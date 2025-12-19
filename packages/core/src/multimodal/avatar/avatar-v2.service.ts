@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventBusService } from '../../events/bus.service';
 import { EventDomain, AvatarEventSchema } from '../../events/types';
-import { TTSService } from '../voice/tts.service';
+import { TtsService } from '../voice/tts.service';
 import { AvatarService } from '@wattweiser/avatar';
 import { v4 as uuid } from 'uuid';
 
@@ -59,13 +59,13 @@ export interface AvatarV2SceneConfig {
         enabled: boolean;
         property: string;
         range: [number, number];
-        smoothness: number; // 0-1 für flüssige Übergänge
-        precision: number; // Viseme-Genauigkeit
+        smoothness?: number; // 0-1 für flüssige Übergänge
+        precision?: number; // Viseme-Genauigkeit
       };
       gestures?: {
         enabled: boolean;
         types: string[];
-        smoothness: number;
+        smoothness?: number;
       };
       idle?: {
         enabled: boolean;
@@ -109,7 +109,7 @@ export class AvatarV2Service {
 
   constructor(
     private readonly eventBus: EventBusService,
-    private readonly ttsService: TTSService,
+    private readonly ttsService: TtsService,
     private readonly avatarService?: AvatarService,
   ) {}
 
@@ -203,6 +203,11 @@ export class AvatarV2Service {
         type: 'gltf',
         url: undefined, // Wird später aus DB/Config geladen
         fallback: 'box',
+        quality: {
+          textureResolution: '2K',
+          enablePBR: true,
+          targetFPS: 60,
+        },
       },
       scene: {
         camera: {
@@ -226,6 +231,11 @@ export class AvatarV2Service {
         background: {
           color: '#1a1a2e',
         },
+        renderSettings: {
+          antialias: true,
+          shadowMap: true,
+          toneMapping: 'linear',
+        },
       },
       avatar: {
         position: [0, 0, 0],
@@ -242,14 +252,18 @@ export class AvatarV2Service {
             enabled: true,
             property: 'mouthOpen',
             range: [0, 0.1],
+            smoothness: 0.5,
+            precision: 0.1,
           },
           gestures: {
             enabled: true,
             types: ['nod', 'shake', 'point'],
+            smoothness: 0.5,
           },
           idle: {
             enabled: true,
             animation: 'breathing',
+            loop: true,
           },
         },
       },
