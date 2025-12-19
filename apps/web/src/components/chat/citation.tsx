@@ -3,18 +3,15 @@
 import { Badge } from '@/components/ui/badge';
 import { FileText, ExternalLink } from 'lucide-react';
 
-export interface Citation {
-  id: string;
-  documentId: string;
-  documentName: string;
-  chunkIndex: number;
-  content: string;
-  score: number;
-  url?: string;
-}
+import { Citation as CitationType } from '@/types/chat';
 
 interface CitationProps {
-  citation: Citation;
+  citation: CitationType & {
+    id?: string;
+    documentName?: string;
+    chunkIndex?: number;
+    url?: string;
+  };
   variant?: 'default' | 'light';
 }
 
@@ -38,7 +35,7 @@ export function Citation({ citation, variant = 'default' }: CitationProps) {
                 isLight ? 'text-white' : 'text-gray-900'
               }`}
             >
-              {citation.documentName}
+              {citation.documentName || citation.metadata?.fileName || 'Dokument'}
             </span>
             {citation.score && (
               <Badge

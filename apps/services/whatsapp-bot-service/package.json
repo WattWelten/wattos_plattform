@@ -12,23 +12,22 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
-    "@nestjs/config": "^3.0.0",
-    "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/common": "^11.1.9",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.9",
+    "@nestjs/platform-express": "^11.1.9",
     "@wattweiser/core": "workspace:*",
-    "@wattweiser/shared": "workspace:*",
     "@wattweiser/db": "workspace:*",
-    "axios": "^1.6.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "@wattweiser/shared": "workspace:*",
+    "axios": "^1.13.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
-    "@nestjs/schematics": "^10.0.0",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.3.3",
-    "vitest": "^1.0.0"
+    "@nestjs/cli": "^11.0.14",
+    "@nestjs/schematics": "^11.0.9",
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   }
 }
-

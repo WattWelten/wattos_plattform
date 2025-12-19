@@ -85,7 +85,7 @@ export function AvatarScene({
 
           {/* Environment (HDRI) */}
           {enableEnvironment && (
-            <Environment preset="sunset" background={sceneConfig.scene.background?.color} />
+            <Environment preset="sunset" background={sceneConfig.scene.background?.color ? true : false} />
           )}
 
           {/* Avatar */}

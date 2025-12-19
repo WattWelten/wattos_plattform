@@ -35,12 +35,26 @@
 
   /* Focus Visible Styles */
   *:focus-visible {
-    outline: 2px solid theme('colors.primary.500');
+    outline: 2px solid rgb(0, 115, 230); /* primary-500 */
     outline-offset: 2px;
   }
 
   /* Skip Link */
   .skip-link {
-    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-500 focus:text-white focus:rounded-md;
+    @apply sr-only;
+  }
+  
+  .skip-link:focus {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 50;
+    padding: 0.5rem 1rem;
+    background-color: rgb(0, 115, 230); /* primary-500 */
+    color: white;
+    border-radius: 0.375rem;
+    width: auto;
+    height: auto;
+    clip: auto;
   }
 }

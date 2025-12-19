@@ -12,7 +12,7 @@ export function Providers({
 }: {
   children: React.ReactNode;
   locale: string;
-  messages: any;
+  messages: Record<string, unknown>;
 }) {
   const [queryClient] = useState(
     () =>

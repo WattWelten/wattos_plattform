@@ -85,7 +85,7 @@ export function AvatarV2({
       const idleAction = actions[config.avatar.animations.idle.animation || 'idle'];
       if (idleAction) {
         idleAction.play();
-        idleAction.setLoop(THREE.LoopRepeat);
+        idleAction.setLoop(THREE.LoopRepeat, Infinity);
       }
     }
   }, [actions, config]);

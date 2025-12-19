@@ -19,7 +19,7 @@ const registerSchema = z
     password: z.string().min(8, 'Passwort muss mindestens 8 Zeichen lang sein'),
     confirmPassword: z.string(),
     tenantType: z.enum(['kmu', 'schule', 'verwaltung'], {
-      required_error: 'Bitte wählen Sie einen Typ aus',
+      message: 'Bitte wählen Sie einen Typ aus',
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {

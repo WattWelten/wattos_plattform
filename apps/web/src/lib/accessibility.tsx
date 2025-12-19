@@ -3,6 +3,8 @@
  * Hilfsfunktionen für WCAG 2.1 AA Compliance
  */
 
+import React from 'react';
+
 /**
  * Generiert eine eindeutige ID für ARIA-Labels
  */

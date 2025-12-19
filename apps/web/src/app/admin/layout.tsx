@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Providers } from '../providers';
 
 export default function AdminLayout({
   children,
@@ -7,7 +10,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen">
+    <Providers locale="de" messages={{}}>
+      <div className="flex h-screen">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-gray-50 p-4">
         <h2 className="text-xl font-bold mb-6">Admin</h2>
@@ -48,6 +52,7 @@ export default function AdminLayout({
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
+    </Providers>
   );
 }
 

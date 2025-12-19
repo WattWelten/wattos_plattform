@@ -21,18 +21,16 @@
     "db:generate": "cd apps/api && npm run db:generate"
   },
   "devDependencies": {
-    "prettier": "^3.2.5",
-    "turbo": "^1.12.4",
-    "typescript": "^5.3.3",
-    "husky": "^9.0.11",
-    "@commitlint/cli": "^19.2.0",
-    "@commitlint/config-conventional": "^19.2.0"
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4",
+    "turbo": "^2.6.3",
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=20.9.0",
+    "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@9.15.0"
 }
-
-

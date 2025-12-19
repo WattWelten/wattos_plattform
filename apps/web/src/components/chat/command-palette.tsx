@@ -87,6 +87,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
           <CommandGroup key={group.group} heading={group.group}>
             {group.items.map((item) => {
               const Icon = item.icon;
+              const hasShortcut = 'shortcut' in item && item.shortcut;
               return (
                 <CommandItem
                   key={item.id}
@@ -95,7 +96,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
-                  {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
+                  {hasShortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
                 </CommandItem>
               );
             })}

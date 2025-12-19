@@ -3,8 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@wattweiser/shared'],
   
-  // Performance Optimizations
-  swcMinify: true,
+  // Performance Optimizations (swcMinify ist in Next.js 16 Standard)
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
@@ -16,10 +15,10 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   
-  // Bundle Optimization
-  experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
-  },
+  // Bundle Optimization (optimizePackageImports ist jetzt Standard in Next.js 16)
+  // experimental: {
+  //   optimizePackageImports: ['lucide-react', 'recharts'],
+  // },
   
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',

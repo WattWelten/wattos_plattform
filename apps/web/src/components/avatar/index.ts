@@ -1,8 +1,8 @@
 export { AvatarV2 } from './AvatarV2';
 export { AvatarScene } from './AvatarScene';
 export { AvatarV2Container } from './AvatarV2Container';
-export { AvatarAnimations, useAvatarAnimations } from './AvatarAnimations';
-export { LipSync, useLipSync } from './LipSync';
+export { useAvatarAnimations } from './AvatarAnimations';
+export { useLipSync } from './LipSync';
 export { AvatarSceneSkeleton } from './AvatarSceneSkeleton';
 export type {
   AvatarV2Props,

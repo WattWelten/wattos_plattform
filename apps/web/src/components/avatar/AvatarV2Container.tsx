@@ -3,7 +3,8 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { AvatarScene, AvatarSceneSkeleton } from './AvatarScene';
+import { AvatarScene } from './AvatarScene';
+import { AvatarSceneSkeleton } from './AvatarSceneSkeleton';
 import { useAvatarV2 } from '@/hooks/use-avatar-v2';
 import { AvatarV2SceneConfig } from './types';
 
