@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { F13Client } from '../client';
-import { RAGProvider, RAGContext, RAGResponse, RAGResult } from '@wattweiser/core';
 
 /**
  * F13 LLM Provider
