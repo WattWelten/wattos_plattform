@@ -35,6 +35,8 @@ model Tenant {
   f13Config  F13Config?
   dashboards Dashboard[]
   widgets    Widget[]
+  alertRules AlertRule[]
+  alerts     Alert[]
 
   @@index([slug])
 }
@@ -385,12 +387,15 @@ model AuditLog {
   id          String   @id @default(uuid())
   tenantId    String
   userId      String?
+  service     String?  // Service-Name für Observability
   action      String
   resourceType String?
   resourceId   String?
   details      Json     @default("{}")
+  metadata    Json     @default("{}") // Zusätzliche Metadaten für Logs
   ipAddress    String?
   userAgent    String?  @db.Text
+  timestamp   DateTime @default(now()) // Alias für createdAt für Observability
   createdAt    DateTime @default(now())
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -399,6 +404,7 @@ model AuditLog {
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([userId, createdAt(sort: Desc)])
   @@index([action])
+  @@index([service, createdAt(sort: Desc)])
 }
 
 // ============================================
@@ -736,5 +742,57 @@ model WidgetAnalytics {
   @@index([widgetId, timestamp])
   @@index([eventType, timestamp])
   @@index([sessionId])
+}
+
+// ============================================
+// MVP: OBSERVABILITY MODELS
+// ============================================
+
+model AlertRule {
+  id            String   @id @default(uuid())
+  tenantId      String?
+  name          String
+  description   String?  @db.Text
+  metric        String   // Metrik-Name (z.B. "http_request_duration_ms")
+  threshold     Float    // Schwellenwert
+  operator      String   // "gt" | "lt" | "eq" | "gte" | "lte"
+  duration      Int      // Dauer in Sekunden, die der Schwellenwert überschritten werden muss
+  severity      String   @default("warning") // "info" | "warning" | "error" | "critical"
+  enabled       Boolean  @default(true)
+  actions       Json     @default("[]") // Aktionen bei Alert (z.B. ["email", "webhook"])
+  recipients    Json     @default("[]") // Empfänger (z.B. ["admin@example.com"])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  alerts        Alert[]
+  
+  @@index([tenantId])
+  @@index([enabled])
+  @@index([metric])
+}
+
+model Alert {
+  id            String   @id @default(uuid())
+  tenantId      String?
+  alertRuleId   String
+  service       String
+  metric        String
+  value         Float
+  threshold     Float
+  severity      String
+  status        String   @default("open") // "open" | "acknowledged" | "resolved" | "closed"
+  message       String   @db.Text
+  metadata      Json     @default("{}")
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  alertRule     AlertRule @relation(fields: [alertRuleId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId, status])
+  @@index([service, status])
+  @@index([severity, status])
+  @@index([createdAt(sort: Desc)])
 }
 
