@@ -62,18 +62,16 @@ export class KBSyncService {
       });
 
       // F13-OS API: KB-Artikel erstellen/aktualisieren
-      // F13 Client verwendet bereits baseURL, daher direkter Pfad
-      const f13Response = await firstValueFrom(
-        this.httpService.post('/api/v1/kb/articles', {
-          title: article.title,
-          content: article.contentMd,
-          metadata: {
-            tenantId,
-            kbArticleId: article.id,
-            status: article.status,
-          },
-        }),
-      );
+      // Verwende F13 Client direkt für konsistente Base-URL und Error-Handling
+      const f13Response = await this.f13Client.post('/api/v1/kb/articles', {
+        title: article.title,
+        content: article.contentMd,
+        metadata: {
+          tenantId,
+          kbArticleId: article.id,
+          status: article.status,
+        },
+      });
 
       const f13ArticleId = f13Response.id || f13Response.data?.id;
 
