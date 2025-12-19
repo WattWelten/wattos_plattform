@@ -43,3 +43,4 @@ export function AnalyticsWidget({ data, config }: AnalyticsWidgetProps) {
   );
 }
 
+

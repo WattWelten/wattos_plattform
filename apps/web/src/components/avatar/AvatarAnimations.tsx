@@ -63,3 +63,4 @@ export function useAvatarAnimations(
   return animationState.current;
 }
 
+

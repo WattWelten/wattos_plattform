@@ -29,3 +29,4 @@ export function ConversationsWidget({ data, config }: ConversationsWidgetProps) 
   );
 }
 
+
