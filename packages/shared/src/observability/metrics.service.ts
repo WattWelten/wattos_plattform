@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -26,18 +26,21 @@ export interface HistogramMetric {
 
 @Injectable()
 export class MetricsService implements OnModuleInit {
+  private readonly logger = new Logger(MetricsService.name);
   private counters: Map<string, Map<string, number>> = new Map();
   private histograms: Map<string, number[]> = new Map();
   private gauges: Map<string, number> = new Map();
   private readonly enabled: boolean;
+  private readonly maxHistogramSize: number;
 
   constructor(private configService?: ConfigService) {
     this.enabled = configService?.get<boolean>('METRICS_ENABLED', true) ?? true;
+    this.maxHistogramSize = configService?.get<number>('METRICS_MAX_HISTOGRAM_SIZE', 1000) ?? 1000;
   }
 
   onModuleInit() {
     if (this.enabled) {
-      console.log('📊 Metrics Service initialized');
+      this.logger.log('Metrics Service initialized');
     }
   }
 
@@ -64,6 +67,12 @@ export class MetricsService implements OnModuleInit {
     const key = this.createKey(name, labels);
     const values = this.histograms.get(key) || [];
     values.push(value);
+
+    // Rotation: Älteste Werte entfernen wenn Limit erreicht
+    if (values.length > this.maxHistogramSize) {
+      values.shift(); // FIFO: Entferne ältesten Wert
+    }
+
     this.histograms.set(key, values);
   }
 

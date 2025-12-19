@@ -81,7 +81,7 @@ export class PgVectorStore implements IVectorStore {
     try {
       // Build filter conditions
       const filterConditions: string[] = [];
-      const queryParams: any[] = [`[${queryEmbedding.join(',')}]`, k];
+      const queryParams: Array<string | number> = [`[${queryEmbedding.join(',')}]`, k];
 
       // Add metadata filters
       if (Object.keys(filter).length > 0) {
@@ -114,7 +114,12 @@ export class PgVectorStore implements IVectorStore {
         LIMIT $2
       `;
 
-      let results: any[];
+      let results: Array<{
+        id: string;
+        content: string;
+        metadata: Record<string, unknown>;
+        score: number;
+      }>;
 
       // Execute query
       if (this.client.query) {
@@ -129,14 +134,19 @@ export class PgVectorStore implements IVectorStore {
       }
 
       // Transform results
-      return results.map((row: any) => ({
-        id: row.id,
-        content: row.content,
-        score: parseFloat(row.score) || 0,
-        metadata: includeMetadata ? (typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata) : {},
+      return results.map((row) => ({
+        id: String(row.id),
+        content: String(row.content),
+        score: parseFloat(String(row.score)) || 0,
+        metadata: includeMetadata
+          ? typeof row.metadata === 'string'
+            ? (JSON.parse(row.metadata) as Record<string, unknown>)
+            : (row.metadata as Record<string, unknown>)
+          : {},
       }));
-    } catch (error: any) {
-      throw new Error(`Failed to search vectors: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to search vectors: ${errorMessage}`);
     }
   }
 

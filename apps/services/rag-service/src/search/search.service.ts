@@ -89,14 +89,23 @@ export class SearchService {
         },
       });
 
-      // Chunks aus DB abrufen
+      // Chunks aus DB abrufen (optimiert: select statt include für bessere Performance)
       const chunkIds = results.map((r) => r.id);
       const chunks = await this.prisma.chunk.findMany({
         where: {
           id: { in: chunkIds },
         },
-        include: {
-          document: true,
+        select: {
+          id: true,
+          content: true,
+          metadata: true,
+          documentId: true,
+          document: {
+            select: {
+              fileName: true,
+              fileType: true,
+            },
+          },
         },
       });
 
@@ -135,8 +144,10 @@ export class SearchService {
       }
 
       return result;
-    } catch (error: any) {
-      this.logger.error(`Search failed: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Search failed: ${errorMessage}`, errorStack);
       throw error;
     }
   }

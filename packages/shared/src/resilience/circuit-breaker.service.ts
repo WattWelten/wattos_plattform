@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 export interface CircuitBreakerOptions {
   failureThreshold: number; // Anzahl Fehler bevor Circuit öffnet
@@ -20,6 +21,7 @@ export class CircuitBreakerService {
     state: CircuitState;
     failures: number;
     lastFailureTime: number;
+    lastUsed: number;
     successCount: number;
     options: CircuitBreakerOptions;
   }> = new Map();
@@ -52,10 +54,16 @@ export class CircuitBreakerService {
     try {
       const result = await operation();
       
+      // Update lastUsed
+      circuit.lastUsed = Date.now();
+      
       // Erfolg - Circuit schließen oder im HALF_OPEN Zustand Erfolge zählen
       this.onSuccess(circuitName, circuit);
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      // Update lastUsed auch bei Fehlern
+      circuit.lastUsed = Date.now();
+      
       // Fehler - Circuit öffnen oder Fehler zählen
       this.onFailure(circuitName, circuit);
       throw error;
@@ -101,6 +109,7 @@ export class CircuitBreakerService {
         state: CircuitState.CLOSED,
         failures: 0,
         lastFailureTime: 0,
+        lastUsed: Date.now(),
         successCount: 0,
         options: { ...defaultOptions, ...options },
       });
@@ -112,6 +121,7 @@ export class CircuitBreakerService {
     state: CircuitState;
     failures: number;
     lastFailureTime: number;
+    lastUsed: number;
     successCount: number;
     options: CircuitBreakerOptions;
   }): CircuitState {
@@ -129,7 +139,30 @@ export class CircuitBreakerService {
     return circuit.state;
   }
 
-  private onSuccess(circuitName: string, circuit: any): void {
+  /**
+   * Cleanup ungenutzte Circuits (läuft stündlich)
+   */
+  @Cron(CronExpression.EVERY_HOUR)
+  cleanupUnusedCircuits(): void {
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 Stunden
+
+    for (const [name, circuit] of this.circuits.entries()) {
+      if (now - circuit.lastUsed > maxAge && circuit.state === CircuitState.CLOSED) {
+        this.circuits.delete(name);
+        this.logger.log(`Cleaned up unused circuit: ${name}`);
+      }
+    }
+  }
+
+  private onSuccess(circuitName: string, circuit: {
+    state: CircuitState;
+    failures: number;
+    lastFailureTime: number;
+    lastUsed: number;
+    successCount: number;
+    options: CircuitBreakerOptions;
+  }): void {
     if (circuit.state === CircuitState.HALF_OPEN) {
       circuit.successCount++;
       // Nach einigen Erfolgen Circuit schließen
@@ -144,7 +177,14 @@ export class CircuitBreakerService {
     }
   }
 
-  private onFailure(circuitName: string, circuit: any): void {
+  private onFailure(circuitName: string, circuit: {
+    state: CircuitState;
+    failures: number;
+    lastFailureTime: number;
+    lastUsed: number;
+    successCount: number;
+    options: CircuitBreakerOptions;
+  }): void {
     circuit.failures++;
     circuit.lastFailureTime = Date.now();
 

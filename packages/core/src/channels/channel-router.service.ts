@@ -273,8 +273,10 @@ export class ChannelRouterService {
       Array.from(this.channels.entries()).map(async ([name, channel]) => {
         try {
           health[name] = await channel.healthCheck();
-        } catch (error: any) {
-          this.logger.error(`Health check failed for channel ${name}: ${error.message}`);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          this.logger.error(`Health check failed for channel ${name}: ${errorMessage}`, errorStack);
           health[name] = false;
         }
       }),

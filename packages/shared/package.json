@@ -13,6 +13,7 @@
   "dependencies": {
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^3.1.1",
+    "@nestjs/schedule": "^4.0.0",
     "@nestjs/throttler": "^5.0.1",
     "@wattweiser/db": "workspace:*",
     "express": "^4.18.2",

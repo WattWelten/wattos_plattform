@@ -17,8 +17,7 @@ export interface Agent {
 @Injectable()
 export class AgentRuntimeService {
   private readonly logger = new Logger(AgentRuntimeService.name);
-  private readonly agents: Map<string, Agent> = new Map();;
-  private agents: Map<string, Agent> = new Map();
+  private readonly agents: Map<string, Agent> = new Map();
   private handlers: Map<string, EventHandler[]> = new Map();
 
   constructor(private readonly eventBus: EventBusService) {}
@@ -66,8 +65,10 @@ export class AgentRuntimeService {
 
       try {
         return await agent.handle(event);
-      } catch (error: any) {
-        this.logger.error(`Error in agent ${agentName}: ${error.message}`, error.stack);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        this.logger.error(`Error in agent ${agentName}: ${errorMessage}`, errorStack);
         return null;
       }
     }

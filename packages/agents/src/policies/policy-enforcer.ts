@@ -149,11 +149,13 @@ export class PolicyEnforcer {
 
       case 'warn':
         // Warnung loggen, aber erlauben
+        // Note: console.warn is acceptable here as this is not a NestJS service
         console.warn(`Guardrail warning: ${guardrail.name} - ${guardrail.message}`);
         return { allowed: true };
 
       case 'log':
         // Nur loggen
+        // Note: console.log is acceptable here as this is not a NestJS service
         console.log(`Guardrail log: ${guardrail.name} - ${guardrail.message}`);
         return { allowed: true };
 

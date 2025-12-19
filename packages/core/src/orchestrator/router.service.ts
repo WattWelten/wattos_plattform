@@ -96,8 +96,10 @@ export class EventRouterService {
             // Emit result event
             await this.eventBus.emit(result);
           }
-        } catch (error: any) {
-          this.logger.error(`Error routing event to ${agentName}: ${error.message}`, error.stack);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          this.logger.error(`Error routing event to ${agentName}: ${errorMessage}`, errorStack);
         }
       }),
     );

@@ -42,8 +42,9 @@ export class ProviderFactoryService {
           // this.ragService.registerProvider('f13', wrapper);
           
           this.logger.log(`F13 RAG Provider registered for tenant: ${tenantId}`);
-        } catch (error: any) {
-          this.logger.error(`Failed to register F13 provider: ${error.message}`);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logger.error(`Failed to register F13 provider: ${errorMessage}`);
           // Fallback zu WattWeiser Provider
           this.logger.warn(`Falling back to WattWeiser provider for tenant: ${tenantId}`);
         }

@@ -7,7 +7,12 @@ export interface MemoryConfig {
   maxTokens: number;
   compressionThreshold: number; // Token-Limit, ab dem komprimiert wird
   longTermStorage: boolean;
-  prismaClient?: any; // Optional: Prisma Client für DB-Persistierung
+  prismaClient?: {
+    agentRun: {
+      findUnique: (args: { where: { id: string }; select: { metrics: boolean } }) => Promise<{ metrics?: { memory?: MemoryContext } } | null>;
+      update: (args: { where: { id: string }; data: { metrics: { memory: MemoryContext } } }) => Promise<unknown>;
+    };
+  }; // Optional: Prisma Client für DB-Persistierung
 }
 
 /**
@@ -17,7 +22,7 @@ export interface MemoryConfig {
 export class MemoryManager {
   private config: MemoryConfig;
   private memoryStore: Map<string, MemoryContext> = new Map();
-  private prisma: any;
+  private prisma: MemoryConfig['prismaClient'];
 
   constructor(config: MemoryConfig) {
     this.config = config;
@@ -50,8 +55,10 @@ export class MemoryManager {
           context = agentRun.metrics.memory as MemoryContext;
           this.memoryStore.set(runId, context);
         }
-      } catch (error: any) {
-        console.warn(`Failed to load memory from DB for run ${runId}: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        // Note: console.warn is acceptable here as this is not a NestJS service
+        console.warn(`Failed to load memory from DB for run ${runId}: ${errorMessage}`);
       }
     }
 
@@ -127,8 +134,8 @@ export class MemoryManager {
   /**
    * Wichtige Fakten extrahieren
    */
-  private extractImportantFacts(messages: AgentMessage[]): Record<string, any> {
-    const facts: Record<string, any> = {};
+  private extractImportantFacts(messages: AgentMessage[]): Record<string, unknown> {
+    const facts: Record<string, unknown> = {};
 
     // Einfache Heuristik: Suche nach Schlüsselwörtern
     // In einer echten Implementierung würde hier ein LLM verwendet
@@ -183,7 +190,7 @@ export class MemoryManager {
   /**
    * Long-Term Fact hinzufügen
    */
-  async addLongTermFact(runId: string, key: string, value: any): Promise<void> {
+  async addLongTermFact(runId: string, key: string, value: unknown): Promise<void> {
     const context = await this.getContext(runId);
     context.longTermFacts[key] = value;
   }
@@ -191,7 +198,7 @@ export class MemoryManager {
   /**
    * Long-Term Fact abrufen
    */
-  async getLongTermFact(runId: string, key: string): Promise<any> {
+  async getLongTermFact(runId: string, key: string): Promise<unknown> {
     const context = await this.getContext(runId);
     return context.longTermFacts[key];
   }
@@ -225,8 +232,10 @@ export class MemoryManager {
           },
         });
       }
-    } catch (error: any) {
-      console.warn(`Failed to persist memory for run ${runId}: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      // Note: console.warn is acceptable here as this is not a NestJS service
+      console.warn(`Failed to persist memory for run ${runId}: ${errorMessage}`);
     }
   }
 

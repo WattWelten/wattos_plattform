@@ -127,17 +127,21 @@ export class LlmService {
         const provider = this.providerFactory.getProvider(name);
         
         // Execute with circuit breaker and retry
-        const response = await this.retryService.retry(
-          () => circuitBreaker.execute(() => handler(provider)),
+        const response = await this.retryService.executeWithRetry(
+          () => circuitBreaker.execute(name, () => handler(provider)),
           {
-            maxRetries: 3,
-            delayMs: 200,
-            backoffFactor: 2,
-            errorHandler: (error) => {
+            maxAttempts: 3,
+            initialDelay: 200,
+            backoffMultiplier: 2,
+            retryableErrors: (error: unknown) => {
               // Only retry on transient errors
-              return error instanceof ServiceUnavailableException || 
-                     error.message?.includes('network') ||
-                     error.message?.includes('timeout');
+              if (error instanceof ServiceUnavailableException) {
+                return true;
+              }
+              if (error instanceof Error) {
+                return error.message?.includes('network') || error.message?.includes('timeout');
+              }
+              return false;
             },
           }
         );
@@ -166,10 +170,7 @@ export class LlmService {
 
     throw new ServiceUnavailableException(
       `All providers failed. Errors: ${errors.map((e) => `${e.provider}: ${e.message}`).join(', ')}`,
-    );({
-      message: 'All LLM providers failed to process the request',
-      errors,
-    });
+    );
   }
 
   private buildProviderPriority(preferred: string) {
