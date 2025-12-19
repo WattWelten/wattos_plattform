@@ -1,5 +1,7 @@
 # WattOS KI - Modulare, DSGVO-konforme KI-Plattform
 
+[![CI](https://github.com/WattWelten/wattos_plattform/actions/workflows/ci.yml/badge.svg)](https://github.com/WattWelten/wattos_plattform/actions/workflows/ci.yml)
+
 WattOS KI ist eine modulare, DSGVO-konforme KI-Plattform für kleine und mittlere Unternehmen (KMU), Schulen und öffentliche Verwaltungen. Die Plattform bietet Multi-LLM-Support, RAG (Retrieval-Augmented Generation), Digitale Mitarbeiter (Agents) und eine vollständige Admin-Konsole.
 
 ## 🚀 Features
@@ -37,6 +39,7 @@ pnpm install
 # Umgebungsvariablen konfigurieren
 cp .env.example .env
 # .env Datei bearbeiten und Werte anpassen
+# Siehe docs/ENVIRONMENT_VARIABLES.md für vollständige Dokumentation
 
 # Datenbank-Migrationen ausführen
 pnpm db:migrate

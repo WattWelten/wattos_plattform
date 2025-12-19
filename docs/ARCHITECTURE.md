@@ -9,6 +9,70 @@ WattOS KI ist eine modulare, Microservices-basierte KI-Plattform, die auf folgen
 - **Skalierbarkeit**: Horizontale Skalierung durch Microservices
 - **Wartbarkeit**: Klare Trennung von Concerns
 
+## 5-Schichten-Modell
+
+Die WattOS Plattform folgt einem 5-Schichten-Architekturmodell:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Layer 5: API Layer                                      │
+│ - REST APIs (NestJS)                                    │
+│ - WebSocket/SSE Streams                                 │
+│ - GraphQL (optional)                                   │
+│ - API Gateway (Auth, Rate-Limiting, Proxy)             │
+└─────────────────────────────────────────────────────────┘
+                          │
+┌─────────────────────────────────────────────────────────┐
+│ Layer 4: Agentenlogik (Orchestration Layer)            │
+│ - KAYA Orchestrator                                     │
+│ - Agent Runtime (LangGraph)                             │
+│ - Tool Execution                                        │
+│ - Human-in-the-Loop (HiTL)                              │
+│ - Policy Enforcement                                    │
+└─────────────────────────────────────────────────────────┘
+                          │
+┌─────────────────────────────────────────────────────────┐
+│ Layer 3: Charakter (Persona Layer)                     │
+│ - Character Service                                     │
+│ - Persona Generator                                     │
+│ - Personality Traits                                    │
+│ - Voice & Avatar Configuration                          │
+└─────────────────────────────────────────────────────────┘
+                          │
+┌─────────────────────────────────────────────────────────┐
+│ Layer 2: Streams (Data Flow Layer)                      │
+│ - Chat Service (WebSocket/SSE)                          │
+│ - RAG Service (Vector Search)                          │
+│ - Ingestion Service (Document Processing)              │
+│ - Voice Service (TTS/STT)                              │
+│ - Streaming Pipeline                                    │
+└─────────────────────────────────────────────────────────┘
+                          │
+┌─────────────────────────────────────────────────────────┐
+│ Layer 1: Tool Layer (Infrastructure)                    │
+│ - LLM Gateway (Multi-Provider)                          │
+│ - Vector Stores (pgvector, OpenSearch)                  │
+│ - Database (PostgreSQL)                                  │
+│ - Cache (Redis)                                          │
+│ - Message Queue (BullMQ)                                 │
+│ - File Storage                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Datenflüsse
+
+1. **Request Flow (Top-Down)**:
+   - API Layer → Agentenlogik → Charakter → Streams → Tools
+   - Jede Schicht transformiert/erweitert die Daten
+
+2. **Response Flow (Bottom-Up)**:
+   - Tools → Streams → Charakter → Agentenlogik → API Layer
+   - Aggregation und Formatierung auf jeder Schicht
+
+3. **Streaming Flow**:
+   - LLM Gateway → Chat Service → WebSocket/SSE → Frontend
+   - Echtzeit-Datenfluss ohne Blocking
+
 ## System-Architektur
 
 ```
