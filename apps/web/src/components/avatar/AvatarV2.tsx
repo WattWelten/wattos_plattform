@@ -1,10 +1,18 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { AvatarV2Props } from './types';
+import {
+  buildMorphDict,
+  setViseme,
+  decayAll,
+  enableMorphTargets,
+  filterMorphTracks,
+  enhanceEyeMaterial,
+} from './morph-handler';
 
 /**
  * Avatar V2 Component
@@ -19,6 +27,8 @@ export function AvatarV2({
   onError,
 }: AvatarV2Props) {
   const groupRef = useRef<THREE.Group>(null);
+  const clockRef = useRef(new THREE.Clock());
+  const morphDictRef = useRef<Map<string, { mesh: THREE.SkinnedMesh; idx: number }[]>>(new Map());
 
   // GLTF-Modell laden (falls vorhanden)
   const { scene: gltfScene, animations: gltfAnimations } = useGLTF(
@@ -26,27 +36,74 @@ export function AvatarV2({
     true,
   );
 
-  // Animationen
-  const { actions, mixer } = useAnimations(gltfAnimations, groupRef);
+  // Morph-Tracks aus Animationen filtern
+  const filteredAnimations = useMemo(() => {
+    return filterMorphTracks(gltfAnimations);
+  }, [gltfAnimations]);
 
-  // Lip-Sync Animation
+  // Animationen mit gefilterten Clips
+  const { actions, mixer } = useAnimations(filteredAnimations, groupRef);
+
+  // Morph-Dictionary aufbauen und Materialien konfigurieren
+  useEffect(() => {
+    if (gltfScene) {
+      // Materialien morph-fähig machen
+      enableMorphTargets(gltfScene);
+      
+      // Augen-Material verbessern
+      enhanceEyeMaterial(gltfScene);
+      
+      // Morph-Dictionary aufbauen
+      morphDictRef.current = buildMorphDict(gltfScene);
+      
+      // Dev-Testfunktion registrieren
+      if (typeof window !== 'undefined') {
+        (window as any).testViseme = (visemeName: string, w = 1) => {
+          setViseme(morphDictRef.current, visemeName, w);
+        };
+        console.info(
+          'Morph-Setup aktiv. Dev-Konsole: testViseme("viseme_aa"), testViseme("viseme_pp"), testViseme("viseme_th")',
+        );
+      }
+    }
+  }, [gltfScene]);
+
+  // Lip-Sync Animation mit Morph-Handling
   useFrame((state, delta) => {
-    if (visemes && visemes.length > 0 && groupRef.current) {
+    if (!gltfScene || !groupRef.current) return;
+
+    // Decay für alle Morph Targets (Glättung)
+    decayAll(gltfScene, delta, 12);
+
+    // Visemes anwenden
+    if (visemes && visemes.length > 0) {
       const time = state.clock.elapsedTime;
       const visemeIndex = Math.floor((time * 10) % visemes.length);
       const visemeValue = visemes[visemeIndex] || 0;
 
-      // Morph Target für Lip-Sync
-      if (gltfScene) {
-        gltfScene.traverse((child) => {
-          if (child instanceof THREE.SkinnedMesh) {
-            const morphTargetInfluences = child.morphTargetInfluences;
-            if (morphTargetInfluences && morphTargetInfluences.length > 0) {
-              // Erste Morph Target für Mund-Öffnung
-              morphTargetInfluences[0] = visemeValue;
-            }
-          }
-        });
+      // Viseme-Mapping (vereinfacht - kann erweitert werden)
+      const visemeNames = [
+        'viseme_aa',
+        'viseme_ii',
+        'viseme_uu',
+        'viseme_ee',
+        'viseme_oo',
+        'viseme_pp',
+        'viseme_ff',
+        'viseme_th',
+        'viseme_dd',
+        'viseme_kk',
+        'viseme_ch',
+        'viseme_ss',
+        'viseme_nn',
+        'viseme_rr',
+        'viseme_mm',
+      ];
+
+      if (visemeValue > 0.1) {
+        // Aktiviere entsprechenden Viseme
+        const visemeName = visemeNames[visemeIndex % visemeNames.length] || 'viseme_aa';
+        setViseme(morphDictRef.current, visemeName, visemeValue);
       }
     }
 
