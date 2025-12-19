@@ -19,7 +19,7 @@
     "@wattweiser/core": "workspace:*",
     "@wattweiser/shared": "workspace:*",
     "@wattweiser/db": "workspace:*",
-    "twilio": "^4.19.0",
+    "twilio": "^5.11.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
   },
