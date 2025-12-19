@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { ReportingModule } from './reporting/reporting.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MetricsModule } from './metrics/metrics.module';
     DashboardModule,
     AnalyticsModule,
     MetricsModule,
+    ReportingModule,
   ],
 })
 export class AppModule {}
