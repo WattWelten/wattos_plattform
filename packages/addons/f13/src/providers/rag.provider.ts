@@ -52,7 +52,7 @@ export class F13RAGProvider implements RAGProvider {
 
         // Fallback zu WattWeiser RAG Provider (wenn verfügbar)
         if (context.fallback) {
-          this.logger.info('Falling back to WattWeiser RAG provider');
+          this.logger.log('Falling back to WattWeiser RAG provider');
           return await context.fallback();
         }
 

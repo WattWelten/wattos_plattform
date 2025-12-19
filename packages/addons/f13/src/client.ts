@@ -33,9 +33,9 @@ export class F13Client {
     const envConfig = {
       baseUrl: this.configService.get<string>('F13_BASE_URL') || defaultConfig.baseUrl,
       apiKey: this.configService.get<string>('F13_API_KEY') || defaultConfig.apiKey,
-      timeout: this.configService.get<number>('F13_TIMEOUT', defaultConfig.timeout),
-      retryAttempts: this.configService.get<number>('F13_RETRY_ATTEMPTS', defaultConfig.retryAttempts),
-      retryDelay: this.configService.get<number>('F13_RETRY_DELAY', defaultConfig.retryDelay),
+      timeout: this.configService.get<number>('F13_TIMEOUT') ?? defaultConfig.timeout,
+      retryAttempts: this.configService.get<number>('F13_RETRY_ATTEMPTS') ?? defaultConfig.retryAttempts,
+      retryDelay: this.configService.get<number>('F13_RETRY_DELAY') ?? defaultConfig.retryDelay,
     };
 
     this.config = F13ConfigSchema.parse(envConfig);

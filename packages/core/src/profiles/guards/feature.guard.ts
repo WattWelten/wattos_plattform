@@ -73,7 +73,7 @@ export class FeatureGuard implements CanActivate {
 export const createFeatureGuard = (feature: string) => {
   @Injectable()
   class SpecificFeatureGuard implements CanActivate {
-    constructor(private readonly featureFlags: FeatureFlagsService) {}
+    constructor(public readonly featureFlags: FeatureFlagsService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const request = context.switchToHttp().getRequest();

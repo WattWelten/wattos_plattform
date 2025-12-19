@@ -38,27 +38,28 @@ export class ProfileService {
           where: { tenantId },
         });
 
-      if (dbProfile) {
-        const profile: TenantProfile = {
-          id: dbProfile.id,
-          tenantId: dbProfile.tenantId,
-          market: dbProfile.market as Market,
-          mode: dbProfile.mode as Mode,
-          providers: dbProfile.providers as ProviderConfig,
-          compliance: dbProfile.compliance as ComplianceConfig,
-          features: dbProfile.features as FeatureFlags,
-          createdAt: dbProfile.createdAt.getTime(),
-          updatedAt: dbProfile.updatedAt.getTime(),
-        };
+        if (dbProfile) {
+          const profile: TenantProfile = {
+            id: dbProfile.id,
+            tenantId: dbProfile.tenantId,
+            market: dbProfile.market as Market,
+            mode: dbProfile.mode as Mode,
+            providers: dbProfile.providers as ProviderConfig,
+            compliance: dbProfile.compliance as ComplianceConfig,
+            features: dbProfile.features as FeatureFlags,
+            createdAt: dbProfile.createdAt.getTime(),
+            updatedAt: dbProfile.updatedAt.getTime(),
+          };
 
-        // Cache speichern
-        this.cache.set(tenantId, profile);
-        this.logger.debug(`Profile loaded from DB: ${tenantId}`, {
-          market: profile.market,
-          mode: profile.mode,
-        });
+          // Cache speichern
+          this.cache.set(tenantId, profile);
+          this.logger.debug(`Profile loaded from DB: ${tenantId}`, {
+            market: profile.market,
+            mode: profile.mode,
+          });
 
-        return profile;
+          return profile;
+        }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         this.logger.warn(`Failed to load profile from DB: ${errorMessage}`, {

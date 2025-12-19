@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { F13Client, F13ApiError } from '../client';
+import { F13Client } from '../client';
 import { RAGProvider, RAGContext, RAGResponse, RAGResult } from '@wattweiser/core';
 
 /**
@@ -57,7 +57,7 @@ export class F13LLMProvider {
 
         // Fallback zu WattWeiser Provider (wenn verfügbar)
         if (options?.fallback) {
-          this.logger.info('Falling back to WattWeiser LLM provider');
+          this.logger.log('Falling back to WattWeiser LLM provider');
           return await options.fallback();
         }
 

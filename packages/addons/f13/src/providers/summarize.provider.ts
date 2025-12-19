@@ -48,7 +48,7 @@ export class F13SummaryProvider {
 
         // Fallback zu WattWeiser Summary Provider (wenn verfügbar)
         if (options?.fallback) {
-          this.logger.info('Falling back to WattWeiser summary provider');
+          this.logger.log('Falling back to WattWeiser summary provider');
           return await options.fallback();
         }
 

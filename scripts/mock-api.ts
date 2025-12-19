@@ -3,8 +3,8 @@
  * Simuliert Chat, Session, TTS, Log, Delete-Artifact, search_tool_config Endpoints
  */
 
-import express from 'express';
-import cors from 'cors';
+const express = require('express');
+const cors = require('cors');
 
 const app = express();
 const PORT = 4001;

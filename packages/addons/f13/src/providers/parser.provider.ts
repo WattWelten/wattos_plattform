@@ -60,7 +60,7 @@ export class F13ParserProvider {
 
         // Fallback zu WattWeiser Parser (wenn verfügbar)
         if (options?.fallback) {
-          this.logger.info('Falling back to WattWeiser parser');
+          this.logger.log('Falling back to WattWeiser parser');
           return await options.fallback();
         }
 
@@ -89,7 +89,7 @@ export class F13ParserProvider {
    * Dokument aus Buffer parsen
    */
   async parseDocumentBuffer(
-    buffer: Buffer,
+    _buffer: Buffer,
     filename: string,
     mimeType: string,
     options?: {
