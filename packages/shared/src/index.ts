@@ -17,3 +17,4 @@ export * from './cache/cache.module';
 export * from './security/rate-limit.guard';
 export * from './service-discovery/service-discovery.service';
 export * from './service-discovery/service-discovery.module';
+export * from './performance';
