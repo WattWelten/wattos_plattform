@@ -16,5 +16,5 @@
     "noUnusedParameters": false
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "../**/*", "**/*.spec.ts", "**/*.test.ts", "../db/**/*"]
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "../db"]
 }

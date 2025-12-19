@@ -46,7 +46,7 @@ export class ServiceDiscoveryService {
       return cachedUrl;
     }
 
-    let url: string;
+    let url: string | undefined;
 
     // Kubernetes: DNS-basierte URLs
     if (this.platform === 'kubernetes') {
@@ -76,7 +76,10 @@ export class ServiceDiscoveryService {
 
       // Fallback: Prüfe auch direkte ENV-Variablen
       if (!url) {
-        url = process.env[envVarFormats[0]] || process.env[envVarFormats[1]] || undefined;
+        const envUrl = process.env[envVarFormats[0]] || process.env[envVarFormats[1]];
+        if (envUrl) {
+          url = envUrl;
+        }
       }
     }
 
