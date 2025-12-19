@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@wattweiser/db';
 import { createClient, RedisClientType } from 'redis';
+
+// Optional PrismaService type to avoid circular dependency
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PrismaService = any;
 
 export interface HealthCheckResult {
   status: 'healthy' | 'unhealthy' | 'degraded';
@@ -101,12 +104,18 @@ export class HealthService {
 
     const startTime = Date.now();
     try {
-      await this.prisma.$queryRaw`SELECT 1`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (this.prisma && typeof (this.prisma as any).$queryRaw === 'function') {
+        await (this.prisma as any).$queryRaw`SELECT 1`;
+      } else {
+        return { status: 'down', message: 'Prisma service not properly initialized' };
+      }
       const responseTime = Date.now() - startTime;
       return { status: 'up', responseTime };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const responseTime = Date.now() - startTime;
-      return { status: 'down', message: error.message, responseTime };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { status: 'down', message: errorMessage, responseTime };
     }
   }
 

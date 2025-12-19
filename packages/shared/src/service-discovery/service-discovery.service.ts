@@ -75,8 +75,8 @@ export class ServiceDiscoveryService {
       }
 
       // Fallback: Prüfe auch direkte ENV-Variablen
-      if (!url) {
-        const envUrl = process.env[envVarFormats[0]] || process.env[envVarFormats[1]];
+      if (!url && envVarFormats.length > 0) {
+        const envUrl = process.env[envVarFormats[0]!] || (envVarFormats[1] ? process.env[envVarFormats[1]!] : undefined);
         if (envUrl) {
           url = envUrl;
         }
