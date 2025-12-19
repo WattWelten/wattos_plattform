@@ -1,5 +1,42 @@
 # Agent-Konfiguration
 
+## Übersicht
+
+WattOS verwendet ein **Multi-Agenten-Orchestrator-System** mit Event-basierter Kommunikation. Agents kommunizieren ausschließlich über Events, nicht über direkte Abhängigkeiten.
+
+## Orchestrator (KAYA)
+
+Der **Orchestrator** (auch "KAYA" genannt) koordiniert alle Agents:
+
+- **Event-Routing**: Leitet Events zu den richtigen Agents
+- **Agent-Lifecycle**: Verwaltet Agent-Registrierung und -Laufzeit
+- **Session-State**: Verwaltet Konversations-State
+- **Cross-Agent-Kommunikation**: Ermöglicht Agent-zu-Agent-Kommunikation über Events
+
+### Event-Domains
+
+```typescript
+perception.*    → Media Agent      // Audio/Video Input
+intent.*        → Conversation Agent // Intent-Erkennung
+knowledge.*     → Retrieval Agent    // RAG-Suche
+tool.*          → Tool Agent         // Tool-Ausführung
+compliance.*   → Compliance Agent   // Policy-Prüfung
+avatar.*        → Media Agent        // Avatar-Rendering
+channel.*       → Conversation Agent // Channel-Kommunikation
+```
+
+### Agent-Runtime
+
+```typescript
+import { AgentRuntimeService } from '@wattweiser/core';
+
+// Agent registrieren
+runtimeService.registerAgent('conversation-agent', agent);
+
+// Event an Agent weiterleiten
+await runtimeService.routeEvent(event, 'conversation-agent');
+```
+
 ## Verfügbare Agent-Rollen
 
 ### IT-Support Assist

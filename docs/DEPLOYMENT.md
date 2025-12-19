@@ -1,11 +1,20 @@
 # Deployment-Guide
 
+## Übersicht
+
+WattOS kann auf verschiedenen Plattformen deployed werden:
+- **Railway** (Empfohlen für Backend-Services)
+- **Vercel** (Empfohlen für Frontend)
+- **Docker Compose** (Lokale Entwicklung)
+- **Kubernetes** (Production, geplant)
+
 ## Voraussetzungen
 
-- Docker & Docker Compose
-- PostgreSQL 15+ (mit pgvector)
+- Docker & Docker Compose (optional)
+- PostgreSQL 15+ (mit pgvector Extension)
 - Redis 7+
-- Node.js 18+ (für lokale Entwicklung)
+- Node.js 20+ (für lokale Entwicklung)
+- pnpm 9+
 
 ## Lokale Entwicklung
 

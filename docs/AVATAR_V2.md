@@ -4,6 +4,75 @@
 
 Avatar V2 ist eine **Three.js/R3F (React Three Fiber)**-basierte Avatar-Implementierung für WattOS V2. Sie ersetzt die bisherige Babylon.js-basierte Lösung und bietet bessere Performance, Flexibilität und React-Integration.
 
+## Morph-Handling & Visemes
+
+### Morph-Targets aktivieren
+
+Nach GLB-Load werden automatisch alle Materialien morph-fähig gemacht:
+
+```typescript
+import { enableMorphTargets } from '@/components/avatar/morph-handler';
+
+// Materialien konfigurieren
+enableMorphTargets(scene);
+// → morphTargets: true
+// → morphNormals: true
+// → skinning: true
+```
+
+### Viseme-Mapping
+
+15+ Visemes werden unterstützt:
+
+- **viseme_aa** - Offener Mund
+- **viseme_pp** - Geschlossener Mund
+- **viseme_ff** - Unterlippe bei Zähnen
+- **viseme_th** - Zunge sichtbar
+- **viseme_dd** - Zungenspitze
+- **viseme_kk** - Gaumen
+- **viseme_ch** - Zischlaute
+- **viseme_ii, viseme_oo, viseme_uu, viseme_ee** - Vokale
+- **viseme_ss, viseme_nn, viseme_rr, viseme_mm** - Konsonanten
+
+### Head/Teeth/Tongue-Lookup
+
+Visemes werden mit Mesh-Gewichtung angewendet:
+
+```typescript
+const MESH_WEIGHTS = {
+  viseme_pp: [1.0, 0.1, 0.0],  // Head, Teeth, Tongue
+  viseme_th: [0.7, 0.0, 0.3],  // Zunge sichtbar
+  // ...
+};
+```
+
+### Decay/Glättung
+
+Morph-Targets werden automatisch geglättet:
+
+```typescript
+decayAll(scene, delta, lambda = 12); // λ≈12 für moderate Glättung
+```
+
+### Dev-Tests
+
+In der Browser-Konsole:
+
+```javascript
+testViseme('viseme_aa');  // Mund öffnen
+testViseme('viseme_pp');  // Mund schließen
+testViseme('viseme_th');  // Zunge zeigen
+```
+
+### Lab-Route
+
+QA-Seite für Avatar-Tests: `/lab/avatar`
+
+- FPS-Counter
+- Viseme-Buttons für alle 15 Visemes
+- Performance-Overlay
+- Dev-Konsole-Tests
+
 ## Architektur
 
 ### Three.js/R3F Stack
