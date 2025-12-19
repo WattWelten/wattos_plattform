@@ -14,7 +14,6 @@ export class KBSyncService {
 
   constructor(
     private readonly f13Client: F13Client,
-    private readonly httpService: HttpService,
   ) {
     this.prisma = new PrismaClient();
   }
