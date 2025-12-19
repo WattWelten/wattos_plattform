@@ -1,0 +1,644 @@
+{
+  "services": {
+    "api-gateway": {
+      "name": "api-gateway",
+      "displayName": "API Gateway",
+      "type": "gateway",
+      "port": 3001,
+      "path": "apps/gateway",
+      "buildCommand": "cd apps/gateway && npm install && npm run build",
+      "startCommand": "cd apps/gateway && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": true,
+      "deploymentPriority": 1,
+      "dependencies": [],
+      "infrastructureDependencies": ["redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "JWT_SECRET",
+          "required": true,
+          "description": "Secret für JWT-Token-Generierung"
+        },
+        {
+          "name": "CORS_ORIGIN",
+          "required": false,
+          "description": "CORS Origin (komma-separiert)",
+          "default": "*"
+        }
+      ],
+      "documented": true
+    },
+    "chat-service": {
+      "name": "chat-service",
+      "displayName": "Chat Service",
+      "type": "nestjs",
+      "port": 3006,
+      "path": "apps/services/chat-service",
+      "buildCommand": "cd apps/services/chat-service && npm install && npm run build",
+      "startCommand": "cd apps/services/chat-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": true,
+      "deploymentPriority": 2,
+      "dependencies": ["llm-gateway", "rag-service"],
+      "infrastructureDependencies": ["postgresql", "redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "LLM_GATEWAY_URL",
+          "required": true,
+          "description": "URL des LLM Gateway Services"
+        },
+        {
+          "name": "RAG_SERVICE_URL",
+          "required": true,
+          "description": "URL des RAG Services"
+        },
+        {
+          "name": "VOICE_SERVICE_URL",
+          "required": false,
+          "description": "URL des Voice Services"
+        }
+      ],
+      "documented": true
+    },
+    "rag-service": {
+      "name": "rag-service",
+      "displayName": "RAG Service",
+      "type": "nestjs",
+      "port": 3007,
+      "path": "apps/services/rag-service",
+      "buildCommand": "cd apps/services/rag-service && npm install && npm run build",
+      "startCommand": "cd apps/services/rag-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": true,
+      "deploymentPriority": 2,
+      "dependencies": ["llm-gateway"],
+      "infrastructureDependencies": ["postgresql"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "LLM_GATEWAY_URL",
+          "required": true,
+          "description": "URL des LLM Gateway Services (für Embeddings)"
+        },
+        {
+          "name": "VECTOR_STORE_TYPE",
+          "required": false,
+          "description": "Vector Store Typ",
+          "default": "pgvector"
+        }
+      ],
+      "documented": true
+    },
+    "agent-service": {
+      "name": "agent-service",
+      "displayName": "Agent Service",
+      "type": "nestjs",
+      "port": 3008,
+      "path": "apps/services/agent-service",
+      "buildCommand": "cd apps/services/agent-service && npm install && npm run build",
+      "startCommand": "cd apps/services/agent-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": true,
+      "deploymentPriority": 2,
+      "dependencies": ["llm-gateway", "tool-service"],
+      "infrastructureDependencies": ["postgresql", "redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "LLM_GATEWAY_URL",
+          "required": true,
+          "description": "URL des LLM Gateway Services"
+        },
+        {
+          "name": "TOOL_SERVICE_URL",
+          "required": true,
+          "description": "URL des Tool Services"
+        }
+      ],
+      "documented": true
+    },
+    "llm-gateway": {
+      "name": "llm-gateway",
+      "displayName": "LLM Gateway",
+      "type": "nestjs",
+      "port": 3009,
+      "path": "apps/services/llm-gateway",
+      "buildCommand": "cd apps/services/llm-gateway && pnpm install && pnpm run build",
+      "startCommand": "cd apps/services/llm-gateway && pnpm run start:prod",
+      "healthCheckPath": "/health",
+      "required": true,
+      "deploymentPriority": 1,
+      "dependencies": [],
+      "infrastructureDependencies": ["postgresql"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "required": true,
+          "description": "OpenAI API Key"
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "required": false,
+          "description": "Anthropic API Key (optional)"
+        }
+      ],
+      "documented": true
+    },
+    "customer-intelligence-service": {
+      "name": "customer-intelligence-service",
+      "displayName": "Customer Intelligence Service",
+      "type": "nestjs",
+      "port": 3014,
+      "path": "apps/services/customer-intelligence-service",
+      "buildCommand": "cd apps/services/customer-intelligence-service && npm install && npm run build",
+      "startCommand": "cd apps/services/customer-intelligence-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 3,
+      "dependencies": ["llm-gateway", "agent-service", "rag-service", "chat-service", "admin-service", "crawler-service"],
+      "infrastructureDependencies": ["postgresql"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "LLM_GATEWAY_URL",
+          "required": true,
+          "description": "URL des LLM Gateway Services"
+        },
+        {
+          "name": "AGENT_SERVICE_URL",
+          "required": true,
+          "description": "URL des Agent Services"
+        }
+      ],
+      "documented": true
+    },
+    "crawler-service": {
+      "name": "crawler-service",
+      "displayName": "Crawler Service",
+      "type": "nestjs",
+      "port": 3015,
+      "path": "apps/services/crawler-service",
+      "buildCommand": "cd apps/services/crawler-service && npm install && npm run build",
+      "startCommand": "cd apps/services/crawler-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 3,
+      "dependencies": [],
+      "infrastructureDependencies": [],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "CRAWLER_MAX_DEPTH",
+          "required": false,
+          "description": "Maximale Crawl-Tiefe",
+          "default": "3"
+        }
+      ],
+      "documented": true
+    },
+    "voice-service": {
+      "name": "voice-service",
+      "displayName": "Voice Service",
+      "type": "nestjs",
+      "port": 3016,
+      "path": "apps/services/voice-service",
+      "buildCommand": "cd apps/services/voice-service && npm install && npm run build",
+      "startCommand": "cd apps/services/voice-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 3,
+      "dependencies": ["llm-gateway", "chat-service"],
+      "infrastructureDependencies": [],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "ELEVENLABS_API_KEY",
+          "required": false,
+          "description": "ElevenLabs API Key"
+        },
+        {
+          "name": "ELEVENLABS_VOICE_ID",
+          "required": false,
+          "description": "ElevenLabs Voice ID"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "required": false,
+          "description": "OpenAI API Key (für STT/TTS)"
+        }
+      ],
+      "documented": true
+    },
+    "avatar-service": {
+      "name": "avatar-service",
+      "displayName": "Avatar Service",
+      "type": "nestjs",
+      "port": 3017,
+      "path": "apps/services/avatar-service",
+      "buildCommand": "cd apps/services/avatar-service && npm install && npm run build",
+      "startCommand": "cd apps/services/avatar-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 4,
+      "dependencies": ["voice-service"],
+      "infrastructureDependencies": [],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        }
+      ],
+      "documented": true
+    },
+    "character-service": {
+      "name": "character-service",
+      "displayName": "Character Service",
+      "type": "nestjs",
+      "port": 3013,
+      "path": "apps/services/character-service",
+      "buildCommand": "cd apps/services/character-service && npm install && npm run build",
+      "startCommand": "cd apps/services/character-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 4,
+      "dependencies": [],
+      "infrastructureDependencies": ["postgresql"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        }
+      ],
+      "documented": false
+    },
+    "feedback-service": {
+      "name": "feedback-service",
+      "displayName": "Feedback Service",
+      "type": "nestjs",
+      "port": 3018,
+      "path": "apps/services/feedback-service",
+      "buildCommand": "cd apps/services/feedback-service && npm install && npm run build",
+      "startCommand": "cd apps/services/feedback-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 4,
+      "dependencies": [],
+      "infrastructureDependencies": ["postgresql"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        }
+      ],
+      "documented": false
+    },
+    "summary-service": {
+      "name": "summary-service",
+      "displayName": "Summary Service",
+      "type": "nestjs",
+      "port": 3019,
+      "path": "apps/services/summary-service",
+      "buildCommand": "cd apps/services/summary-service && npm install && npm run build",
+      "startCommand": "cd apps/services/summary-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 4,
+      "dependencies": ["llm-gateway"],
+      "infrastructureDependencies": ["postgresql"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "LLM_GATEWAY_URL",
+          "required": true,
+          "description": "URL des LLM Gateway Services"
+        }
+      ],
+      "documented": false
+    },
+    "tool-service": {
+      "name": "tool-service",
+      "displayName": "Tool Service",
+      "type": "nestjs",
+      "port": 3005,
+      "path": "apps/services/tool-service",
+      "buildCommand": "cd apps/services/tool-service && npm install && npm run build",
+      "startCommand": "cd apps/services/tool-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": true,
+      "deploymentPriority": 2,
+      "dependencies": [],
+      "infrastructureDependencies": [],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "SANDBOX_ENABLED",
+          "required": false,
+          "description": "Sandbox für Tool-Ausführung aktivieren",
+          "default": "false"
+        }
+      ],
+      "documented": false
+    },
+    "admin-service": {
+      "name": "admin-service",
+      "displayName": "Admin Service",
+      "type": "nestjs",
+      "port": 3020,
+      "path": "apps/services/admin-service",
+      "buildCommand": "cd apps/services/admin-service && npm install && npm run build",
+      "startCommand": "cd apps/services/admin-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 4,
+      "dependencies": [],
+      "infrastructureDependencies": ["postgresql", "redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        }
+      ],
+      "documented": false
+    },
+    "ingestion-service": {
+      "name": "ingestion-service",
+      "displayName": "Ingestion Service",
+      "type": "python",
+      "port": 8001,
+      "path": "apps/services/ingestion-service",
+      "buildCommand": "cd apps/services/ingestion-service && pip install -r requirements.txt",
+      "startCommand": "cd apps/services/ingestion-service && python main.py",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 4,
+      "dependencies": ["admin-service"],
+      "infrastructureDependencies": ["postgresql", "redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "ADMIN_SERVICE_URL",
+          "required": true,
+          "description": "URL des Admin Services (für DB-API)"
+        }
+      ],
+      "documented": false
+    },
+    "metaverse-service": {
+      "name": "metaverse-service",
+      "displayName": "Metaverse Service",
+      "type": "nestjs",
+      "port": 3010,
+      "path": "apps/services/metaverse-service",
+      "buildCommand": "cd apps/services/metaverse-service && npm install && npm run build",
+      "startCommand": "cd apps/services/metaverse-service && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 5,
+      "dependencies": [],
+      "infrastructureDependencies": [],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        }
+      ],
+      "documented": false
+    },
+    "agent-worker": {
+      "name": "agent-worker",
+      "displayName": "Agent Worker",
+      "type": "worker",
+      "port": 0,
+      "path": "apps/workers/agent-worker",
+      "buildCommand": "cd apps/workers/agent-worker && npm install && npm run build",
+      "startCommand": "cd apps/workers/agent-worker && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 5,
+      "dependencies": ["agent-service"],
+      "infrastructureDependencies": ["redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "AGENT_SERVICE_URL",
+          "required": true,
+          "description": "URL des Agent Services"
+        }
+      ],
+      "documented": false
+    },
+    "document-worker": {
+      "name": "document-worker",
+      "displayName": "Document Worker",
+      "type": "worker",
+      "port": 0,
+      "path": "apps/workers/document-worker",
+      "buildCommand": "cd apps/workers/document-worker && npm install && npm run build",
+      "startCommand": "cd apps/workers/document-worker && npm run start:prod",
+      "healthCheckPath": "/health",
+      "required": false,
+      "deploymentPriority": 5,
+      "dependencies": ["ingestion-service"],
+      "infrastructureDependencies": ["redis"],
+      "environmentVariables": [
+        {
+          "name": "DEPLOYMENT_PLATFORM",
+          "required": false,
+          "description": "Deployment Platform (railway, kubernetes, local)",
+          "default": "railway"
+        },
+        {
+          "name": "NODE_ENV",
+          "required": false,
+          "description": "Node.js Environment",
+          "default": "production"
+        },
+        {
+          "name": "INGESTION_SERVICE_URL",
+          "required": true,
+          "description": "URL des Ingestion Services"
+        }
+      ],
+      "documented": false
+    }
+  }
+}
+
+
+
+

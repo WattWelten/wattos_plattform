@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WattOS KI Environment Variables Schema",
+  "description": "JSON Schema für Validierung von Environment Variables",
+  "type": "object",
+  "properties": {
+    "NODE_ENV": {
+      "type": "string",
+      "enum": ["development", "production", "staging", "test"],
+      "default": "development",
+      "description": "Node.js Environment"
+    },
+    "PORT": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535,
+      "description": "Port für Service (Railway setzt automatisch)"
+    },
+    "DATABASE_URL": {
+      "type": "string",
+      "pattern": "^postgresql://",
+      "description": "PostgreSQL Connection String"
+    },
+    "REDIS_URL": {
+      "type": "string",
+      "pattern": "^redis://",
+      "default": "redis://localhost:6379",
+      "description": "Redis Connection String"
+    },
+    "JWT_SECRET": {
+      "type": "string",
+      "minLength": 32,
+      "description": "Secret für JWT-Token-Generierung"
+    },
+    "CORS_ORIGIN": {
+      "type": "string",
+      "description": "CORS Origin (komma-separiert)"
+    },
+    "OPENAI_API_KEY": {
+      "type": "string",
+      "pattern": "^sk-",
+      "description": "OpenAI API Key"
+    },
+    "ANTHROPIC_API_KEY": {
+      "type": "string",
+      "description": "Anthropic API Key"
+    },
+    "ELEVENLABS_API_KEY": {
+      "type": "string",
+      "pattern": "^sk_",
+      "description": "ElevenLabs API Key"
+    },
+    "ELEVENLABS_VOICE_ID": {
+      "type": "string",
+      "description": "ElevenLabs Voice ID"
+    },
+    "LLM_GATEWAY_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "LLM Gateway Service URL"
+    },
+    "RAG_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "RAG Service URL"
+    },
+    "CHAT_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Chat Service URL"
+    },
+    "AGENT_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Agent Service URL"
+    },
+    "TOOL_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Tool Service URL"
+    },
+    "ADMIN_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Admin Service URL"
+    },
+    "CHARACTER_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Character Service URL"
+    },
+    "CUSTOMER_INTELLIGENCE_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Customer Intelligence Service URL"
+    },
+    "CRAWLER_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Crawler Service URL"
+    },
+    "VOICE_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Voice Service URL"
+    },
+    "AVATAR_SERVICE_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Avatar Service URL"
+    },
+    "VECTOR_STORE_TYPE": {
+      "type": "string",
+      "enum": ["pgvector", "opensearch"],
+      "default": "pgvector",
+      "description": "Vector Store Typ"
+    },
+    "OPENSEARCH_URL": {
+      "type": "string",
+      "format": "uri",
+      "description": "OpenSearch URL"
+    },
+    "TTS_PROVIDER": {
+      "type": "string",
+      "enum": ["openai", "elevenlabs", "azure"],
+      "default": "openai",
+      "description": "TTS Provider"
+    },
+    "STT_PROVIDER": {
+      "type": "string",
+      "enum": ["openai", "whisper", "azure"],
+      "default": "openai",
+      "description": "STT Provider"
+    },
+    "STREAMING_ENABLED": {
+      "type": "string",
+      "enum": ["true", "false"],
+      "default": "true",
+      "description": "Streaming aktivieren"
+    },
+    "WEBSOCKET_ENABLED": {
+      "type": "string",
+      "enum": ["true", "false"],
+      "default": "true",
+      "description": "WebSocket aktivieren"
+    },
+    "SANDBOX_ENABLED": {
+      "type": "string",
+      "enum": ["true", "false"],
+      "default": "false",
+      "description": "Sandbox für Tool-Ausführung"
+    }
+  },
+  "required": ["DATABASE_URL"],
+  "additionalProperties": true
+}
+
+
+
+
+
+
+
+
+
+
+
+

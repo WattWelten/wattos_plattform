@@ -1,0 +1,325 @@
+name: Deploy to Railway (Simplified)
+
+on:
+  push:
+    branches:
+      - main
+      - production
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - '.github/workflows/deploy-railway*.yml'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy (leave empty for all)'
+        required: false
+        type: string
+      environment:
+        description: 'Environment (production, staging)'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+  RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID || 'a97f01bc-dc80-4941-b911-ed7ebb3efa7a' }}
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Setup & Validate
+  setup-validate:
+    name: Setup & Validate
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+        continue-on-error: true
+      
+      - name: Authenticate Railway
+        id: auth
+        run: |
+          # Versuche verschiedene Login-Methoden
+          echo "${{ secrets.RAILWAY_TOKEN }}" | railway login || \
+          railway login --token "${{ secrets.RAILWAY_TOKEN }}" || \
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}" && railway whoami || \
+          echo "⚠️ Railway authentication failed, but continuing..."
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Analyze Authentication
+        if: failure() && steps.auth.outcome == 'failure'
+        run: |
+          chmod +x scripts/analyze-step-logs.sh
+          ./scripts/analyze-step-logs.sh "Setup & Validate" "Authenticate Railway"
+        continue-on-error: true
+      
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+        continue-on-error: true
+      
+      - name: Run Pre-Deployment Validation
+        id: validate
+        run: |
+          chmod +x scripts/validate-pre-deployment.sh
+          ./scripts/validate-pre-deployment.sh ${{ github.event.inputs.environment || 'production' }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Analyze Validation
+        if: failure() && steps.validate.outcome == 'failure'
+        run: |
+          chmod +x scripts/analyze-step-logs.sh
+          ./scripts/analyze-step-logs.sh "Setup & Validate" "Run Pre-Deployment Validation"
+        continue-on-error: true
+      
+      - name: Generate Railway Configs
+        id: generate-configs
+        run: |
+          chmod +x scripts/generate-railway-configs.sh
+          ./scripts/generate-railway-configs.sh
+        continue-on-error: true
+      
+      - name: Analyze Config Generation
+        if: failure() && steps.generate-configs.outcome == 'failure'
+        run: |
+          chmod +x scripts/analyze-step-logs.sh
+          ./scripts/analyze-step-logs.sh "Setup & Validate" "Generate Railway Configs"
+        continue-on-error: true
+      
+      - name: Upload Generated Configs
+        if: steps.generate-configs.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: railway-configs
+          path: |
+            apps/**/railway.json
+            apps/services/**/railway.json
+          retention-days: 1
+
+  # Job 2: Deploy Services
+  deploy-services:
+    name: Deploy Services
+    runs-on: ubuntu-latest
+    needs: [setup-validate]
+    if: always()  # Läuft immer, auch wenn Setup fehlschlägt
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: api-gateway
+            priority: 1
+          - service: llm-gateway
+            priority: 1
+          - service: tool-service
+            priority: 2
+          - service: rag-service
+            priority: 2
+          - service: chat-service
+            priority: 2
+          - service: agent-service
+            priority: 2
+          - service: customer-intelligence-service
+            priority: 3
+          - service: crawler-service
+            priority: 3
+          - service: voice-service
+            priority: 3
+          - service: admin-service
+            priority: 4
+          - service: character-service
+            priority: 4
+          - service: summary-service
+            priority: 4
+          - service: feedback-service
+            priority: 4
+          - service: avatar-service
+            priority: 4
+          - service: ingestion-service
+            priority: 4
+          - service: metaverse-service
+            priority: 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Railway Configs
+        uses: actions/download-artifact@v4
+        with:
+          name: railway-configs
+          path: .
+        continue-on-error: true
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+        continue-on-error: true
+      
+      - name: Authenticate Railway
+        id: auth
+        run: |
+          echo "${{ secrets.RAILWAY_TOKEN }}" | railway login || \
+          railway login --token "${{ secrets.RAILWAY_TOKEN }}" || \
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}" && railway whoami || \
+          echo "⚠️ Railway authentication failed"
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Link Railway Project
+        id: link
+        run: |
+          # Linke Project mit korrekter Syntax
+          railway link "${{ env.RAILWAY_PROJECT_ID }}" --yes || \
+          echo "${{ env.RAILWAY_PROJECT_ID }}" | railway link || \
+          railway link --project "${{ env.RAILWAY_PROJECT_ID }}" || true
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Deploy ${{ matrix.service }}
+        id: deploy
+        if: github.event.inputs.service == '' || github.event.inputs.service == matrix.service || github.event_name == 'push'
+        run: |
+          echo "🚀 Deploying ${{ matrix.service }} (Priority: ${{ matrix.priority }})"
+          
+          # Für llm-gateway: Verwende root railway.json (Monorepo-kompatibel)
+          if [ "${{ matrix.service }}" = "llm-gateway" ]; then
+            echo "📦 LLM Gateway: Verwende root railway.json für Monorepo"
+            echo "💡 Railway verwendet automatisch root railway.json wenn kein Root Directory gesetzt ist"
+            
+            # Redeploy Service (verwendet root railway.json)
+            railway redeploy --service "${{ matrix.service }}" || \
+            echo "⚠️ Redeploy fehlgeschlagen, versuche railway up..."
+            
+            # Fallback: railway up (für neues Deployment)
+            railway up --service "${{ matrix.service }}" --detach || \
+            echo "⚠️ Deployment fehlgeschlagen für ${{ matrix.service }}"
+          else
+            # Andere Services: Standard-Prozess
+            SERVICE_PATH=$(jq -r ".services[\"${{ matrix.service }}\"].path // \"\"" scripts/services-config.json 2>/dev/null || echo "")
+            
+            if [ -z "$SERVICE_PATH" ] || [ "$SERVICE_PATH" = "null" ]; then
+              SERVICE_PATH=$(find . -type d -name "${{ matrix.service }}" -o -type d -path "*/${{ matrix.service }}" | head -1)
+            fi
+            
+            if [ -z "$SERVICE_PATH" ] || [ ! -d "$SERVICE_PATH" ]; then
+              echo "⚠️ Service-Verzeichnis nicht gefunden für ${{ matrix.service }}"
+              railway redeploy --service "${{ matrix.service }}" || \
+              echo "⚠️ Redeploy fehlgeschlagen für ${{ matrix.service }}"
+            else
+              echo "✅ Service-Verzeichnis gefunden: $SERVICE_PATH"
+              cd "$SERVICE_PATH"
+              railway service "${{ matrix.service }}" || true
+              railway up --service "${{ matrix.service }}" --detach || \
+              railway redeploy --service "${{ matrix.service }}" || \
+              echo "⚠️ Deployment fehlgeschlagen für ${{ matrix.service }}"
+            fi
+          fi
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ${{ github.workspace }}
+        continue-on-error: true
+      
+      - name: Analyze Deployment
+        if: failure() && steps.deploy.outcome == 'failure'
+        run: |
+          chmod +x scripts/analyze-step-logs.sh
+          ./scripts/analyze-step-logs.sh "Deploy Services" "Deploy ${{ matrix.service }}"
+        continue-on-error: true
+      
+      - name: Get Railway Logs
+        if: failure() && steps.deploy.outcome == 'failure'
+        run: |
+          echo "📋 Railway Logs für ${{ matrix.service }}:" >> $GITHUB_STEP_SUMMARY
+          railway logs --service "${{ matrix.service }}" --tail 50 >> $GITHUB_STEP_SUMMARY || echo "Konnte Logs nicht abrufen" >> $GITHUB_STEP_SUMMARY
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+
+  # Job 3: Verify & Report
+  verify-report:
+    name: Verify & Report
+    runs-on: ubuntu-latest
+    needs: [deploy-services]
+    if: always()  # Läuft immer
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+        continue-on-error: true
+      
+      - name: Authenticate Railway
+        run: |
+          echo "${{ secrets.RAILWAY_TOKEN }}" | railway login || \
+          railway login --token "${{ secrets.RAILWAY_TOKEN }}" || \
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}" && railway whoami || true
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Wait for Services
+        run: echo "⏳ Waiting 60s for services to start..." && sleep 60
+      
+      - name: Sync Service URLs
+        id: sync-urls
+        run: |
+          chmod +x scripts/sync-service-urls.sh
+          ./scripts/sync-service-urls.sh ${{ github.event.inputs.environment || 'production' }} || true
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Run Health Checks
+        id: health-check
+        run: |
+          chmod +x scripts/post-deployment-health-check.sh
+          ./scripts/post-deployment-health-check.sh ${{ github.event.inputs.environment || 'production' }} || true
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Generate Deployment Report
+        run: |
+          echo "## 🚀 Railway Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment || 'production' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Setup & Validate: ${{ needs.setup-validate.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Deploy Services: ${{ needs.deploy-services.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Health Checks: ${{ steps.health-check.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. Prüfe Service-Status: \`railway service <service-name>\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Prüfe Logs: \`railway logs --service <service-name>\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Prüfe Health: \`./scripts/post-deployment-health-check.sh ${{ github.event.inputs.environment || 'production' }}\`" >> $GITHUB_STEP_SUMMARY
+

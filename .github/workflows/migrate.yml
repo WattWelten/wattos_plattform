@@ -1,0 +1,85 @@
+name: Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment (staging/production)'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+  workflow_run:
+    workflows: ["Deploy to Production"]
+    types:
+      - requested
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Check migration status
+        run: |
+          echo "Checking current migration status..."
+          chmod +x scripts/migrate.sh || true
+          ./scripts/migrate.sh status ${{ github.event.inputs.environment || 'production' }} || true
+      
+      - name: Run database migrations
+        run: |
+          echo "Running database migrations..."
+          chmod +x scripts/migrate.sh || true
+          ./scripts/migrate.sh ${{ github.event.inputs.environment || 'production' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Verify migrations
+        run: |
+          echo "Verifying migrations..."
+          chmod +x scripts/migrate.sh || true
+          ./scripts/migrate.sh verify ${{ github.event.inputs.environment || 'production' }} || true
+      
+      - name: Log migration results
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Database Migration ${status === 'success' ? '✅' : '❌'} - ${new Date().toISOString()}`,
+              body: `Migration ${status} for environment: ${{ github.event.inputs.environment || 'production' }}\n\nCommit: ${context.sha}`,
+              labels: ['database', 'migration', status === 'success' ? 'success' : 'failure']
+            })
+
+
+
+
+
+
+
+
+
+
+
+

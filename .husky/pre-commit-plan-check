@@ -1,0 +1,32 @@
+#!/bin/sh
+# Pre-Commit Hook für Plan-Validierung
+
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Checking plan changes..."
+
+# Prüfe ob Plan-Dateien geändert wurden
+if git diff --cached --name-only | grep -q "\.cursor/plans/"; then
+  echo "⚠️  Plan-Änderungen erkannt"
+  echo ""
+  echo "Bitte stelle sicher, dass:"
+  echo "1. ✅ Plan-Änderungen dokumentiert sind"
+  echo "2. ✅ CHANGELOG.md aktualisiert ist"
+  echo "3. ✅ Code-Änderungen im Plan reflektiert sind"
+  echo ""
+  
+  # Prüfe ob CHANGELOG aktualisiert wurde
+  if ! git diff --cached --name-only | grep -q "CHANGELOG.md"; then
+    echo "⚠️  WARNUNG: CHANGELOG.md wurde nicht aktualisiert!"
+    echo "Bitte aktualisiere .cursor/plans/CHANGELOG.md mit deinen Änderungen."
+    echo ""
+    read -p "Möchtest du trotzdem committen? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      exit 1
+    fi
+  fi
+fi
+
+echo "✅ Plan-Validierung erfolgreich"
+

@@ -1,0 +1,53 @@
+name: Notifications
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Staging", "Deploy to Production"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Determine notification type
+        id: notification
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "type=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "type=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create deployment notification issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const workflow = '${{ github.event.workflow_run.name }}';
+            const conclusion = '${{ github.event.workflow_run.conclusion }}';
+            const emoji = '${{ steps.notification.outputs.emoji }}';
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${emoji} ${workflow} - ${conclusion}`,
+              body: `Workflow: ${workflow}\nStatus: ${conclusion}\nRun: ${{ github.event.workflow_run.html_url }}`,
+              labels: ['notification', 'deployment', conclusion === 'success' ? 'success' : 'failure']
+            });
+
+
+
+
+
+
+
+
+
+
+
+

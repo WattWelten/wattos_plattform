@@ -1,0 +1,239 @@
+name: Deploy to Railway (Clean - Single Service)
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy (start with llm-gateway)'
+        required: true
+        type: choice
+        options:
+          - llm-gateway
+          - api-gateway
+          - tool-service
+          - rag-service
+          - chat-service
+          - agent-service
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+        default: 'production'
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+  RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID || 'a97f01bc-dc80-4941-b911-ed7ebb3efa7a' }}
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Lokaler Build-Test (KRITISCH - kein continue-on-error)
+  validate-build:
+    name: Validate Build Locally
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build Workspace Dependencies
+        run: |
+          echo "🔨 Building @wattweiser/shared..."
+          pnpm --filter '@wattweiser/shared...' build
+          
+          echo "🔨 Building @wattweiser/db..."
+          pnpm --filter '@wattweiser/db...' build
+      
+      - name: Build Service
+        id: build
+        run: |
+          echo "🔨 Building ${{ github.event.inputs.service }}..."
+          pnpm --filter @wattweiser/${{ github.event.inputs.service }} build
+      
+      - name: Verify Build Output
+        run: |
+          SERVICE_PATH="apps/services/${{ github.event.inputs.service }}"
+          if [ "${{ github.event.inputs.service }}" = "api-gateway" ]; then
+            SERVICE_PATH="apps/gateway"
+          fi
+          
+          if [ ! -f "$SERVICE_PATH/dist/main.js" ]; then
+            echo "❌ Build failed: dist/main.js not found in $SERVICE_PATH"
+            exit 1
+          fi
+          
+          echo "✅ Build successful: $SERVICE_PATH/dist/main.js exists"
+          ls -lh "$SERVICE_PATH/dist/main.js"
+      
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.event.inputs.service }}
+          path: |
+            apps/services/${{ github.event.inputs.service }}/dist/**
+            apps/gateway/dist/**
+          retention-days: 1
+
+  # Job 2: Deploy Single Service (KRITISCH - kein continue-on-error)
+  deploy-service:
+    name: Deploy ${{ github.event.inputs.service }}
+    runs-on: ubuntu-latest
+    needs: [validate-build]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ github.event.inputs.service }}
+          path: .
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@latest
+      
+      - name: Authenticate Railway
+        id: auth
+        run: |
+          # Railway CLI verwendet RAILWAY_TOKEN automatisch wenn gesetzt
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+          railway whoami
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
+      - name: Link Railway Project
+        run: |
+          railway link "${{ env.RAILWAY_PROJECT_ID }}" --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
+      - name: Deploy Service
+        id: deploy
+        run: |
+          echo "🚀 Deploying ${{ github.event.inputs.service }} to ${{ github.event.inputs.environment }}"
+          
+          # Für llm-gateway: Verwende root railway.json
+          if [ "${{ github.event.inputs.service }}" = "llm-gateway" ]; then
+            echo "📦 Using root railway.json for monorepo"
+            railway redeploy --service "${{ github.event.inputs.service }}"
+          else
+            # Andere Services: Standard-Deployment
+            railway redeploy --service "${{ github.event.inputs.service }}"
+          fi
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
+      - name: Wait for Deployment
+        run: |
+          echo "⏳ Waiting 30s for service to start..."
+          sleep 30
+
+  # Job 3: Verify Deployment (KRITISCH - kein continue-on-error)
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-service]
+    
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@latest
+      
+      - name: Authenticate Railway
+        run: |
+          # Railway CLI verwendet RAILWAY_TOKEN automatisch wenn gesetzt
+          export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+          railway whoami
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
+      - name: Link Railway Project
+        run: |
+          railway link "${{ env.RAILWAY_PROJECT_ID }}" --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
+      - name: Get Service Status
+        id: status
+        run: |
+          echo "📊 Service Status:" >> $GITHUB_STEP_SUMMARY
+          railway service "${{ github.event.inputs.service }}" --json | jq '.' >> $GITHUB_STEP_SUMMARY || echo "Could not get service status" >> $GITHUB_STEP_SUMMARY
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Get Service Logs
+        id: logs
+        run: |
+          echo "📋 Recent Logs (last 50 lines):" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          railway logs --service "${{ github.event.inputs.service }}" --tail 50 >> $GITHUB_STEP_SUMMARY || echo "Could not get logs" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Health Check
+        id: health
+        run: |
+          SERVICE_URL=$(railway service "${{ github.event.inputs.service }}" --json | jq -r '.url // empty' 2>/dev/null || echo "")
+          
+          if [ -z "$SERVICE_URL" ]; then
+            echo "⚠️ Could not determine service URL"
+            exit 1
+          fi
+          
+          echo "🏥 Checking health at: $SERVICE_URL/health"
+          
+          # Versuche Health Check
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/health" || echo "000")
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Health check passed (HTTP $HTTP_CODE)"
+            echo "✅ Health check passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Health check failed (HTTP $HTTP_CODE)"
+            echo "❌ Health check failed (HTTP $HTTP_CODE)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        continue-on-error: true
+      
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Service:** ${{ github.event.inputs.service }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ needs.deploy-service.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. Check service: \`railway service ${{ github.event.inputs.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. View logs: \`railway logs --service ${{ github.event.inputs.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Check health: Visit service URL + /health" >> $GITHUB_STEP_SUMMARY
+

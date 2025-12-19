@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # DATABASE
+  # ============================================
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: wattweiser-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wattweiser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-wattweiser}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wattweiser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wattweiser-network
+
+  # ============================================
+  # REDIS
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: wattweiser-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wattweiser-network
+
+  # ============================================
+  # KEYCLOAK
+  # ============================================
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.0
+    container_name: wattweiser-keycloak
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-wattweiser}
+      KC_DB_USERNAME: ${POSTGRES_USER:-wattweiser}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: start-dev
+    networks:
+      - wattweiser-network
+
+  # ============================================
+  # OPENSEARCH (Optional)
+  # ============================================
+  opensearch:
+    image: opensearchproject/opensearch:latest
+    container_name: wattweiser-opensearch
+    environment:
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_PASSWORD:-changeme}
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - wattweiser-network
+
+  # ============================================
+  # MINIO (S3)
+  # ============================================
+  minio:
+    image: minio/minio:latest
+    container_name: wattweiser-minio
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - wattweiser-network
+
+  # ============================================
+  # TEXT EMBEDDINGS (from DMS)
+  # ============================================
+  text-embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.6
+    container_name: wattweiser-text-embeddings
+    ports:
+      - "8181:80"
+    volumes:
+      - text_embeddings_data:/data
+    command: --model-id ${EMBEDDINGS_MODEL_ID:-sentence-transformers/all-MiniLM-L6-v2} --payload-limit 20000000
+    networks:
+      - wattweiser-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  opensearch_data:
+  minio_data:
+  text_embeddings_data:
+
+networks:
+  wattweiser-network:
+    driver: bridge
+
+

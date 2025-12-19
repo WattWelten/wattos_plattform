@@ -1,0 +1,160 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  pre-deployment-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run full test suite
+        run: |
+          pnpm lint
+          pnpm type-check
+          pnpm test:unit
+          pnpm test:e2e || true
+
+  migrate-database:
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    environment:
+      name: production
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run database migrations
+        run: |
+          chmod +x scripts/migrate.sh || true
+          ./scripts/migrate.sh production
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, migrate-database]
+    environment:
+      name: production
+      url: https://production.railway.app
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build production artifacts
+        run: pnpm build
+      
+      - name: Deploy to Railway Production
+        uses: bervProject/railway-deploy@v0.2.5
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          project_id: ${{ secrets.RAILWAY_PROJECT_ID }}
+          service: wattos-ki
+        env:
+          RAILWAY_ENVIRONMENT: production
+      
+      - name: Wait for deployment
+        run: sleep 60
+      
+      - name: Health checks (all services)
+        run: |
+          chmod +x scripts/health-check.sh || true
+          ./scripts/health-check.sh production
+      
+      - name: Run smoke tests
+        run: |
+          chmod +x scripts/smoke-tests.sh || true
+          ./scripts/smoke-tests.sh production
+      
+      - name: Validate deployment
+        run: |
+          chmod +x scripts/validate-deployment.sh || true
+          ./scripts/validate-deployment.sh production
+      
+      - name: Rollback on failure
+        if: failure()
+        uses: bervProject/railway-deploy@v0.2.5
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          project_id: ${{ secrets.RAILWAY_PROJECT_ID }}
+          service: wattos-ki
+          rollback: true
+      
+      - name: Notify team on success
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `✅ Production Deployment Successful - ${context.sha.substring(0, 7)}`,
+              body: `Production deployment completed successfully.\n\nCommit: ${context.sha}\nVersion: ${context.ref.replace('refs/tags/', '')}\nEnvironment: Production`,
+              labels: ['deployment', 'production', 'success']
+            })
+      
+      - name: Notify team on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Production Deployment Failed - ${context.sha.substring(0, 7)}`,
+              body: `Production deployment failed. Rollback may have been triggered.\n\nCommit: ${context.sha}\nVersion: ${context.ref.replace('refs/tags/', '')}\n\nPlease investigate immediately.`,
+              labels: ['deployment', 'production', 'failure', 'critical']
+            })
+

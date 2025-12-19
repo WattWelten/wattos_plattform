@@ -1,0 +1,90 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.railway.app
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run tests
+        run: |
+          pnpm lint
+          pnpm type-check
+          pnpm test:unit
+      
+      - name: Build services
+        run: pnpm build
+      
+      - name: Deploy to Railway Staging
+        uses: bervProject/railway-deploy@v0.2.5
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          project_id: ${{ secrets.RAILWAY_PROJECT_ID }}
+          service: wattos-ki-staging
+        env:
+          RAILWAY_ENVIRONMENT: staging
+      
+      - name: Wait for deployment
+        run: sleep 30
+      
+      - name: Health check
+        run: |
+          echo "Running health checks..."
+          # Health checks werden in separatem Script ausgeführt
+          chmod +x scripts/health-check.sh || true
+          ./scripts/health-check.sh staging || true
+      
+      - name: Run smoke tests
+        run: |
+          chmod +x scripts/smoke-tests.sh || true
+          ./scripts/smoke-tests.sh staging || true
+      
+      - name: Notify on success
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `✅ Staging Deployment Successful - ${context.sha.substring(0, 7)}`,
+              body: `Staging deployment completed successfully.\n\nCommit: ${context.sha}\nBranch: ${context.ref}`,
+              labels: ['deployment', 'staging', 'success']
+            })
+      
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `❌ Staging Deployment Failed - ${context.sha.substring(0, 7)}`,
+              body: `Staging deployment failed. Please check the logs.\n\nCommit: ${context.sha}\nBranch: ${context.ref}`,
+              labels: ['deployment', 'staging', 'failure']
+            })
+

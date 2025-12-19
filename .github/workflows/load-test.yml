@@ -1,0 +1,143 @@
+name: Load Testing
+
+on:
+  schedule:
+    - cron: '0 2 * * 0' # Wöchentlich am Sonntag um 2 Uhr
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test (staging/production)'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E8915D5940A4B8C5F3C8C2C2C2C2C2
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Create load test script
+        run: |
+          mkdir -p scripts/load-tests
+          cat > scripts/load-tests/api-load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
+          import { Rate } from 'k6/metrics';
+
+          const errorRate = new Rate('errors');
+
+          export const options = {
+            stages: [
+              { duration: '2m', target: 50 },   // Ramp up to 50 users
+              { duration: '5m', target: 100 },   // Stay at 100 users
+              { duration: '2m', target: 0 },     // Ramp down
+            ],
+            thresholds: {
+              http_req_duration: ['p(95)<2000'], // 95% of requests should be below 2s
+              errors: ['rate<0.05'],              // Error rate should be below 5%
+            },
+          };
+
+          const BASE_URL = __ENV.BASE_URL || 'http://localhost:3001';
+
+          export default function () {
+            // Health check
+            const healthRes = http.get(`${BASE_URL}/health`);
+            check(healthRes, {
+              'health check status is 200': (r) => r.status === 200,
+            }) || errorRate.add(1);
+
+            sleep(1);
+
+            // API Gateway endpoint (if authenticated)
+            if (__ENV.API_TOKEN) {
+              const apiRes = http.get(`${BASE_URL}/api/auth/me`, {
+                headers: {
+                  'Authorization': `Bearer ${__ENV.API_TOKEN}`,
+                },
+              });
+              check(apiRes, {
+                'API request status is 200': (r) => r.status === 200,
+                'API response time < 2s': (r) => r.timings.duration < 2000,
+              }) || errorRate.add(1);
+            }
+
+            sleep(1);
+          }
+          EOF
+      
+      - name: Run API load test
+        run: |
+          BASE_URL="${{ github.event.inputs.environment == 'production' && 'https://api.production.railway.app' || 'https://api.staging.railway.app' }}"
+          k6 run --out json=load-test-results.json scripts/load-tests/api-load-test.js \
+            -e BASE_URL="$BASE_URL" \
+            -e API_TOKEN="${{ secrets.API_TEST_TOKEN }}" || true
+        continue-on-error: true
+      
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results-${{ github.run_id }}
+          path: load-test-results.json
+          retention-days: 30
+      
+      - name: Generate load test report
+        run: |
+          if [ -f load-test-results.json ]; then
+            echo "# Load Test Report" > load-test-report.md
+            echo "" >> load-test-report.md
+            echo "Environment: ${{ github.event.inputs.environment || 'staging' }}" >> load-test-report.md
+            echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> load-test-report.md
+            echo "" >> load-test-report.md
+            echo "## Results" >> load-test-report.md
+            echo "" >> load-test-report.md
+            echo "\`\`\`json" >> load-test-report.md
+            cat load-test-results.json | head -100 >> load-test-report.md
+            echo "\`\`\`" >> load-test-report.md
+          fi
+        continue-on-error: true
+      
+      - name: Create GitHub Issue for load test results
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            let report = 'Load test completed.';
+            try {
+              report = fs.readFileSync('load-test-report.md', 'utf8');
+            } catch (e) {
+              report = 'Load test completed. See artifacts for details.';
+            }
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 Load Test Report - ${{ github.event.inputs.environment || 'staging' }} - ${new Date().toISOString().split('T')[0]}`,
+              body: report,
+              labels: ['monitoring', 'load-test', 'report']
+            });
+
+
+
+
+
+
+

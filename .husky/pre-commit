@@ -1,0 +1,84 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Pre-commit Hook für Qualitätssicherung
+# Führt Code-Qualitäts-Checks vor jedem Commit aus
+
+echo "🔍 Running pre-commit quality checks..."
+
+# 1. ESLint (mit Auto-Fix)
+echo "📝 Running ESLint..."
+pnpm lint --fix || {
+  echo "❌ ESLint found errors. Please fix them before committing."
+  exit 1
+}
+
+# 2. Prettier (Auto-Format)
+echo "💅 Running Prettier..."
+pnpm format || {
+  echo "❌ Prettier formatting failed."
+  exit 1
+}
+
+# 3. TypeScript Type-Check
+echo "🔷 Running TypeScript type check..."
+pnpm type-check || {
+  echo "❌ TypeScript type check failed. Please fix type errors before committing."
+  exit 1
+}
+
+# 4. Check for TODO/FIXME in production code (Warnung, nicht blockierend)
+echo "⚠️  Checking for TODO/FIXME comments..."
+TODOS=$(git diff --cached --name-only | grep -E '\.(ts|tsx|js|jsx)$' | xargs grep -l -E '(TODO|FIXME|XXX|HACK)' 2>/dev/null || true)
+if [ -n "$TODOS" ]; then
+  echo "⚠️  WARNING: Found TODO/FIXME comments in staged files:"
+  echo "$TODOS"
+  echo "⚠️  Consider addressing these before committing to production."
+  # Nicht blockierend, nur Warnung
+fi
+
+# 5. Check for console.log in production code (Warnung)
+echo "⚠️  Checking for console.log statements..."
+CONSOLE_LOGS=$(git diff --cached --name-only | grep -E '\.(ts|tsx|js|jsx)$' | xargs grep -l 'console\.log' 2>/dev/null || true)
+if [ -n "$CONSOLE_LOGS" ]; then
+  echo "⚠️  WARNING: Found console.log statements in staged files:"
+  echo "$CONSOLE_LOGS"
+  echo "⚠️  Consider using logger instead of console.log for production code."
+  # Nicht blockierend, nur Warnung
+fi
+
+# 6. Plan-Validierung (wenn Plan-Dateien geändert wurden)
+echo "📋 Checking plan changes..."
+if git diff --cached --name-only | grep -q "\.cursor/plans/"; then
+  echo "⚠️  Plan-Änderungen erkannt"
+  echo ""
+  echo "Bitte stelle sicher, dass:"
+  echo "1. ✅ Plan-Änderungen dokumentiert sind"
+  echo "2. ✅ CHANGELOG.md aktualisiert ist"
+  echo "3. ✅ Code-Änderungen im Plan reflektiert sind"
+  echo ""
+  
+  # Prüfe ob CHANGELOG aktualisiert wurde
+  if ! git diff --cached --name-only | grep -q "CHANGELOG.md"; then
+    echo "⚠️  WARNUNG: CHANGELOG.md wurde nicht aktualisiert!"
+    echo "Bitte aktualisiere .cursor/plans/CHANGELOG.md mit deinen Änderungen."
+    echo ""
+    echo "Möchtest du trotzdem committen? (Dies ist nur eine Warnung)"
+    # Nicht blockierend, nur Warnung
+  fi
+fi
+
+echo "✅ All pre-commit checks passed!"
+exit 0
+
+
+
+
+
+
+
+
+
+
+
+

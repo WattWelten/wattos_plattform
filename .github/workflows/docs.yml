@@ -1,0 +1,55 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/**/*.ts'
+      - 'packages/**/*.ts'
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  generate-api-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Generate API documentation
+        run: |
+          # This would generate OpenAPI/Swagger docs if implemented
+          echo "API documentation generation not yet implemented"
+          # cd apps/services/api-gateway
+          # npm run docs:generate || true
+      
+      - name: Update README badges
+        run: |
+          # Update badges if needed
+          echo "Badge updates skipped"
+
+
+
+
+
+
+
+
+
+
+
+

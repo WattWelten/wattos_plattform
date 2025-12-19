@@ -1,0 +1,15 @@
+/**
+ * DMS Add-on für WattOS V2
+ * 
+ * DMS (Document Management System) Integration
+ */
+
+// Config
+export * from './config';
+
+// Client
+export * from './client';
+
+// Service
+export * from './dms.service';
+

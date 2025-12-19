@@ -1,0 +1,20 @@
+name: Deploy
+
+# DEAKTIVIERT: Dieser Workflow ist veraltet
+# Verwende stattdessen: deploy-railway-simple.yml
+
+on:
+  workflow_dispatch:  # Nur manuell auslösbar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: false  # Workflow deaktiviert
+    
+    steps:
+      - name: Workflow deaktiviert
+        run: |
+          echo "⚠️ Dieser Workflow ist deaktiviert."
+          echo "Verwende stattdessen: deploy-railway-simple.yml"
+          exit 1
+

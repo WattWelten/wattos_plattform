@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WattOS KI Service Deployment Schema",
+  "description": "Schema für Service-Konfigurationen und Deployment-Abhängigkeiten",
+  "type": "object",
+  "properties": {
+    "services": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/service"
+      }
+    }
+  },
+  "definitions": {
+    "service": {
+      "type": "object",
+      "required": ["name", "type", "port"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Service-Name (kebab-case)"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Anzeigename des Services"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["nestjs", "python", "worker", "gateway", "frontend"],
+          "description": "Service-Typ"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Standard-Port (lokal)"
+        },
+        "path": {
+          "type": "string",
+          "description": "Pfad zum Service im Monorepo"
+        },
+        "buildCommand": {
+          "type": "string",
+          "description": "Build-Command für den Service"
+        },
+        "startCommand": {
+          "type": "string",
+          "description": "Start-Command für den Service"
+        },
+        "healthCheckPath": {
+          "type": "string",
+          "default": "/health",
+          "description": "Health Check Endpoint"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ist der Service für Basis-Funktionalität erforderlich?"
+        },
+        "deploymentPriority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Deployment-Priorität (1=hoch, 5=niedrig)"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Service-Abhängigkeiten (andere Service-Namen)"
+        },
+        "infrastructureDependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["postgresql", "redis"]
+          },
+          "description": "Infrastruktur-Abhängigkeiten"
+        },
+        "environmentVariables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean",
+                "default": false
+              },
+              "description": {
+                "type": "string"
+              },
+              "default": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Service-spezifische Environment Variables"
+        },
+        "documented": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ist der Service in der Deployment-Dokumentation?"
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+

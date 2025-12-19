@@ -1,0 +1,685 @@
+// WattWeiser Platform - Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MULTI-TENANT
+// ============================================
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  areas     Area[]
+  users     User[]
+  knowledgeSpaces KnowledgeSpace[]
+  agents    Agent[]
+  llmUsage  LLMUsage[]
+  auditLogs AuditLog[]
+  customerAnalyses CustomerAnalysis[]
+  profile   TenantProfile?
+  channelSessions ChannelSession[]
+  characters Character[]
+  crawlJobs  CrawlJob[]
+  kbArticles KBArticle[]
+  f13Config  F13Config?
+  dashboards Dashboard[]
+
+  @@index([slug])
+}
+
+model Area {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teams     Team[]
+
+  @@index([tenantId])
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  areaId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  area      Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@index([areaId])
+}
+
+// ============================================
+// RBAC
+// ============================================
+
+model User {
+  id          String   @id @default(uuid())
+  tenantId    String
+  email       String   @unique
+  passwordHash String?
+  keycloakId  String?  @unique
+  mfaEnabled  Boolean  @default(false)
+  mfaSecret   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles   UserRole[]
+  agentRuns   AgentRun[]
+  auditLogs   AuditLog[]
+  chats       Chat[]
+  feedback    Feedback[]
+
+  @@index([tenantId])
+  @@index([email])
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  permissions Json     @default("[]")
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles   UserRole[]
+
+  @@index([tenantId])
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Permission {
+  id       String @id @default(uuid())
+  name     String @unique
+  resource String
+  action   String
+
+  @@index([resource, action])
+}
+
+// ============================================
+// KNOWLEDGE SPACES & RAG
+// ============================================
+
+model KnowledgeSpace {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  settings    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents   Document[]
+
+  @@index([tenantId])
+}
+
+model Document {
+  id             String   @id @default(uuid())
+  knowledgeSpaceId String
+  filePath       String
+  fileName       String
+  fileType       String?
+  fileSize       BigInt
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  knowledgeSpace KnowledgeSpace @relation(fields: [knowledgeSpaceId], references: [id], onDelete: Cascade)
+  chunks        Chunk[]
+
+  @@index([knowledgeSpaceId])
+  @@index([filePath])
+}
+
+model Chunk {
+  id          String   @id @default(uuid())
+  documentId  String
+  content     String   @db.Text
+  chunkIndex  Int
+  metadata    Json     @default("{}")
+  embedding   Unsupported("vector(1536)")? // pgvector
+  createdAt   DateTime @default(now())
+
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  // Note: pgvector index created via migration
+}
+
+// ============================================
+// AGENTS
+// ============================================
+
+model Agent {
+  id           String   @id @default(uuid())
+  tenantId     String
+  characterId String?  // MVP: Verknüpfung zu Character
+  personaId   String?  // MVP: Verknüpfung zu Persona
+  name         String
+  role         String   // MVP: Rolle des Agents
+  roleType     String
+  tools        String[] // MVP: Tool-IDs
+  ragConfig    Json?    // MVP: RAG-Konfiguration
+  personaConfig Json    @default("{}")
+  toolsConfig  Json     @default("[]")
+  policiesConfig Json   @default("{}")
+  kpiConfig    Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  character    Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  persona      Persona? @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  agentRuns    AgentRun[]
+  agentGenerations AgentGeneration[]
+
+  @@index([tenantId])
+  @@index([characterId])
+  @@index([personaId])
+  @@index([roleType])
+}
+
+model AgentRun {
+  id          String   @id @default(uuid())
+  agentId     String
+  userId      String?
+  input       String   @db.Text
+  output      String?  @db.Text
+  status      String   // pending | running | completed | failed
+  metrics     Json     @default("{}")
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toolCalls   ToolCall[]
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([status])
+}
+
+model ToolCall {
+  id         String   @id @default(uuid())
+  agentRunId String
+  toolName   String
+  input      Json
+  output     Json?
+  error      String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  agentRun   AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+
+  @@index([agentRunId])
+}
+
+// ============================================
+// CHARACTERS
+// ============================================
+
+model Character {
+  id              String   @id @default(uuid())
+  tenantId        String   // Tenant-Zuordnung für MVP
+  role            String   // Nicht mehr unique, da pro Tenant
+  name            String?  // Extrahierter Name aus Prompt
+  personality     Json?    // LLM-generierte Persönlichkeit
+  agent           String   @default("chatbot")
+  voiceId         String?
+  voiceModel      String?
+  systemPrompt    String?  @db.Text
+  prompt          String   @db.Text // Original-Prompt für Charakter-Definition
+  customParameters Json    @default("{}")
+  knowledgeBase   Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations   Conversation[]
+  artifacts       Artifact[]
+  personas        Persona[]
+  agents          Agent[]
+
+  @@unique([tenantId, role]) // Unique pro Tenant
+  @@index([tenantId])
+  @@index([role])
+}
+
+model Artifact {
+  id          String   @id @default(uuid())
+  characterId String
+  name        String
+  description String?  @db.Text
+  url         String
+  storageType String   @default("local") // local | s3 | url
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  character  Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+}
+
+// ============================================
+// CHAT / CONVERSATIONS
+// ============================================
+
+model Chat {
+  id        String   @id @default(uuid())
+  userId    String
+  tenantId  String
+  title     String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([userId])
+  @@index([tenantId])
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  threadId  String   @unique @default(uuid())
+  characterId String?
+  userId    String?
+  tenantId  String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  character Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  messages  ConversationMessage[]
+
+  @@index([characterId])
+  @@index([userId])
+  @@index([threadId])
+}
+
+model ConversationMessage {
+  id            String   @id @default(uuid())
+  conversationId String
+  role          String   // user | assistant | system
+  content       String   @db.Text
+  citations     Json?
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  role      String   // user | assistant | system
+  content   String   @db.Text
+  citations Json?    // Array of Citation objects
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([createdAt])
+}
+
+// ============================================
+// LLM USAGE & COSTS
+// ============================================
+
+model LLMUsage {
+  id              String   @id @default(uuid())
+  tenantId        String
+  provider        String
+  model           String
+  promptTokens    Int
+  completionTokens Int
+  totalTokens     Int
+  costUsd         Decimal  @db.Decimal(10, 6)
+  createdAt       DateTime @default(now())
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([createdAt])
+  @@index([provider])
+}
+
+// ============================================
+// AUDIT LOGS
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  userId      String?
+  action      String
+  resourceType String?
+  resourceId   String?
+  details      Json     @default("{}")
+  ipAddress    String?
+  userAgent    String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([action])
+}
+
+// ============================================
+// FEEDBACK
+// ============================================
+
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // rating | comment | improvement
+  content   String?  @db.Text
+  rating    Int?     // 1-5 stars
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+}
+
+// ============================================
+// CUSTOMER INTELLIGENCE
+// ============================================
+
+model CustomerAnalysis {
+  id              String   @id @default(uuid())
+  tenantId        String
+  customerType    String   // "kommune" | "unternehmen" | "organisation"
+  analysisType    String   // "initial" | "periodic" | "on-demand"
+  status          String   // "pending" | "running" | "completed" | "failed"
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  targetGroups    TargetGroup[]
+  personas        Persona[]
+  agentGenerations AgentGeneration[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([customerType])
+}
+
+model TargetGroup {
+  id                String   @id @default(uuid())
+  analysisId        String
+  name              String
+  description       String?  @db.Text
+  demographics      Json     @default("{}") // Alter, Geschlecht, Standort, etc.
+  behaviorPatterns  Json     @default("{}") // Interaktionen, Präferenzen
+  language          String   // "de" | "en" | "tr" | etc.
+  contentPreferences Json    @default("{}") // Bevorzugte Content-Typen
+  size              Int?     // Geschätzte Größe der Zielgruppe
+  confidence        Float    @default(0.0) // 0.0 - 1.0
+  createdAt         DateTime @default(now())
+
+  analysis          CustomerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  personas          Persona[]
+  contentEnrichments ContentEnrichment[]
+  agentGenerations  AgentGeneration[]
+
+  @@index([analysisId])
+  @@index([language])
+  @@index([confidence])
+}
+
+model Persona {
+  id                String   @id @default(uuid())
+  characterId       String?  // MVP: Verknüpfung zu Character
+  analysisId        String?
+  targetGroupId     String?
+  name              String
+  description       String?  @db.Text
+  traits            Json     @default("{}") // Persona-Eigenschaften (MVP)
+  characteristics   Json     @default("{}") // Persönlichkeitsmerkmale, Bedürfnisse
+  painPoints        Json     @default("[]") // Herausforderungen
+  goals             Json     @default("[]") // Ziele
+  communicationStyle Json    @default("{}") // Bevorzugter Kommunikationsstil
+  language          String   // "de" | "en" | "tr" | etc.
+  metadata          Json     @default("{}")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  character         Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  analysis          CustomerAnalysis? @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  targetGroup       TargetGroup? @relation(fields: [targetGroupId], references: [id], onDelete: SetNull)
+  agentGenerations  AgentGeneration[]
+  agents            Agent[]
+
+  @@index([characterId])
+  @@index([analysisId])
+  @@index([targetGroupId])
+  @@index([language])
+}
+
+model ContentEnrichment {
+  id                String   @id @default(uuid())
+  targetGroupId     String
+  sourceType        String   // "crawler" | "document" | "conversation" | "external"
+  sourceId          String   // ID des Quell-Dokuments/Conversations/etc.
+  content           String   @db.Text
+  relevanceScore    Float    @default(0.0) // 0.0 - 1.0
+  language          String
+  metadata          Json     @default("{}")
+  createdAt         DateTime @default(now())
+
+  targetGroup       TargetGroup @relation(fields: [targetGroupId], references: [id], onDelete: Cascade)
+
+  @@index([targetGroupId])
+  @@index([sourceType, sourceId])
+  @@index([relevanceScore])
+}
+
+model AgentGeneration {
+  id                String   @id @default(uuid())
+  analysisId        String
+  personaId         String?
+  targetGroupId     String?
+  agentId           String?  // ID des generierten Agents
+  generationConfig  Json     @default("{}") // Konfiguration für Agent-Generierung
+  status            String   // "pending" | "generating" | "completed" | "failed"
+  error             String?  @db.Text
+  createdAt         DateTime @default(now())
+  completedAt       DateTime?
+
+  analysis          CustomerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  persona           Persona? @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  targetGroup       TargetGroup? @relation(fields: [targetGroupId], references: [id], onDelete: SetNull)
+  agent             Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  @@index([analysisId])
+  @@index([personaId])
+  @@index([targetGroupId])
+  @@index([agentId])
+  @@index([status])
+}
+
+// ============================================
+// TENANT PROFILE
+// ============================================
+
+model TenantProfile {
+  id          String   @id @default(uuid())
+  tenantId    String   @unique
+  market      String   // "enterprise" | "gov" | "media" | "health"
+  mode        String   // "standard" | "regulated" | "gov-f13"
+  providers   Json     @default("{}") // { llm: "wattweiser" | "f13", ... }
+  compliance  Json     @default("{}") // { gdpr: boolean, aiAct: boolean, ... }
+  features    Json     @default("{}") // { guidedFlows: boolean, sourceRequired: boolean, ... }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([market])
+  @@index([mode])
+}
+
+// ============================================
+// CHANNEL SESSIONS
+// ============================================
+
+model ChannelSession {
+  id          String   @id @default(uuid())
+  tenantId    String
+  channel     String   // "web-chat" | "phone" | "whatsapp" | "telegram"
+  channelId   String   // Channel-spezifische ID (z.B. WhatsApp Number, Phone Number)
+  userId      String?
+  metadata    Json     @default("{}")
+  status      String   @default("active") // "active" | "closed" | "paused"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  closedAt    DateTime?
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages    ChannelMessage[]
+
+  @@index([tenantId, channel])
+  @@index([channelId])
+}
+
+model ChannelMessage {
+  id          String   @id @default(uuid())
+  sessionId   String
+  direction   String   // "inbound" | "outbound"
+  type        String   // "text" | "audio" | "media"
+  content     String?  @db.Text
+  audioUrl    String?
+  mediaUrl    String?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+
+  session     ChannelSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt(sort: Desc)])
+}
+
+// ============================================
+// MVP: CHARACTER & AUTOMATION MODELS
+// ============================================
+
+model CrawlJob {
+  id          String   @id @default(uuid())
+  tenantId    String
+  characterId String?
+  urls        String[] // Array von URLs
+  schedule    String   // Cron-Expression
+  lastRunAt   DateTime?
+  nextRunAt   DateTime
+  status      String   @default("active") // "active" | "paused" | "error"
+  config      Json     @default("{}") // Crawl-Konfiguration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId, status])
+  @@index([nextRunAt])
+}
+
+model KBArticle {
+  id            String   @id @default(uuid())
+  tenantId      String
+  kbId          String   @unique // KB-ID aus F13-OS
+  title         String
+  contentMd     String   @db.Text
+  status        String   @default("draft") // "draft" | "approved" | "published" | "synced"
+  f13SyncStatus String?  // "pending" | "syncing" | "synced" | "error"
+  lastSyncedAt  DateTime?
+  syncedAt      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId, status])
+  @@index([f13SyncStatus])
+}
+
+model F13Config {
+  id            String   @id @default(uuid())
+  tenantId      String   @unique
+  baseUrl       String
+  apiKey        String?  // Encrypted
+  kbSyncEnabled Boolean  @default(false)
+  kbSyncInterval String? // Cron-Expression
+  autoApprove   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model Dashboard {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  config      Json     @default("{}") // Dashboard-Konfiguration (Widgets, Layout)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId])
+  @@index([isDefault])
+}
+
+model Metric {
+  id          String   @id @default(uuid())
+  tenantId    String?
+  service     String
+  name        String
+  value       Float
+  unit        String?
+  tags        Json     @default("{}")
+  timestamp   DateTime @default(now())
+  
+  @@index([tenantId, service, timestamp])
+  @@index([timestamp])
+  @@index([service])
+}
+

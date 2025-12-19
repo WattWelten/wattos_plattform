@@ -1,0 +1,62 @@
+name: Plan Backup
+
+on:
+  push:
+    paths:
+      - '.cursor/plans/**'
+      - '.github/workflows/plan-backup.yml'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Clone projekt-blaupause repository
+        run: |
+          git clone https://github.com/WattWelten/projekt-blaupause.git /tmp/projekt-blaupause || true
+          cd /tmp/projekt-blaupause
+          git checkout main || git checkout -b main
+
+      - name: Backup plans to projekt-blaupause
+        run: |
+          # Erstelle plans Verzeichnis falls nicht vorhanden
+          mkdir -p /tmp/projekt-blaupause/plans
+          
+          # Kopiere alle Plan-Dateien
+          cp -r .cursor/plans/* /tmp/projekt-blaupause/plans/ || true
+          
+          # Kopiere auch Workflow-Datei
+          mkdir -p /tmp/projekt-blaupause/.github/workflows
+          cp .github/workflows/plan-backup.yml /tmp/projekt-blaupause/.github/workflows/ || true
+          
+          cd /tmp/projekt-blaupause
+          
+          # Prüfe ob Änderungen vorhanden
+          if [ -n "$(git status --porcelain)" ]; then
+            git add plans/ .github/workflows/plan-backup.yml
+            git commit -m "chore: update project plan from WattOS_V2 [$(date +%Y-%m-%d)]"
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/WattWelten/projekt-blaupause.git main || echo "Push failed - repository might not exist or no write access"
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Plan Backup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Plans backed up to projekt-blaupause repository" >> $GITHUB_STEP_SUMMARY
+          echo "- Backup date: $(date)" >> $GITHUB_STEP_SUMMARY
+

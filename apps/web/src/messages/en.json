@@ -1,0 +1,82 @@
+{
+  "Index": {
+    "title": "WattWeiser - AI Platform",
+    "description": "Modular, GDPR-compliant AI platform for your business",
+    "heroHeading": "AI Platform for Your Business",
+    "heroSubheading": "Modular, GDPR-compliant AI solutions with Multi-LLM support, RAG, and Digital Employees",
+    "getStarted": "Get Started Now",
+    "learnMore": "Learn More",
+    "featuresTitle": "Your Benefits",
+    "feature1Title": "GDPR Compliant",
+    "feature1Description": "All data remains in the EU. Full control over your data.",
+    "feature2Title": "Multi-LLM",
+    "feature2Description": "Support for OpenAI, Anthropic, Google, and local models. Flexible and cost-efficient.",
+    "feature3Title": "Digital Employees",
+    "feature3Description": "Pre-configured agents for IT support, sales, marketing, and more."
+  },
+  "common": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close",
+    "login": "Login",
+    "register": "Register",
+    "solutions": "Solutions",
+    "industries": "Industries",
+    "resources": "Resources",
+    "partners": "Partners",
+    "contact": "Contact",
+    "copyright": "All rights reserved."
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "chat": {
+    "title": "Chat",
+    "newChat": "New Chat",
+    "sendMessage": "Send message",
+    "placeholder": "Enter message...",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "noMessages": "No messages",
+    "startConversation": "Start a conversation by entering a message."
+  },
+  "admin": {
+    "title": "Admin Console",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "roles": "Roles",
+    "providers": "Providers",
+    "knowledgeSpaces": "Knowledge Spaces",
+    "metrics": "Metrics",
+    "activeUsers": "Active Users",
+    "chatsToday": "Chats Today",
+    "llmCalls": "LLM Calls",
+    "totalCost": "Total Cost"
+  },
+  "onboarding": {
+    "welcome": "Welcome to WattWeiser",
+    "step1": "Welcome",
+    "step2": "Organization",
+    "step3": "Knowledge Space",
+    "step4": "Agent",
+    "step5": "Complete"
+  }
+}
+
+

@@ -1,0 +1,82 @@
+{
+  "Index": {
+    "title": "WattWeiser - KI-Plattform",
+    "description": "Modulare, DSGVO-konforme KI-Plattform für Ihr Unternehmen",
+    "heroHeading": "KI-Plattform für Ihr Unternehmen",
+    "heroSubheading": "Modulare, DSGVO-konforme KI-Lösungen mit Multi-LLM-Support, RAG und Digitalen Mitarbeitern",
+    "getStarted": "Jetzt starten",
+    "learnMore": "Mehr erfahren",
+    "featuresTitle": "Ihre Vorteile",
+    "feature1Title": "DSGVO-konform",
+    "feature1Description": "Alle Daten bleiben in der EU. Vollständige Kontrolle über Ihre Daten.",
+    "feature2Title": "Multi-LLM",
+    "feature2Description": "Unterstützung für OpenAI, Anthropic, Google und lokale Modelle. Flexibel und kosteneffizient.",
+    "feature3Title": "Digitale Mitarbeiter",
+    "feature3Description": "Vorkonfigurierte Agenten für IT-Support, Sales, Marketing und mehr."
+  },
+  "common": {
+    "welcome": "Willkommen",
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "success": "Erfolgreich",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "search": "Suchen",
+    "filter": "Filter",
+    "close": "Schließen",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "solutions": "Lösungen",
+    "industries": "Branchen",
+    "resources": "Ressourcen",
+    "partners": "Partner",
+    "contact": "Kontakt",
+    "copyright": "Alle Rechte vorbehalten."
+  },
+  "auth": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Bereits ein Konto?"
+  },
+  "chat": {
+    "title": "Chat",
+    "newChat": "Neuer Chat",
+    "sendMessage": "Nachricht senden",
+    "placeholder": "Nachricht eingeben...",
+    "connected": "Verbunden",
+    "disconnected": "Nicht verbunden",
+    "noMessages": "Keine Nachrichten",
+    "startConversation": "Starten Sie eine Unterhaltung, indem Sie eine Nachricht eingeben."
+  },
+  "admin": {
+    "title": "Admin-Konsole",
+    "dashboard": "Dashboard",
+    "users": "Nutzer",
+    "roles": "Rollen",
+    "providers": "Provider",
+    "knowledgeSpaces": "Wissensräume",
+    "metrics": "Metriken",
+    "activeUsers": "Aktive Nutzer",
+    "chatsToday": "Chats heute",
+    "llmCalls": "LLM-Aufrufe",
+    "totalCost": "Gesamtkosten"
+  },
+  "onboarding": {
+    "welcome": "Willkommen bei WattWeiser",
+    "step1": "Willkommen",
+    "step2": "Organisation",
+    "step3": "Wissensraum",
+    "step4": "Agent",
+    "step5": "Fertig"
+  }
+}
+
+

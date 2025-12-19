@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Commit Message Hook
+# Validiert Commit-Messages nach Conventional Commits Standard
+
+# Prüfe ob commitlint installiert ist
+if ! command -v npx &> /dev/null; then
+  echo "⚠️  npx not found, skipping commit message validation"
+  exit 0
+fi
+
+# Validiere Commit-Message mit commitlint
+npx --no-install commitlint --edit "$1" || {
+  echo ""
+  echo "❌ Commit message does not follow Conventional Commits format."
+  echo ""
+  echo "Valid formats:"
+  echo "  feat: add new feature"
+  echo "  fix: fix bug"
+  echo "  docs: update documentation"
+  echo "  style: formatting changes"
+  echo "  refactor: code refactoring"
+  echo "  test: add tests"
+  echo "  chore: maintenance tasks"
+  echo ""
+  echo "For breaking changes, use:"
+  echo "  feat!: breaking change description"
+  echo ""
+  exit 1
+}
+
+
+
+
+
+
+
+
+
+
+
+
