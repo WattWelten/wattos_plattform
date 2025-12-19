@@ -17,6 +17,7 @@ export interface Agent {
 @Injectable()
 export class AgentRuntimeService {
   private readonly logger = new Logger(AgentRuntimeService.name);
+  private readonly agents: Map<string, Agent> = new Map();;
   private agents: Map<string, Agent> = new Map();
   private handlers: Map<string, EventHandler[]> = new Map();
 
@@ -74,8 +75,9 @@ export class AgentRuntimeService {
     // Wenn kein Agent spezifiziert, versuche alle Agenten
     const results: (Event | null)[] = await Promise.all(
       Array.from(this.agents.values()).map((agent) =>
-        agent.handle(event).catch((error: any) => {
-          this.logger.error(`Error in agent ${agent.name}: ${error.message}`);
+        agent.handle(event).catch((error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          this.logger.error(`Error in agent ${agent.name}: ${errorMessage}`);
           return null;
         }),
       ),

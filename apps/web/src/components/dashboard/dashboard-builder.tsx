@@ -42,7 +42,10 @@ export function DashboardBuilder({
       const data = await response.json();
       setWidgets(data.layout?.widgets || []);
     } catch (error) {
-      console.error('Failed to load dashboard:', error);
+      // Error-Handling: In Production sollte hier ein Logger verwendet werden
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to load dashboard:', error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +63,10 @@ export function DashboardBuilder({
         setWidgets(defaultDashboard.layout?.widgets || []);
       }
     } catch (error) {
-      console.error('Failed to load default dashboard:', error);
+      // Error-Handling: In Production sollte hier ein Logger verwendet werden
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to load default dashboard:', error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +116,10 @@ export function DashboardBuilder({
         });
       }
     } catch (error) {
-      console.error('Failed to save dashboard:', error);
+      // Error-Handling: In Production sollte hier ein Logger verwendet werden
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to save dashboard:', error);
+      }
     } finally {
       setIsLoading(false);
     }

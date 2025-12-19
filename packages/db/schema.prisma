@@ -618,6 +618,8 @@ model CrawlJob {
   
   @@index([tenantId, status])
   @@index([nextRunAt])
+  @@index([characterId])
+  @@index([status, nextRunAt])
 }
 
 model KBArticle {
@@ -637,6 +639,9 @@ model KBArticle {
   
   @@index([tenantId, status])
   @@index([f13SyncStatus])
+  @@index([tenantId, f13SyncStatus, status])
+  @@index([updatedAt])
+  @@index([syncedAt])
 }
 
 model F13Config {
@@ -657,7 +662,8 @@ model Dashboard {
   id          String   @id @default(uuid())
   tenantId    String
   name        String
-  config      Json     @default("{}") // Dashboard-Konfiguration (Widgets, Layout)
+  layout      Json?    // Dashboard-Layout (Widgets, Positionen) - MVP: Umbenannt von config
+  config      Json     @default("{}") // Dashboard-Konfiguration (Widgets, Layout) - Legacy
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -666,6 +672,7 @@ model Dashboard {
   
   @@index([tenantId])
   @@index([isDefault])
+  @@index([tenantId, isDefault])
 }
 
 model Metric {

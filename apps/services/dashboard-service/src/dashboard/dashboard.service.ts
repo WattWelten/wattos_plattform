@@ -62,9 +62,11 @@ export class DashboardService {
     }
 
     // Dashboard-Daten aggregieren
+    // MVP: layout hat Vorrang, fallback zu config (Legacy)
+    const layout = dashboard.layout || dashboard.config;
     const dashboardData = await this.dataAggregation.aggregateDashboardData(
       tenantId,
-      dashboard,
+      { ...dashboard, layout },
     );
 
     // Cache speichern
@@ -81,7 +83,13 @@ export class DashboardService {
     name: string,
     layout: any,
     isDefault = false,
-  ): Promise<any> {
+  ): Promise<{
+    id: string;
+    name: string;
+    layout: any;
+    isDefault: boolean;
+    createdAt: Date;
+  }> {
     // Wenn Default, andere Defaults deaktivieren
     if (isDefault) {
       await this.prisma.dashboard.updateMany({
@@ -94,7 +102,8 @@ export class DashboardService {
       data: {
         tenantId,
         name,
-        layout: layout as any,
+        layout: layout as any, // MVP: layout field wird verwendet
+        config: {}, // Legacy: leeres config für Kompatibilität
         isDefault,
       },
     });
@@ -116,7 +125,13 @@ export class DashboardService {
       layout?: any;
       isDefault?: boolean;
     },
-  ): Promise<any> {
+  ): Promise<{
+    id: string;
+    name: string;
+    layout: any;
+    isDefault: boolean;
+    updatedAt: Date;
+  }> {
     // Wenn Default, andere Defaults deaktivieren
     if (updates.isDefault) {
       await this.prisma.dashboard.updateMany({
@@ -132,7 +147,8 @@ export class DashboardService {
       },
       data: {
         ...updates,
-        layout: updates.layout as any,
+        layout: updates.layout as any, // MVP: layout field wird verwendet
+        config: updates.layout || {}, // Legacy: config als Fallback
       },
     });
 
@@ -160,7 +176,12 @@ export class DashboardService {
   /**
    * Alle Dashboards für Tenant auflisten
    */
-  async listDashboards(tenantId: string): Promise<any[]> {
+  async listDashboards(tenantId: string): Promise<Array<{
+    id: string;
+    name: string;
+    isDefault: boolean;
+    createdAt: Date;
+  }>> {
     const dashboards = await this.prisma.dashboard.findMany({
       where: { tenantId },
       orderBy: {
@@ -174,7 +195,12 @@ export class DashboardService {
   /**
    * Default Dashboard erstellen
    */
-  private async createDefaultDashboard(tenantId: string): Promise<any> {
+  private async createDefaultDashboard(tenantId: string): Promise<{
+    id: string;
+    name: string;
+    layout: any;
+    isDefault: boolean;
+  }> {
     const defaultLayout = {
       widgets: [
         {

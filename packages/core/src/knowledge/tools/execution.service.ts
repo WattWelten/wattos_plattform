@@ -80,8 +80,10 @@ export class ToolExecutionService {
       await this.eventBus.emit(successEvent);
 
       return output;
-    } catch (error: any) {
-      this.logger.error(`Tool execution failed: ${toolName}`, error.stack);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Tool execution failed: ${toolName}`, errorStack);
 
       // Emit Tool Call Failed Event
       const failEvent = ToolEventSchema.parse({
@@ -96,7 +98,7 @@ export class ToolExecutionService {
         payload: {
           toolName,
           toolInput: input,
-          error: error.message,
+          error: errorMessage,
         },
       });
 

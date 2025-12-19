@@ -23,7 +23,16 @@ export class DashboardDataAggregationService {
   /**
    * Dashboard-Daten aggregieren
    */
-  async aggregateDashboardData(tenantId: string, dashboard: any): Promise<any> {
+  async aggregateDashboardData(
+    tenantId: string,
+    dashboard: { id: string; name: string; layout?: any; config?: any },
+  ): Promise<{
+    id: string;
+    name: string;
+    layout: any;
+    widgets: Record<string, any>;
+    updatedAt: Date;
+  }> {
     const widgets = dashboard.layout?.widgets || [];
     const widgetData: Record<string, any> = {};
 
@@ -57,7 +66,10 @@ export class DashboardDataAggregationService {
   /**
    * Widget-Daten aggregieren
    */
-  private async aggregateWidgetData(tenantId: string, widget: any): Promise<any> {
+  private async aggregateWidgetData(
+    tenantId: string,
+    widget: { id: string; type: string; position?: any; config?: any },
+  ): Promise<any> {
     switch (widget.type) {
       case 'overview':
         return await this.getOverviewData(tenantId);

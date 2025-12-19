@@ -164,7 +164,9 @@ export class LlmService {
       }
     }
 
-    throw new ServiceUnavailableException({
+    throw new ServiceUnavailableException(
+      `All providers failed. Errors: ${errors.map((e) => `${e.provider}: ${e.message}`).join(', ')}`,
+    );({
       message: 'All LLM providers failed to process the request',
       errors,
     });
