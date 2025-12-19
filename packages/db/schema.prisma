@@ -34,6 +34,7 @@ model Tenant {
   kbArticles KBArticle[]
   f13Config  F13Config?
   dashboards Dashboard[]
+  widgets    Widget[]
 
   @@index([slug])
 }
@@ -263,6 +264,7 @@ model Character {
   artifacts       Artifact[]
   personas        Persona[]
   agents          Agent[]
+  widgets         Widget[]
 
   @@unique([tenantId, role]) // Unique pro Tenant
   @@index([tenantId])
@@ -688,5 +690,51 @@ model Metric {
   @@index([tenantId, service, timestamp])
   @@index([timestamp])
   @@index([service])
+}
+
+// ============================================
+// MVP: WIDGET MODELS
+// ============================================
+
+model Widget {
+  id              String   @id @default(uuid())
+  tenantId        String
+  characterId     String?  // Optional: Character für Widget
+  name            String
+  type            String   // "chat" | "voice" | "multimodal"
+  mode            String   @default("iframe") // "iframe" | "embed"
+  config          Json     @default("{}") // Widget-Konfiguration (Position, Größe, Theme, etc.)
+  abTestVariant   String?  // A/B-Test-Variante
+  embeddingCode   String?  @db.Text // Generierter Embedding-Code
+  analyticsEnabled Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  character       Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  analytics       WidgetAnalytics[]
+  
+  @@index([tenantId])
+  @@index([characterId])
+  @@index([isActive])
+  @@index([tenantId, isActive])
+  @@index([abTestVariant])
+}
+
+model WidgetAnalytics {
+  id          String   @id @default(uuid())
+  widgetId   String
+  eventType   String   // "view" | "click" | "message" | "conversion"
+  eventData   Json     @default("{}")
+  sessionId   String?
+  userId      String?
+  timestamp   DateTime @default(now())
+  
+  widget      Widget   @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  
+  @@index([widgetId, timestamp])
+  @@index([eventType, timestamp])
+  @@index([sessionId])
 }
 

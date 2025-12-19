@@ -12,4 +12,5 @@ export * from './client';
 
 // Service
 export * from './dms.service';
+export * from './dms-sync.service';
 

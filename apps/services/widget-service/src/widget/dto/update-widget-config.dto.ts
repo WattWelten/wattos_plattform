@@ -1,24 +1,10 @@
-import { IsString, IsObject, IsOptional, IsBoolean } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateWidgetConfigDto } from './create-widget-config.dto';
+import { IsOptional, IsBoolean } from 'class-validator';
 
-export class UpdateWidgetConfigDto {
-  @IsOptional()
-  @IsString()
-  position?: string;
-
-  @IsOptional()
-  @IsObject()
-  size?: { width: number; height: number };
-
-  @IsOptional()
-  @IsString()
-  theme?: string;
-
-  @IsOptional()
-  @IsString()
-  avatar?: string;
-
+export class UpdateWidgetConfigDto extends PartialType(CreateWidgetConfigDto) {
   @IsOptional()
   @IsBoolean()
-  enabled?: boolean;
+  isActive?: boolean;
 }
 

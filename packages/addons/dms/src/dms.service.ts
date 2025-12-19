@@ -27,12 +27,15 @@ export class DMSService {
   /**
    * Dokumente aus DMS abrufen
    */
-  async getDocuments(options?: {
-    folderId?: string;
-    limit?: number;
-    offset?: number;
-    updatedSince?: Date;
-  }): Promise<DMSDocument[]> {
+  async listDocuments(
+    tenantId: string,
+    options?: {
+      folderId?: string;
+      limit?: number;
+      offset?: number;
+      updatedSince?: Date;
+    },
+  ): Promise<DMSDocument[]> {
     try {
       this.logger.debug('Fetching documents from DMS', options);
 
@@ -59,7 +62,7 @@ export class DMSService {
   /**
    * Dokument aus DMS abrufen
    */
-  async getDocument(documentId: string): Promise<DMSDocument> {
+  async getDocument(tenantId: string, documentId: string): Promise<DMSDocument> {
     try {
       this.logger.debug(`Fetching document: ${documentId}`);
 
@@ -163,7 +166,7 @@ export class DMSService {
 
       // Batch-weise Dokumente abrufen
       while (true) {
-        const documents = await this.getDocuments({
+        const documents = await this.listDocuments(tenantId, {
           folderId: options?.folderId,
           limit: batchSize,
           offset,
