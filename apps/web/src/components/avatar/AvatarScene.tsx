@@ -6,6 +6,7 @@ import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei
 import { AvatarV2 } from './AvatarV2';
 import { AvatarSceneProps } from './types';
 import { AvatarSceneSkeleton } from './AvatarSceneSkeleton';
+import { getCappedDPR } from '@/lib/performance';
 
 /**
  * Avatar Scene Component
@@ -29,7 +30,7 @@ export function AvatarScene({
           alpha: true,
           powerPreference: 'high-performance',
         }}
-        dpr={[1, 2]} // Device Pixel Ratio für Retina-Displays
+        dpr={[1, getCappedDPR()]} // DPR-Cap: Desktop ≤2.0, Mobile ≤1.5
         performance={{ min: 0.5 }} // Performance-Monitoring
       >
         <Suspense fallback={null}>
