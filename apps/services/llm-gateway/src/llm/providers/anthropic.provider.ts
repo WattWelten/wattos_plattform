@@ -35,7 +35,7 @@ export class AnthropicProvider extends BaseProvider {
     const { data } = await this.http.post('/v1/messages', payload, { headers: this.headers });
 
     const content = Array.isArray(data.content)
-      ? data.content.map((item) => item.text ?? '').join('\n')
+      ? data.content.map((item: any) => item.text ?? '').join('\n')
       : data.content ?? '';
 
     return this.buildResponse({

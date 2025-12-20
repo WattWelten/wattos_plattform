@@ -14,11 +14,10 @@ export class AzureOpenAiProvider extends BaseProvider {
     super('azure');
   }
 
-  private buildUrl(path: string) {
+  private buildUrl(_path: string) {
     if (!this.config.endpoint || !this.config.deployment) {
       throw new Error('Azure OpenAI configuration missing endpoint or deployment');
     }
-    const version = this.config.apiVersion ?? '2023-12-01-preview';
     return `${this.config.endpoint}/openai/deployments/?api-version=${this.config.apiVersion || '2024-02-15-preview'}`;
   }
 
@@ -47,7 +46,7 @@ export class AzureOpenAiProvider extends BaseProvider {
       id: data.id ?? data.created?.toString(),
       created: data.created ?? Math.floor(Date.now() / 1000),
       model: data.model ?? request.model,
-      choices: data.choices?.map((choice) => ({
+      choices: data.choices?.map((choice: any) => ({
         index: choice.index,
         message: {
           role: choice.message?.role ?? 'assistant',

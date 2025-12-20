@@ -12,7 +12,7 @@ export class GoogleProvider extends BaseProvider {
     super('google', config.baseUrl);
   }
 
-  private buildUrl(model: string) {
+  private buildUrl(_model: string) {
     if (!this.config.apiKey) {
       throw new Error('GOOGLE_API_KEY is not configured');
     }
@@ -34,7 +34,7 @@ export class GoogleProvider extends BaseProvider {
     };
 
     const { data } = await this.http.post(url, payload);
-    const text = data?.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('\n') ?? '';
+    const text = data?.candidates?.[0]?.content?.parts?.map((part: any) => part.text ?? '').join('\n') ?? '';
 
     return this.buildResponse({
       id: data?.candidates?.[0]?.id ?? `${Date.now()}`,

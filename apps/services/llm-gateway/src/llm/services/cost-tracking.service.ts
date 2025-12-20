@@ -41,7 +41,7 @@ export class CostTrackingService {
   /**
    * Berechnet die Kosten für einen LLM-Aufruf ohne sie zu speichern
    */
-  calculateCost(provider: string, model: string, usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number }): number {
+  calculateCost(_provider: string, model: string, usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number }): number {
     const rates = MODEL_RATES[model] ?? DEFAULT_RATES;
     return (usage.prompt_tokens * rates.prompt + usage.completion_tokens * rates.completion) / 1000;
   }
@@ -96,7 +96,12 @@ export class CostTrackingService {
   /**
    * Kosten für einen Tenant abrufen
    */
-  async getCostsForTenant(tenantId: string, startDate?: Date, endDate?: Date) {
+  async getCostsForTenant(tenantId: string, startDate?: Date, endDate?: Date): Promise<{
+    totalCost: number;
+    totalTokens: number;
+    usageCount: number;
+    usage: any[];
+  }> {
     try {
       const where: any = { tenantId };
       if (startDate || endDate) {
@@ -110,8 +115,8 @@ export class CostTrackingService {
         orderBy: { createdAt: 'desc' },
       });
 
-      const totalCost = usage.reduce((sum, u) => sum + Number(u.costUsd), 0);
-      const totalTokens = usage.reduce((sum, u) => sum + u.totalTokens, 0);
+      const totalCost = usage.reduce((sum: number, u: any) => sum + Number(u.costUsd), 0);
+      const totalTokens = usage.reduce((sum: number, u: any) => sum + u.totalTokens, 0);
 
       return {
         totalCost,

@@ -42,7 +42,7 @@ export class OpenAiProvider extends BaseProvider {
       id: data.id,
       created: data.created,
       model: data.model,
-      choices: data.choices?.map((choice) => ({
+      choices: data.choices?.map((choice: any) => ({
         index: choice.index,
         message: {
           role: choice.message?.role ?? 'assistant',
@@ -75,7 +75,7 @@ export class OpenAiProvider extends BaseProvider {
       id: data.id,
       created: data.created,
       model: data.model,
-      choices: data.choices?.map((choice) => ({
+      choices: data.choices?.map((choice: any) => ({
         index: choice.index,
         message: {
           role: 'assistant',

@@ -9,12 +9,19 @@ import { CostTrackingService } from './services/cost-tracking.service';
 import { ProviderHealthService } from './services/provider-health.service';
 import { CircuitBreakerService, RetryService, MetricsService } from '@wattweiser/shared';
 
+interface RecordUsageInput {
+  provider: string;
+  model: string;
+  tenantId?: string;
+  usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
+}
+
 const PROVIDER_PRIORITY = ['openai', 'azure', 'anthropic', 'google', 'ollama'];
 
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
-  private circuitBreakers: Map<string, CircuitBreakerService> = new Map();
+  private readonly circuitBreaker: CircuitBreakerService;
 
   constructor(
     private readonly providerFactory: ProviderFactory,
@@ -22,16 +29,10 @@ export class LlmService {
     private readonly costTrackingService: CostTrackingService,
     private readonly providerHealthService: ProviderHealthService,
     private readonly retryService: RetryService,
+    circuitBreaker: CircuitBreakerService,
     private readonly metricsService?: MetricsService,
   ) {
-    // Initialize circuit breakers for each provider
-    PROVIDER_PRIORITY.forEach(providerName => {
-      this.circuitBreakers.set(providerName, new CircuitBreakerService(providerName, {
-        failureThreshold: 5,
-        resetTimeout: 60000, // 1 minute
-        halfOpenAttempts: 2,
-      }));
-    });
+    this.circuitBreaker = circuitBreaker;
   }
 
   async createChatCompletion(request: ChatCompletionRequestDto): Promise<ChatCompletionResponse> {
@@ -39,12 +40,15 @@ export class LlmService {
     const response = await this.executeWithFallback(provider, (currentProvider) =>
       currentProvider.createChatCompletion(request),
     );
-    await this.costTrackingService.recordUsage({
+    const usageInput: RecordUsageInput = {
       provider: response.provider,
       model: response.model,
-      tenantId: request.tenantId,
       usage: response.usage,
-    });
+    };
+    if (request.tenantId !== undefined) {
+      usageInput.tenantId = request.tenantId;
+    }
+    await this.costTrackingService.recordUsage(usageInput);
     return response;
   }
 
@@ -56,12 +60,15 @@ export class LlmService {
       }
       return currentProvider.createCompletion(request);
     });
-    await this.costTrackingService.recordUsage({
+    const usageInput: RecordUsageInput = {
       provider: response.provider,
       model: response.model,
-      tenantId: request.tenantId,
       usage: response.usage,
-    });
+    };
+    if (request.tenantId !== undefined) {
+      usageInput.tenantId = request.tenantId;
+    }
+    await this.costTrackingService.recordUsage(usageInput);
     return response;
   }
 
@@ -117,18 +124,16 @@ export class LlmService {
     const startTime = Date.now();
 
     for (const name of providers) {
-      const circuitBreaker = this.circuitBreakers.get(name);
-      if (!circuitBreaker) {
-        this.logger.error(`Circuit breaker not found for provider: ${name}`);
-        continue;
-      }
-
       try {
         const provider = this.providerFactory.getProvider(name);
         
         // Execute with circuit breaker and retry
         const response = await this.retryService.executeWithRetry(
-          () => circuitBreaker.execute(name, () => handler(provider)),
+          () => this.circuitBreaker.execute<ChatCompletionResponse>(name, () => handler(provider), {
+            failureThreshold: 5,
+            resetTimeout: 60000,
+            monitoringPeriod: 60000,
+          }),
           {
             maxAttempts: 3,
             initialDelay: 200,

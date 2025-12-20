@@ -9,10 +9,13 @@ export abstract class BaseProvider implements LlmProvider {
   protected readonly http: AxiosInstance;
 
   constructor(public readonly name: string, baseURL?: string) {
-    this.http = axios.create({
-      baseURL,
+    const httpConfig: { baseURL?: string; timeout: number } = {
       timeout: 1000 * 60,
-    });
+    };
+    if (baseURL !== undefined) {
+      httpConfig.baseURL = baseURL;
+    }
+    this.http = axios.create(httpConfig);
   }
 
   abstract createChatCompletion(
