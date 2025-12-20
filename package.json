@@ -24,6 +24,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "type-check": "turbo run type-check",
+    "audit:local": "node scripts/audit-local.js",
     "clean": "turbo run clean && rm -rf node_modules",
     "db:migrate": "cd apps/api && npm run db:migrate",
     "db:generate": "cd apps/api && npm run db:generate"
