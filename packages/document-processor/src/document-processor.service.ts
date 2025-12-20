@@ -60,7 +60,9 @@ export class DocumentProcessorService {
 
     // 4. Embeddings zu Chunks hinzufügen
     chunks.forEach((chunk, index) => {
-      chunk.embedding = embeddings[index];
+      if (embeddings[index]) {
+        chunk.embedding = embeddings[index];
+      }
     });
 
     return {

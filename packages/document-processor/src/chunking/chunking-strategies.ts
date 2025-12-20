@@ -66,6 +66,7 @@ export class ChunkingStrategies {
 
     for (let i = 0; i < sentences.length; i++) {
       const sentence = sentences[i];
+      if (!sentence) continue;
       const sentenceLength = sentence.length;
 
       if (currentLength + sentenceLength > chunkSize && currentChunk.length > 0) {
@@ -89,7 +90,7 @@ export class ChunkingStrategies {
         currentLength = 0;
       }
 
-      currentChunk.push(sentence);
+      currentChunk.push(sentence!);
       currentLength += sentenceLength + 1; // +1 für Leerzeichen
     }
 
@@ -120,7 +121,7 @@ export class ChunkingStrategies {
   static paragraphBased(
     content: string,
     documentId: string,
-    options: ChunkingOptions,
+    _options: ChunkingOptions,
   ): DocumentChunk[] {
     const paragraphs = content.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
     const chunks: DocumentChunk[] = [];

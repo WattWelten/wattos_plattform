@@ -22,6 +22,7 @@
     "dev:all": "concurrently \"pnpm mock:start\" \"turbo run dev\"",
     "mock:start": "ts-node --transpile-only scripts/mock-api.ts",
     "lint": "turbo run lint",
+    "lint:fix": "turbo run lint -- --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "type-check": "turbo run type-check",
     "audit:local": "node scripts/audit-local.js",

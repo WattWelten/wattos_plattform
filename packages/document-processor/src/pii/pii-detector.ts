@@ -70,7 +70,8 @@ export class PiiDetector {
         // Matches in umgekehrter Reihenfolge ersetzen (um Indizes nicht zu verschieben)
         for (let i = matches.length - 1; i >= 0; i--) {
           const match = matches[i];
-          const start = match.index!;
+          if (!match || match.index === undefined) continue;
+          const start = match.index;
           const end = start + match[0].length;
 
           entities.push({

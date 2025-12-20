@@ -78,8 +78,8 @@ export class EmbeddingsService {
       throw new Error(`OpenAI embedding failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.data[0].embedding;
+    const data = (await response.json()) as { data: Array<{ embedding: number[] }> };
+    return data.data[0]?.embedding || [];
   }
 
   /**
@@ -110,8 +110,8 @@ export class EmbeddingsService {
       throw new Error(`OpenAI batch embedding failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.data.map((item: any) => item.embedding);
+    const data = (await response.json()) as { data: Array<{ embedding: number[] }> };
+    return data.data.map((item) => item.embedding);
   }
 
   /**
@@ -138,8 +138,8 @@ export class EmbeddingsService {
       throw new Error(`Ollama embedding failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.embedding;
+    const data = (await response.json()) as { embedding: number[] };
+    return data.embedding || [];
   }
 }
 
