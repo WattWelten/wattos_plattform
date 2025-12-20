@@ -201,4 +201,3 @@ export class PgVectorStore implements IVectorStore {
     }
   }
 }
-

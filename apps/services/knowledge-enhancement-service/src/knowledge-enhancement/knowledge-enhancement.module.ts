@@ -25,4 +25,3 @@ import { MetadataExtractionService } from './metadata-extraction.service';
   ],
 })
 export class KnowledgeEnhancementModule {}
-

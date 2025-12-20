@@ -141,4 +141,3 @@ export class WidgetController {
     return await this.widgetService.getABTestVariants(tenantId, widgetId);
   }
 }
-

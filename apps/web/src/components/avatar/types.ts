@@ -103,4 +103,3 @@ export interface AvatarV2ContainerProps {
   enableControls?: boolean;
   enableEnvironment?: boolean;
 }
-

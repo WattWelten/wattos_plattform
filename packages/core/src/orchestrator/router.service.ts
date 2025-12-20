@@ -112,4 +112,3 @@ export class EventRouterService {
     return await this.agentRuntime.routeEvent(event, agentName);
   }
 }
-

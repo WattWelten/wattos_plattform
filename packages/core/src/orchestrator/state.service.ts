@@ -8,7 +8,7 @@ import { Event } from '../events/types';
 export interface SessionState {
   sessionId: string;
   tenantId: string;
-  userId?: string;
+  userId?: string | undefined;
   state: Record<string, any>;
   createdAt: number;
   updatedAt: number;
@@ -39,7 +39,7 @@ export class StateService {
     const state: SessionState = {
       sessionId,
       tenantId,
-      userId,
+      userId: userId ?? undefined,
       state: {},
       createdAt: Date.now(),
       updatedAt: Date.now(),

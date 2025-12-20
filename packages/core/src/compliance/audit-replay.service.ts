@@ -9,11 +9,11 @@ import { ProfileService } from '../profiles/profile.service';
 export interface ReplaySession {
   sessionId: string;
   tenantId: string;
-  userId?: string;
+  userId?: string | undefined;
   events: Event[];
   startTime: number;
-  endTime?: number;
-  duration?: number;
+  endTime?: number | undefined;
+  duration?: number | undefined;
 }
 
 /**
@@ -173,12 +173,14 @@ export class AuditReplayService {
     const events = await this.getEventHistory(sessionId, options);
     const replayId = `replay-${sessionId}-${Date.now()}`;
 
+    const startTime = options?.startTime || events[0]?.timestamp || Date.now();
+    const endTime = options?.endTime || events[events.length - 1]?.timestamp;
     const replaySession: ReplaySession = {
       sessionId,
       tenantId,
       events,
-      startTime: options?.startTime || events[0]?.timestamp || Date.now(),
-      endTime: options?.endTime || events[events.length - 1]?.timestamp,
+      startTime,
+      endTime: endTime !== undefined ? endTime : undefined,
       duration: options?.endTime && options?.startTime
         ? options.endTime - options.startTime
         : undefined,

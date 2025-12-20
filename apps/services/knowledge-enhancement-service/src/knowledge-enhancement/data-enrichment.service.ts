@@ -149,4 +149,3 @@ Antworte im JSON-Format:
     return [...new Set(words)];
   }
 }
-

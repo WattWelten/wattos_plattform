@@ -303,4 +303,3 @@ Antworte NUR mit dem JSON-Objekt, keine zusätzlichen Erklärungen.`;
     }
   }
 }
-

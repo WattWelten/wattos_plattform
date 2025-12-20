@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ProfileService } from '../profiles/profile.service';
 import { RAGService } from '../knowledge/rag/rag.service';
 import { F13RAGProvider } from '@wattweiser/f13';
+import { F13Client } from '@wattweiser/f13';
 import { F13RAGProviderWrapper } from '../knowledge/rag/providers/f13.rag.provider';
 
 /**
@@ -16,6 +18,7 @@ export class ProviderFactoryService {
   constructor(
     private readonly profileService: ProfileService,
     private readonly ragService: RAGService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -35,16 +38,21 @@ export class ProviderFactoryService {
       // F13 RAG Provider nur bei gov-f13 Mode laden
       if (profile.mode === 'gov-f13') {
         try {
-          // TODO: F13 Module importieren und Provider erstellen
-          // const f13Module = await import('@wattweiser/f13');
-          // const f13RAGProvider = new f13Module.F13RAGProvider(...);
-          // const wrapper = new F13RAGProviderWrapper(f13RAGProvider);
-          // this.ragService.registerProvider('f13', wrapper);
+          // F13 Client erstellen (benötigt ConfigService)
+          const f13Client = new F13Client(this.configService);
+
+          // F13 RAG Provider erstellen
+          const f13RAGProvider = new F13RAGProvider(f13Client);
+          const wrapper = new F13RAGProviderWrapper(f13RAGProvider);
+          
+          // Provider registrieren
+          this.ragService.registerProvider('f13', wrapper);
           
           this.logger.log(`F13 RAG Provider registered for tenant: ${tenantId}`);
         } catch (error: unknown) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          this.logger.error(`Failed to register F13 provider: ${errorMessage}`);
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          this.logger.error(`Failed to register F13 provider: ${errorMessage}`, errorStack);
           // Fallback zu WattWeiser Provider
           this.logger.warn(`Falling back to WattWeiser provider for tenant: ${tenantId}`);
         }
@@ -53,7 +61,8 @@ export class ProviderFactoryService {
       }
     }
 
-    // TODO: LLM, Parser, Summary Provider ähnlich
+    // LLM, Parser, Summary Provider werden über Provider-Factory im LLM-Gateway verwaltet
+    // Diese werden bei Bedarf über Service Discovery aufgerufen
   }
 
   /**
@@ -70,8 +79,14 @@ export class ProviderFactoryService {
       return null;
     }
 
-    // TODO: Provider-Instanz zurückgeben
+    // RAG Provider zurückgeben
+    if (providerType === 'rag') {
+      const provider = this.ragService.getProvider(providerName);
+      return (provider as unknown) as T;
+    }
+
+    // LLM, Parser, Summary Provider werden über LLM-Gateway verwaltet
+    // Diese werden nicht direkt zurückgegeben, sondern über Service Discovery aufgerufen
     return null;
   }
 }
-

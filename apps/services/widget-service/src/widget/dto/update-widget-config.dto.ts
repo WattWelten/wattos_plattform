@@ -7,4 +7,3 @@ export class UpdateWidgetConfigDto extends PartialType(CreateWidgetConfigDto) {
   @IsBoolean()
   isActive?: boolean;
 }
-

@@ -53,4 +53,3 @@ export class CharacterController {
     return this.characterService.deleteCharacter(id);
   }
 }
-

@@ -70,6 +70,13 @@ export class RAGService {
   }
 
   /**
+   * Provider abrufen
+   */
+  getProvider(name: string): RAGProvider | undefined {
+    return this.providers.get(name);
+  }
+
+  /**
    * Standard-Provider setzen
    */
   setDefaultProvider(name: string): void {

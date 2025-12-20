@@ -13,10 +13,10 @@ export interface SourceCard {
   content: string;
   source: string;
   score: number;
-  documentName?: string;
-  documentUrl?: string;
-  pageNumber?: number;
-  metadata?: Record<string, unknown>;
+  documentName?: string | undefined;
+  documentUrl?: string | undefined;
+  pageNumber?: number | undefined;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 /**
@@ -27,8 +27,8 @@ export interface Citation {
   title: string;
   content: string;
   score: number;
-  url?: string;
-  metadata?: Record<string, unknown>;
+  url?: string | undefined;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 /**
@@ -71,7 +71,7 @@ export class SourceCardsService {
       documentName: result.metadata?.documentName || result.source,
       documentUrl: result.metadata?.documentUrl,
       pageNumber: result.metadata?.pageNumber,
-      metadata: result.metadata,
+      metadata: result.metadata ? (result.metadata as Record<string, unknown>) : undefined,
     }));
 
     // Bei Gov-Mode: Source Cards sind verpflichtend
@@ -134,7 +134,7 @@ export class SourceCardsService {
       title: card.documentName || card.source,
       content: card.content,
       score: card.score,
-      url: card.documentUrl,
+      url: card.documentUrl ?? undefined,
       metadata: {
         ...card.metadata,
         pageNumber: card.pageNumber,

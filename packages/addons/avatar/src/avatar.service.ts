@@ -95,7 +95,9 @@ export class AvatarService {
         glbUrl: finalGlbUrl,
         thumbnailUrl: avatarResult.thumbnailUrl,
         qualityScore: qualityCheck.score,
-        optimizations: Object.values(avatarResult.quality).filter((v) => v === true),
+        optimizations: Object.entries(avatarResult.quality)
+          .filter(([_, v]) => v === true)
+          .map(([k]) => k),
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -12,4 +12,3 @@ import { ProfilesModule } from '@wattweiser/core';
   exports: [CharacterService, CharacterDefinitionService],
 })
 export class CharacterModule {}
-

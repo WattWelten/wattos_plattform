@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import * as fs from 'fs';
 import { AvatarConfig, defaultAvatarConfig } from './config';
 import { GLBProcessorService } from './glb-processor.service';
 
@@ -216,4 +217,3 @@ export class AvaturnAdapterService {
     }
   }
 }
-

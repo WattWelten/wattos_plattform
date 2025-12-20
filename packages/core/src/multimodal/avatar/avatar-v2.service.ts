@@ -173,7 +173,7 @@ export class AvatarV2Service {
         audioUrl: `data:audio/mpeg;base64,${ttsResult.audioData.toString('base64')}`,
         audioData: ttsResult.audioData,
         sceneConfig,
-        visemes,
+        visemes: visemes ?? undefined,
         metadata: {
           text,
           voiceId: options?.voiceId,
@@ -390,4 +390,3 @@ export class AvatarV2Service {
     }
   }
 }
-

@@ -10,8 +10,8 @@ export interface EventTrace {
   tenantId: string;
   events: Event[];
   startTime: number;
-  endTime?: number;
-  metadata?: Record<string, any>;
+  endTime?: number | undefined;
+  metadata?: Record<string, any> | undefined;
 }
 
 /**
@@ -41,7 +41,7 @@ export class TraceService {
       tenantId,
       events: [],
       startTime: Date.now(),
-      metadata,
+      metadata: metadata ?? undefined,
     };
 
     this.traces.set(sessionId, trace);

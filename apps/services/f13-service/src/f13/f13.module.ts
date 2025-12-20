@@ -22,4 +22,3 @@ import { F13Client, F13LLMProvider, F13RAGProvider } from '@wattweiser/f13';
   exports: [F13Service, KBSyncService],
 })
 export class F13Module {}
-

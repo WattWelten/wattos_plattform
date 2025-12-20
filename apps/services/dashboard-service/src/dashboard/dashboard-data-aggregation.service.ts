@@ -241,4 +241,3 @@ export class DashboardDataAggregationService {
     return new Date(now.getTime() - ms);
   }
 }
-

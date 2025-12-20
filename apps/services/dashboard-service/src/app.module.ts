@@ -20,4 +20,3 @@ import { ReportingModule } from './reporting/reporting.module';
   ],
 })
 export class AppModule {}
-

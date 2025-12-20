@@ -10,4 +10,3 @@ export type {
   AvatarV2SceneConfig,
   AvatarV2ContainerProps,
 } from './types';
-

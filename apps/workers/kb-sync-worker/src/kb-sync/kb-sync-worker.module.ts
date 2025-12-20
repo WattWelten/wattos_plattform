@@ -22,4 +22,3 @@ import { IncrementalSyncService } from './incremental-sync.service';
   exports: [KBSyncWorkerService],
 })
 export class KBSyncWorkerModule {}
-

@@ -12,4 +12,3 @@ import { EmbeddingCodeGeneratorService } from './embedding-code-generator.servic
   exports: [WidgetService],
 })
 export class WidgetModule {}
-

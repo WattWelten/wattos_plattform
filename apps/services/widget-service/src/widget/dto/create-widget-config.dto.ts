@@ -64,4 +64,3 @@ export class CreateWidgetConfigDto {
   @IsObject()
   config?: Record<string, any>;
 }
-

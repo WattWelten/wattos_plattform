@@ -22,4 +22,3 @@ import { AvatarService, AvatarRepoClient, GLBProcessorService, AvaturnAdapterSer
   exports: [AvatarV2Service, AvatarService],
 })
 export class AvatarV2Module {}
-

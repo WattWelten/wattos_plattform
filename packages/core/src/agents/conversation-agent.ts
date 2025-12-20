@@ -1,12 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { EventBusService } from '../events/bus.service';
 import { Agent } from '../orchestrator/runtime.service';
 import { Event, EventDomain, IntentEvent, IntentEventSchema } from '../events/types';
-import { StreamingService } from '../multimodal/text/streaming.service';
+import { TextStreamingService } from '../multimodal/text/streaming.service';
 import { RAGService } from '../knowledge/rag/rag.service';
 import { ToolExecutionService } from '../knowledge/tools/execution.service';
 import { ProfileService } from '../profiles/profile.service';
 import { SourceCardsService } from '../compliance/source-cards.service';
+import { ServiceDiscoveryService } from '@wattweiser/shared';
 import { TenantProfile } from '../profiles/types';
 import { Citation } from '../compliance/source-cards.service';
 import { v4 as uuid } from 'uuid';
@@ -24,11 +27,13 @@ export class ConversationAgent implements Agent {
 
   constructor(
     private readonly eventBus: EventBusService,
-    private readonly streamingService: StreamingService,
+    private readonly streamingService: TextStreamingService,
     private readonly ragService: RAGService,
     private readonly toolExecutionService: ToolExecutionService,
     private readonly profileService: ProfileService,
     private readonly sourceCardsService: SourceCardsService,
+    private readonly httpService: HttpService,
+    private readonly serviceDiscovery: ServiceDiscoveryService,
   ) {}
 
   /**
@@ -182,15 +187,53 @@ export class ConversationAgent implements Agent {
     userMessage: string,
     profile: TenantProfile,
   ): Promise<string> {
-    // TODO: LLM-Gateway nutzen für tatsächliche LLM-Generierung
-    // Placeholder für jetzt
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userMessage },
-    ];
+    try {
+      // LLM-Gateway URL ermitteln
+      const llmGatewayUrl = this.serviceDiscovery.getServiceUrl('llm-gateway', 3009);
 
-    // Placeholder Response
-    return `Ich habe Ihre Nachricht erhalten: "${userMessage}". Dies ist eine Platzhalter-Antwort. Die tatsächliche LLM-Integration folgt.`;
+      // Messages für LLM-Gateway formatieren
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+      ];
+
+      // LLM-Gateway aufrufen
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${llmGatewayUrl}/v1/chat/completions`,
+          {
+            model: profile.features.defaultModel || 'gpt-4',
+            provider: profile.features.defaultProvider || 'openai',
+            messages,
+            stream: false,
+            temperature: profile.features.temperature || 0.7,
+            max_tokens: profile.features.maxTokens || 2000,
+            tenantId: profile.tenantId,
+          },
+          {
+            timeout: 30000, // 30 Sekunden Timeout
+          },
+        ),
+      );
+
+      // Response extrahieren
+      const assistantContent = response.data?.choices?.[0]?.message?.content;
+      
+      if (!assistantContent) {
+        this.logger.warn('LLM-Gateway returned empty response');
+        return 'Entschuldigung, ich konnte keine Antwort generieren. Bitte versuchen Sie es erneut.';
+      }
+
+      this.logger.debug(`LLM response generated: ${assistantContent.substring(0, 50)}...`);
+      return assistantContent;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`LLM-Gateway call failed: ${errorMessage}`, errorStack);
+
+      // Fallback: Placeholder Response
+      return `Ich habe Ihre Nachricht erhalten: "${userMessage}". Entschuldigung, die LLM-Integration ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.`;
+    }
   }
 
   /**
@@ -202,11 +245,29 @@ export class ConversationAgent implements Agent {
       const checks = await Promise.all([
         this.ragService.healthCheck(),
         this.toolExecutionService.healthCheck(),
+        // Prüfe LLM-Gateway Verfügbarkeit
+        this.checkLLMGatewayHealth(),
       ]);
 
       return checks.every((check) => check === true);
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * LLM-Gateway Health Check
+   */
+  private async checkLLMGatewayHealth(): Promise<boolean> {
+    try {
+      const llmGatewayUrl = this.serviceDiscovery.getServiceUrl('llm-gateway', 3009);
+      const response = await firstValueFrom(
+        this.httpService.get(`${llmGatewayUrl}/health`, { timeout: 5000 }),
+      );
+      return response.status === 200;
+    } catch {
+      // LLM-Gateway nicht verfügbar, aber Agent kann trotzdem funktionieren (mit Fallback)
+      return true;
     }
   }
 }

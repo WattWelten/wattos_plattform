@@ -6,11 +6,12 @@ import {
   EventDomain,
   PerceptionEvent,
   PerceptionEventSchema,
+  IntentEvent,
   AvatarEvent,
   AvatarEventSchema,
 } from '../events/types';
-import { ASRService } from '../multimodal/voice/asr.service';
-import { TTSService } from '../multimodal/voice/tts.service';
+import { AsrService } from '../multimodal/voice/asr.service';
+import { TtsService } from '../multimodal/voice/tts.service';
 import { AvatarV2Service } from '../multimodal/avatar/avatar-v2.service';
 import { v4 as uuid } from 'uuid';
 
@@ -27,8 +28,8 @@ export class MediaAgent implements Agent {
 
   constructor(
     private readonly eventBus: EventBusService,
-    private readonly asrService: ASRService,
-    private readonly ttsService: TTSService,
+    private readonly asrService: AsrService,
+    private readonly ttsService: TtsService,
     private readonly avatarV2Service: AvatarV2Service,
   ) {}
 
@@ -96,11 +97,11 @@ export class MediaAgent implements Agent {
       );
 
       // Intent-Event emittieren (Text wurde erkannt)
-      const intentEvent = {
+      const intentEvent: IntentEvent = {
         id: uuid(),
         type: `${EventDomain.INTENT}.message.processed`,
         domain: EventDomain.INTENT,
-        action: 'message.processed' as const,
+        action: 'message.processed',
         timestamp: Date.now(),
         sessionId,
         tenantId,
@@ -144,11 +145,11 @@ export class MediaAgent implements Agent {
     const text = payload.data as string;
 
     // Weiterleiten als Intent-Event
-    const intentEvent = {
+    const intentEvent: IntentEvent = {
       id: uuid(),
       type: `${EventDomain.INTENT}.message.processed`,
       domain: EventDomain.INTENT,
-      action: 'message.processed' as const,
+      action: 'message.processed',
       timestamp: Date.now(),
       sessionId,
       tenantId,
