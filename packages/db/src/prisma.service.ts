@@ -1,6 +1,10 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Optional, Inject } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { MetricsService } from '@wattweiser/shared';
+
+// Optional: MetricsService from @wattweiser/shared (if available)
+type MetricsService = {
+  recordDbQuery: (action: string, duration: number, success: boolean) => void;
+};
 
 /**
  * PrismaService - Singleton Service für PrismaClient
@@ -10,13 +14,15 @@ import { MetricsService } from '@wattweiser/shared';
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
 
-  constructor(@Optional() @Inject(MetricsService) private metricsService?: MetricsService) {
+  constructor(
+    @Optional() @Inject('MetricsService') private readonly metricsService?: MetricsService,
+  ) {
     super({
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
     
     // Prisma Middleware für automatische Metrics-Collection
-    this.$use(async (params, next) => {
+    (this as any).$use(async (params: any, next: any) => {
       const start = Date.now();
       try {
         const result = await next(params);
@@ -58,6 +64,3 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     this.logger.log('Prisma Client disconnected from database');
   }
 }
-
-
-

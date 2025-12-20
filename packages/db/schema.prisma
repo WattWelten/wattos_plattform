@@ -30,13 +30,14 @@ model Tenant {
   profile   TenantProfile?
   channelSessions ChannelSession[]
   characters Character[]
-  crawlJobs  CrawlJob[]
-  kbArticles KBArticle[]
-  f13Config  F13Config?
-  dashboards Dashboard[]
-  widgets    Widget[]
-  alertRules AlertRule[]
-  alerts     Alert[]
+  roles     Role[]
+  // crawlJobs  CrawlJob[] // TODO: Add CrawlJob model
+  // kbArticles KBArticle[] // TODO: Add KBArticle model
+  // f13Config  F13Config? // TODO: Add F13Config model
+  // dashboards Dashboard[] // TODO: Add Dashboard model
+  // widgets    Widget[] // TODO: Add Widget model
+  // alertRules AlertRule[] // TODO: Add AlertRule model
+  // alerts     Alert[] // TODO: Add Alert model
 
   @@index([slug])
 }
@@ -266,7 +267,7 @@ model Character {
   artifacts       Artifact[]
   personas        Persona[]
   agents          Agent[]
-  widgets         Widget[]
+  // widgets         Widget[] // TODO: Add Widget model
 
   @@unique([tenantId, role]) // Unique pro Tenant
   @@index([tenantId])

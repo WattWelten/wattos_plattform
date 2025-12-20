@@ -1,6 +1,8 @@
-import { Global, Module, Optional } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { ObservabilityModule } from '@wattweiser/shared';
+
+// Optional: ObservabilityModule from @wattweiser/shared (if available)
+// import { ObservabilityModule } from '@wattweiser/shared';
 
 /**
  * PrismaModule - Globales Modul für PrismaService
@@ -10,7 +12,7 @@ import { ObservabilityModule } from '@wattweiser/shared';
  */
 @Global()
 @Module({
-  imports: [ObservabilityModule],
+  // imports: [ObservabilityModule], // Optional: Enable if @wattweiser/shared is available
   providers: [PrismaService],
   exports: [PrismaService],
 })
