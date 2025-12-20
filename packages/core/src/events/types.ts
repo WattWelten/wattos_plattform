@@ -119,12 +119,27 @@ export type AvatarEvent = z.infer<typeof AvatarEventSchema>;
  */
 export const ComplianceEventSchema = BaseEventSchema.extend({
   domain: z.literal(EventDomain.COMPLIANCE),
-  action: z.enum(['disclosure.shown', 'pii.detected', 'pii.redacted', 'audit.logged']),
+  action: z.enum([
+    'disclosure.shown',
+    'pii.detected',
+    'pii.redacted',
+    'audit.logged',
+    'retention.cleanup',
+  ]),
   payload: z.object({
     disclosureType: z.string().optional(),
     piiType: z.string().optional(),
-    action: z.string(),
+    action: z.string().optional(),
     details: z.record(z.any()).optional(),
+    retentionDays: z.number().optional(),
+    cutoffDate: z.string().optional(),
+    deletedCounts: z
+      .object({
+        deletedConversations: z.number(),
+        deletedMessages: z.number(),
+        deletedAuditLogs: z.number(),
+      })
+      .optional(),
   }),
 });
 
