@@ -94,8 +94,8 @@ export class AvaturnAdapterService {
         glbUrl: optimizedGlbUrl,
         thumbnailUrl,
         quality: {
-          textureResolution: this.config.quality.textureResolution,
-          pbrEnabled: this.config.quality.enablePBR,
+          textureResolution: this.config.quality?.textureResolution || '2K',
+          pbrEnabled: this.config.quality?.enablePBR ?? true,
           morphsEnabled: options?.enableMorphs !== false,
           rigsEnabled: options?.enableRigs !== false,
         },
@@ -124,15 +124,19 @@ export class AvaturnAdapterService {
       const tempOutputPath = `/tmp/avatar-${avatarId}-output.glb`;
 
       // GLB speichern
-      await fs.writeFile(tempInputPath, glbBuffer);
+      await fs.promises.writeFile(tempInputPath, glbBuffer);
 
       // Optimieren
-      const result = await this.glbProcessor.optimizeGLB(tempInputPath, tempOutputPath, {
-        textureResolution: this.config.quality.textureResolution,
-        enablePBR: this.config.quality.enablePBR,
-        addMorphs: true,
-        optimizeLighting: true,
-      });
+      const result = await this.glbProcessor.optimizeGLB(
+        tempInputPath,
+        tempOutputPath,
+        {
+          textureResolution: this.config.quality?.textureResolution || '2K',
+          enablePBR: this.config.quality?.enablePBR ?? true,
+          addMorphs: true,
+          optimizeLighting: true,
+        },
+      );
 
       if (result.success) {
         // Optimiertes GLB hochladen (zurück zu Avatar-Repo)
@@ -173,7 +177,7 @@ export class AvaturnAdapterService {
 
       // Temporäre Datei
       const tempPath = `/tmp/avatar-check-${Date.now()}.glb`;
-      await fs.writeFile(tempPath, glbBuffer);
+      await fs.promises.writeFile(tempPath, glbBuffer);
 
       // Validierung
       const validation = await this.glbProcessor.validateGLB(tempPath);
@@ -196,7 +200,11 @@ export class AvaturnAdapterService {
       const score = checks.length > 0 ? passedChecks / checks.length : 0;
 
       // Cleanup
-      await fs.unlink(tempPath).catch(() => {});
+      try {
+        await fs.promises.unlink(tempPath);
+      } catch {
+        // Ignore cleanup errors
+      }
 
       return {
         score,

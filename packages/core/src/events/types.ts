@@ -88,12 +88,23 @@ export type ToolEvent = z.infer<typeof ToolEventSchema>;
  */
 export const KnowledgeEventSchema = BaseEventSchema.extend({
   domain: z.literal(EventDomain.KNOWLEDGE),
-  action: z.enum(['search.executed', 'context.built', 'citation.generated']),
+  action: z.enum([
+    'search.executed',
+    'context.built',
+    'citation.generated',
+    'document.ready',
+    'document.deleted',
+  ]),
   payload: z.object({
-    query: z.string(),
+    query: z.string().optional(),
     results: z.array(z.any()).optional(),
     context: z.string().optional(),
     citations: z.array(z.any()).optional(),
+    documentId: z.string().optional(),
+    name: z.string().optional(),
+    content: z.string().optional(),
+    metadata: z.record(z.any()).optional(),
+    source: z.string().optional(),
   }),
 });
 

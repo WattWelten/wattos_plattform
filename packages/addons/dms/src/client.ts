@@ -62,11 +62,11 @@ export class DMSClient {
       baseUrl: this.configService.get<string>('DMS_BASE_URL') || defaultConfig.baseUrl,
       apiKey: this.configService.get<string>('DMS_API_KEY') || defaultConfig.apiKey,
       apiSecret: this.configService.get<string>('DMS_API_SECRET') || defaultConfig.apiSecret,
-      timeout: this.configService.get<number>('DMS_TIMEOUT', defaultConfig.timeout),
-      retryAttempts: this.configService.get<number>('DMS_RETRY_ATTEMPTS', defaultConfig.retryAttempts),
-      retryDelay: this.configService.get<number>('DMS_RETRY_DELAY', defaultConfig.retryDelay),
-      syncInterval: this.configService.get<number>('DMS_SYNC_INTERVAL', defaultConfig.syncInterval),
-      batchSize: this.configService.get<number>('DMS_BATCH_SIZE', defaultConfig.batchSize),
+      timeout: this.configService.get<number>('DMS_TIMEOUT') ?? defaultConfig.timeout,
+      retryAttempts: this.configService.get<number>('DMS_RETRY_ATTEMPTS') ?? defaultConfig.retryAttempts,
+      retryDelay: this.configService.get<number>('DMS_RETRY_DELAY') ?? defaultConfig.retryDelay,
+      syncInterval: this.configService.get<number>('DMS_SYNC_INTERVAL') ?? defaultConfig.syncInterval,
+      batchSize: this.configService.get<number>('DMS_BATCH_SIZE') ?? defaultConfig.batchSize,
     };
 
     this.config = DMSConfigSchema.parse(envConfig);

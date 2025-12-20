@@ -28,7 +28,7 @@ export class DMSService {
    * Dokumente aus DMS abrufen
    */
   async listDocuments(
-    tenantId: string,
+    _tenantId: string,
     options?: {
       folderId?: string;
       limit?: number;
@@ -62,7 +62,7 @@ export class DMSService {
   /**
    * Dokument aus DMS abrufen
    */
-  async getDocument(tenantId: string, documentId: string): Promise<DMSDocument> {
+  async getDocument(_tenantId: string, documentId: string): Promise<DMSDocument> {
     try {
       this.logger.debug(`Fetching document: ${documentId}`);
 
@@ -166,12 +166,22 @@ export class DMSService {
 
       // Batch-weise Dokumente abrufen
       while (true) {
-        const documents = await this.listDocuments(tenantId, {
-          folderId: options?.folderId,
+        const listOptions: {
+          folderId?: string;
+          limit?: number;
+          offset?: number;
+          updatedSince?: Date;
+        } = {
           limit: batchSize,
           offset,
-          updatedSince: options?.updatedSince,
-        });
+        };
+        if (options?.folderId !== undefined) {
+          listOptions.folderId = options.folderId;
+        }
+        if (options?.updatedSince !== undefined) {
+          listOptions.updatedSince = options.updatedSince;
+        }
+        const documents = await this.listDocuments(tenantId, listOptions);
 
         if (documents.length === 0) {
           break; // Keine weiteren Dokumente
@@ -248,7 +258,7 @@ export class DMSService {
       });
 
       // 1. Dokument-Inhalt abrufen
-      const content = await this.getDocumentContent(document.id);
+      await this.getDocumentContent(document.id);
 
       // 2. Dokument in Knowledge Space importieren
       // TODO: Integration mit Ingestion-Service

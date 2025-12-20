@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@wattweiser/db';
 import { EventBusService, Event, EventDomain } from '@wattweiser/core';
 import { DMSService } from './dms.service';
+import { v4 as uuid } from 'uuid';
 
 /**
  * DMS Sync Service
@@ -29,20 +30,26 @@ export class DMSSyncService {
   private setupEventSubscriptions(): void {
     // DMS Document Created Event
     this.eventBus.subscribe('dms.document.created', async (event: Event) => {
-      const { tenantId, documentId } = event.payload as { tenantId: string; documentId: string };
-      await this.syncDocument(tenantId, documentId);
+      const payload = event.payload as { tenantId?: string; documentId?: string };
+      if (payload?.tenantId && payload?.documentId) {
+        await this.syncDocument(payload.tenantId, payload.documentId);
+      }
     });
 
     // DMS Document Updated Event
     this.eventBus.subscribe('dms.document.updated', async (event: Event) => {
-      const { tenantId, documentId } = event.payload as { tenantId: string; documentId: string };
-      await this.syncDocument(tenantId, documentId);
+      const payload = event.payload as { tenantId?: string; documentId?: string };
+      if (payload?.tenantId && payload?.documentId) {
+        await this.syncDocument(payload.tenantId, payload.documentId);
+      }
     });
 
     // DMS Document Deleted Event
     this.eventBus.subscribe('dms.document.deleted', async (event: Event) => {
-      const { tenantId, documentId } = event.payload as { tenantId: string; documentId: string };
-      await this.handleDocumentDeletion(tenantId, documentId);
+      const payload = event.payload as { tenantId?: string; documentId?: string };
+      if (payload?.tenantId && payload?.documentId) {
+        await this.handleDocumentDeletion(payload.tenantId, payload.documentId);
+      }
     });
   }
 
@@ -172,7 +179,7 @@ export class DMSSyncService {
         // Dokument an Ingestion-Service senden
         await this.sendToIngestion(tenantId, {
           id: document.id,
-          name: document.name || documentId,
+          name: document.title || documentId,
           content: document.content || '',
           metadata: document.metadata || {},
         });
@@ -218,11 +225,12 @@ export class DMSSyncService {
   ): Promise<void> {
     // MVP: Event-basierte Integration mit Ingestion-Service
     const event: Event = {
-      id: `ingest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type: 'ingestion.document.ready',
+      id: uuid(),
+      type: 'knowledge.document.ready',
       domain: EventDomain.KNOWLEDGE,
       action: 'document.ready',
       timestamp: Date.now(),
+      sessionId: uuid(),
       tenantId,
       payload: {
         documentId: document.id,
@@ -249,11 +257,12 @@ export class DMSSyncService {
     try {
       // Event an Ingestion-Service senden
       const event: Event = {
-        id: `delete-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        type: 'ingestion.document.deleted',
+        id: uuid(),
+        type: 'knowledge.document.deleted',
         domain: EventDomain.KNOWLEDGE,
         action: 'document.deleted',
         timestamp: Date.now(),
+        sessionId: uuid(),
         tenantId,
         payload: {
           documentId,

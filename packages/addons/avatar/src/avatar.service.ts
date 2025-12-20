@@ -18,7 +18,8 @@ export class AvatarService {
   constructor(
     private readonly httpService: HttpService,
     private readonly avatarRepo: AvatarRepoClient,
-    private readonly glbProcessor: GLBProcessorService,
+    // @ts-expect-error - Unused but required by DI
+    private readonly _glbProcessor: GLBProcessorService,
     private readonly avaturnAdapter: AvaturnAdapterService,
     config?: Partial<AvatarConfig>,
   ) {

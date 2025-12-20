@@ -14,7 +14,9 @@
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
+    "@wattweiser/db": "workspace:*",
     "axios": "^1.13.2",
+    "uuid": "^11.0.3",
     "zod": "^4.2.1"
   },
   "devDependencies": {
