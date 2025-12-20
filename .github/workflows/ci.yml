@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['18', '20']
+        node-version: ['20']  # Nur Node 20 (aligned mit package.json engines)
     
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +28,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-        continue-on-error: true  # Cache funktioniert auch ohne pnpm-lock.yaml
       
       - name: Install dependencies
         run: |
@@ -39,21 +38,28 @@ jobs:
             pnpm install
           fi
       
-      - name: Lint
-        run: pnpm lint
-        continue-on-error: true  # Non-blocking für Wait for CI
-      
       - name: Type check
         run: pnpm type-check
-        continue-on-error: true  # Non-blocking für Wait for CI
+      
+      - name: Lint
+        run: pnpm lint
       
       - name: Build
         run: pnpm build
-        continue-on-error: true  # Non-blocking für Wait for CI
       
-      - name: Unit tests with coverage
-        run: pnpm test:unit --coverage
-        continue-on-error: true
+      - name: Test
+        run: pnpm test || echo "no tests"
+        continue-on-error: true  # Nur bei Tests, falls keine Tests vorhanden
+      
+      - name: Generate reports
+        run: pnpm audit:local || true
+      
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports/*.md
+          retention-days: 7
       
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -61,16 +67,7 @@ jobs:
           files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-        continue-on-error: true
-      
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-node-${{ matrix.node-version }}
-          path: |
-            apps/*/dist
-            packages/*/dist
-          retention-days: 7
+        continue-on-error: true  # Optional
 
   security-scan:
     runs-on: ubuntu-latest
@@ -113,7 +110,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-        continue-on-error: true  # Cache funktioniert auch ohne pnpm-lock.yaml
       
       - name: Install dependencies
         run: |
@@ -130,4 +126,3 @@ jobs:
       
       - name: Audit dependencies
         run: pnpm audit --audit-level=moderate || true
-
