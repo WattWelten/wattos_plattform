@@ -52,9 +52,21 @@ const envSchema = z.object({
   OPENSEARCH_URL: z.string().url().optional(),
 
   // Feature Flags
-  STREAMING_ENABLED: z.string().transform((val) => val !== 'false').default('true'),
-  WEBSOCKET_ENABLED: z.string().transform((val) => val !== 'false').default('true'),
-  SANDBOX_ENABLED: z.string().transform((val) => val === 'true').default('false'),
+  STREAMING_ENABLED: z
+    .string()
+    .transform((val) => val !== 'false')
+    .pipe(z.boolean())
+    .default('true'),
+  WEBSOCKET_ENABLED: z
+    .string()
+    .transform((val) => val !== 'false')
+    .pipe(z.boolean())
+    .default('true'),
+  SANDBOX_ENABLED: z
+    .string()
+    .transform((val) => val === 'true')
+    .pipe(z.boolean())
+    .default('false'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -75,7 +87,7 @@ export function validateEnv(): Env {
     return validatedEnv;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join('\n');
+      const errors = error.issues.map((err) => `${err.path.join('.')}: ${err.message}`).join('\n');
       throw new Error(`Environment variable validation failed:\n${errors}`);
     }
     throw error;
