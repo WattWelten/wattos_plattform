@@ -30,10 +30,10 @@ WattOS KI ist eine modulare, DSGVO-konforme KI-Plattform für kleine und mittler
 
 ```bash
 # Repository klonen
-git clone https://github.com/WattWelten/wattos-ki.git
-cd wattos-ki
+git clone https://github.com/WattWelten/wattos_plattform.git
+cd wattos_plattform
 
-# Dependencies installieren
+# Dependencies installieren (pnpm mit Turbo)
 pnpm install
 
 # Umgebungsvariablen konfigurieren
@@ -44,38 +44,67 @@ cp .env.example .env
 # Datenbank-Migrationen ausführen
 pnpm db:migrate
 
-# Entwicklungsserver starten
+# Entwicklungsserver starten (alle Services mit Turbo)
 pnpm dev
 ```
 
 ## 🏗️ Projektstruktur
 
 ```
-wattos-ki/
+wattos_plattform/
 ├── apps/
-│   ├── web/              # Next.js Frontend
-│   ├── api-gateway/      # API Gateway (Auth, Rate-Limiting, Proxy)
-│   ├── chat-service/     # Chat-Service (WebSocket/SSE)
-│   ├── rag-service/      # RAG-Service
-│   ├── agent-service/    # Agent-Service (LangGraph)
-│   ├── tool-service/     # Tool-Service
-│   ├── feedback-service/ # Feedback-Service
-│   ├── admin-service/    # Admin-Service
-│   ├── summary-service/  # Summary-Service
-│   ├── avatar-service/   # Avatar-Service
-│   ├── metaverse-service/# Metaverse-Service
-│   ├── ingestion-service/# Ingestion-Service (FastAPI)
-│   └── parsing-service/  # Parsing-Service (FastAPI)
+│   ├── web/                      # Next.js Frontend
+│   ├── gateway/                  # API Gateway (Auth, Rate-Limiting, Proxy)
+│   ├── services/                 # Backend Microservices
+│   │   ├── chat-service/         # Chat-Service (WebSocket/SSE)
+│   │   ├── rag-service/          # RAG-Service
+│   │   ├── agent-service/        # Agent-Service (LangGraph)
+│   │   ├── tool-service/         # Tool-Service
+│   │   ├── feedback-service/      # Feedback-Service
+│   │   ├── admin-service/         # Admin-Service
+│   │   ├── summary-service/       # Summary-Service
+│   │   ├── avatar-service/        # Avatar-Service
+│   │   ├── character-service/     # Character-Service
+│   │   ├── metaverse-service/     # Metaverse-Service
+│   │   ├── ingestion-service/     # Ingestion-Service (FastAPI)
+│   │   ├── llm-gateway/           # LLM Gateway Service
+│   │   ├── crawler-service/       # Crawler-Service
+│   │   ├── customer-intelligence-service/ # Customer Intelligence Service
+│   │   ├── voice-service/         # Voice-Service
+│   │   ├── phone-bot-service/     # Phone Bot Service
+│   │   ├── whatsapp-bot-service/  # WhatsApp Bot Service
+│   │   ├── web-chat-service/      # Web Chat Service
+│   │   ├── agent-generator-service/ # Agent Generator Service
+│   │   ├── dashboard-service/     # Dashboard Service
+│   │   ├── f13-service/           # F13 Service
+│   │   ├── knowledge-enhancement-service/ # Knowledge Enhancement Service
+│   │   ├── monitoring-dashboard-service/ # Monitoring Dashboard Service
+│   │   ├── observability-service/ # Observability Service
+│   │   ├── persona-generator-service/ # Persona Generator Service
+│   │   └── widget-service/        # Widget Service
+│   └── workers/                   # Background Workers
+│       ├── agent-worker/          # Agent Worker
+│       ├── document-worker/       # Document Worker
+│       ├── crawler-scheduler/     # Crawler Scheduler
+│       └── kb-sync-worker/        # Knowledge Base Sync Worker
 ├── packages/
-│   ├── shared/           # Shared Utilities
-│   ├── agents/           # Agent-SDK
-│   ├── vector-store/    # Vector Store Abstractions
-│   └── evaluations/      # Evaluations-Harness
+│   ├── shared/                    # Shared Utilities
+│   ├── agents/                    # Agent-SDK
+│   ├── vector-store/              # Vector Store Abstractions
+│   ├── evaluations/               # Evaluations-Harness
+│   ├── core/                      # Core Package
+│   ├── db/                        # Database Package
+│   ├── document-processor/        # Document Processor
+│   ├── config/                    # Configuration Package
+│   └── addons/                    # Addons Package
 ├── .github/
-│   ├── workflows/        # CI/CD Workflows
-│   └── dependabot.yml    # Dependency Updates
-├── scripts/              # Deployment & Utility Scripts
-└── docs/                 # Dokumentation
+│   ├── workflows/                 # CI/CD Workflows
+│   └── dependabot.yml            # Dependency Updates
+├── scripts/                       # Deployment & Utility Scripts
+├── docs/                          # Dokumentation
+├── infra/                         # Infrastructure Configuration
+├── schemas/                       # JSON Schemas
+└── reports/                       # Reports & Analysis
 ```
 
 ## 🔧 Konfiguration
@@ -86,7 +115,7 @@ Erstellen Sie eine `.env` Datei im Root-Verzeichnis:
 
 ```env
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/wattos_ki
+DATABASE_URL=postgresql://user:password@localhost:5432/wattos_plattform
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -216,4 +245,4 @@ Proprietär - Alle Rechte vorbehalten
 ## 👥 Kontakt
 
 - Website: https://www.wattweiser.com
-- GitHub: https://github.com/WattWelten/wattos-ki
+- GitHub: https://github.com/WattWelten/wattos_plattform
