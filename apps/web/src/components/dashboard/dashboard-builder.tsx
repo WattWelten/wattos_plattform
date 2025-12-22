@@ -93,12 +93,6 @@ export function DashboardBuilder({
     );
   };
 
-  // TODO: These functions will be used when DashboardLayout is implemented
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _unusedRemoveWidget = handleRemoveWidget;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _unusedUpdateWidget = handleUpdateWidget;
-
   const handleSave = async () => {
     setIsLoading(true);
     try {
@@ -157,6 +151,21 @@ export function DashboardBuilder({
         <div className="p-4 border rounded mt-4">
           <p className="text-gray-500">Dashboard Layout (TODO: Implement)</p>
           <p className="text-sm text-gray-400 mt-2">Widgets: {widgets.length}</p>
+          {widgets.length > 0 && (
+            <div className="mt-2">
+              {widgets.map((widget) => (
+                <div key={widget.id} className="flex items-center justify-between p-2 bg-gray-50 rounded mt-1">
+                  <span className="text-sm">{widget.type}</span>
+                  <button
+                    onClick={() => handleRemoveWidget(widget.id)}
+                    className="text-red-500 text-xs"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
