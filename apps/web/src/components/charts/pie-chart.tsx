@@ -32,7 +32,7 @@ export function PieChart({ data, colors = DEFAULT_COLORS, className }: PieChartP
             fill="#8884d8"
             dataKey="value"
           >
-            {data.map((entry, index) => (
+            {data.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
             ))}
           </Pie>
