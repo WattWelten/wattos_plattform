@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Building2, FileCheck, Users, Shield, Lock } from 'lucide-react';
+import { Building2, FileCheck, Users, Shield, Lock } from 'lucide-react';
 
 export default function VerwaltungPage() {
   const useCases = [

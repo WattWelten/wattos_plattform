@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, GraduationCap, BookOpen, Users, Shield, Sparkles } from 'lucide-react';
+import { CheckCircle2, GraduationCap, BookOpen, Users, Shield } from 'lucide-react';
 
 export default function SchulePage() {
   const useCases = [
