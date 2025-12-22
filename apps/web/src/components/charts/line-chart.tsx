@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-interface LineChartProps {
+export interface LineChartProps {
   data: Array<Record<string, any>>;
   dataKey: string;
   lines: Array<{ key: string; name: string; color?: string }>;
