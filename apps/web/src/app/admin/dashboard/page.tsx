@@ -67,6 +67,7 @@ export default function AdminDashboardPage() {
       }, 30000);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [autoRefresh, refetch]);
 
   if (!dashboardData) {

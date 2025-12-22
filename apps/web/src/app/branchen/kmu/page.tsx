@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, TrendingUp, Shield, Zap, Users, FileText } from 'lucide-react';
+import { CheckCircle2, TrendingUp, Zap, Users, FileText } from 'lucide-react';
 
 export default function KMUPage() {
   const useCases = [
