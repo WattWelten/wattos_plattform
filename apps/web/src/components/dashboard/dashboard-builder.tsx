@@ -93,6 +93,12 @@ export function DashboardBuilder({
     );
   };
 
+  // TODO: These functions will be used when DashboardLayout is implemented
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unusedRemoveWidget = handleRemoveWidget;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unusedUpdateWidget = handleUpdateWidget;
+
   const handleSave = async () => {
     setIsLoading(true);
     try {
