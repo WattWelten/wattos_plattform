@@ -15,7 +15,7 @@ Die Railway GitHub App ist installiert, aber nicht für das Repository konfiguri
 
 1. Gehe zu Railway Dashboard → Account → Integrations
 2. Klicke auf **"Configure"** bei GitHub Integration
-3. Wähle Repository: **WattWelten/wattos-ki**
+3. Wähle Repository: **WattWelten/wattos_plattform**
 4. Aktiviere **"Auto-Deploy"** für `main` Branch
 5. Optional: Aktiviere **"Wait for CI"** (wartet auf GitHub Actions)
 
@@ -24,7 +24,7 @@ Die Railway GitHub App ist installiert, aber nicht für das Repository konfiguri
 Für jeden Service im Railway Dashboard:
 
 1. Gehe zu **Service → Settings → GitHub**
-2. Wähle Repository: **WattWelten/wattos-ki**
+2. Wähle Repository: **WattWelten/wattos_plattform**
 3. Wähle Branch: **main** (oder **production**)
 4. Aktiviere **"Auto-Deploy"**
 5. Optional: Aktiviere **"Wait for CI"**
@@ -67,7 +67,7 @@ Der vereinfachte Workflow (`.github/workflows/deploy-railway-simple.yml`) verwen
 1. Gehe zu GitHub → Settings → Applications → Installed GitHub Apps
 2. Finde "Railway"
 3. Prüfe Repository-Zugriff
-4. Aktiviere Zugriff für WattWelten/wattos-ki
+4. Aktiviere Zugriff für WattWelten/wattos_plattform
 
 ### Problem: "Wait for CI" blockiert Deployments
 

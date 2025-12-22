@@ -208,13 +208,22 @@ export class DMSClient {
 
   /**
    * Health Check
+   * 
+   * @note Prüft die Verfügbarkeit der DMS API über den /health Endpoint
+   * 
+   * @returns {Promise<boolean>} true wenn DMS API erreichbar ist, sonst false
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // TODO: DMS Health-Check Endpoint
+      // TODO: DMS Health-Check Endpoint implementieren
+      // Der Endpoint sollte folgende Informationen zurückgeben:
+      // - API Version
+      // - Service Status
+      // - Verfügbare Features
       await this.get('/health', { timeout: 5000 });
       return true;
-    } catch {
+    } catch (error: any) {
+      this.logger.debug(`DMS health check failed: ${error.message}`);
       return false;
     }
   }

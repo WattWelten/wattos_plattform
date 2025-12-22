@@ -431,5 +431,5 @@ OPENSEARCH_URL=http://localhost:9200
 Für Fragen und Support kontaktieren Sie uns unter:
 - Email: support@wattweiser.de
 - Dokumentation: https://docs.wattweiser.de
-- GitHub: https://github.com/wattweiser/wattos-ki
+- GitHub: https://github.com/WattWelten/wattos_plattform
 

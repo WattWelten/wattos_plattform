@@ -14,8 +14,8 @@
 ### 1. Repository klonen
 
 ```bash
-git clone https://github.com/WattWelten/wattos-ki.git
-cd wattos-ki
+git clone https://github.com/WattWelten/wattos_plattform.git
+cd wattos_plattform
 ```
 
 ### 2. Dependencies installieren

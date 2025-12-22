@@ -39,3 +39,7 @@
 1. Python-Services (ingestion-service) von Lint ausschließen oder ruff installieren
 2. Lint für TypeScript-Packages ist erfolgreich
 
+
+
+
+

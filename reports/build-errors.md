@@ -75,3 +75,7 @@
 
 Diese Fehler sind TypeScript-Type-Fehler und müssen behoben werden, bevor der Build erfolgreich ist. Sie sind nicht kritisch für die Funktionalität, aber blockieren den Build-Prozess.
 
+
+
+
+

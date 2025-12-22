@@ -1,0 +1,132 @@
+# Dependencies - nicht für Kontext benötigt
+node_modules/
+.pnp
+.pnp.js
+.pnpm-store/
+
+# Build-Artefakte
+build/
+dist/
+.next/
+out/
+*.tsbuildinfo
+*.map
+*.js.map
+*.d.ts.map
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+.vitest/
+
+# Logs & Debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# Environment & Secrets
+.env
+.env*.local
+.env.production
+.env.development
+.env.test
+.railway-secrets.env
+
+# Cache & Temporary
+.cache/
+.turbo/
+.vercel/
+.railway/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Analysis Reports & Logs (zu groß für Kontext)
+log-analysis-*/
+railway-analysis-*/
+github-workflow-logs-*.txt
+*.pdf
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+
+# IDEs (außer .vscode für Settings)
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large generated files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Reports (können bei Bedarf manuell eingefügt werden)
+reports/*.md
+reports/*.json
+reports/*.txt
+
+# Migration files (zu groß, nicht für Kontext)
+**/migrations/*.sql
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Infrastructure
+infra/
+*.yml
+*.yaml
+!vitest.config.ts
+!vitest.integration.config.ts
+!turbo.json
+!pnpm-workspace.yaml
+!.github/workflows/*.yml
+
+# Scripts (nur bei Bedarf, Setup-Scripts ausgenommen)
+scripts/*.sh
+scripts/*.ps1
+!scripts/setup-cursor-global.ps1
+
+# Documentation (nur bei Bedarf, kann manuell geöffnet werden)
+docs/**/*.md
+!README.md
+
+# TypeScript configs (nur base, nicht alle)
+**/tsconfig.json
+!tsconfig.base.json
+
+# Package files (nur root)
+**/package.json
+!package.json
+
+

@@ -1,0 +1,8 @@
+﻿# Global .cursorrules Â· WattWeiser
+- Kleine Commits (Conventional Commits), keine Secrets.
+- Typecheck â†’ Lint â†’ Test â†’ Build mÃ¼ssen grÃ¼n sein.
+- A11y (WCAG AA), Security (Zod-Guards, XSS-Schutz).
+- 9:16 Avatar oben, Chat unten (CSS-Mask-Seam), DPR Desktopâ‰¤2.0/Mobileâ‰¤1.5.
+- Avaturn T2: material.morphTargets/morphNormals aktiv; keine GLB-Morph-Tracks zur Laufzeit Ã¼berschreiben.
+- Performance: KTX2+Mipmaps, Mobile ohne SSAO, moderates DOF; Code-Splitting.
+- Tests: Vitest/Playwright; E2E prÃ¼ft MBP/FV/TH/AA-Visemes.

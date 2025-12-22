@@ -195,7 +195,7 @@ railway service list
 
 ## Dokumentation
 
-- Workflow Run: https://github.com/WattWelten/wattos-ki/actions/runs/19905865805
+- Workflow Run: https://github.com/WattWelten/wattos_plattform/actions/runs/19905865805
 - Railway Project: https://railway.app/project/a97f01bc-dc80-4941-b911-ed7ebb3efa7a
 
 

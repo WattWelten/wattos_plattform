@@ -25,7 +25,7 @@
 
 **Problem:**
 - Verwendet veraltete Action: `bervProject/railway-deploy@v0.2.5`
-- Service Name: `wattos-ki` (existiert nicht in Railway)
+- Service Name: `wattos_plattform` (existiert nicht in Railway)
 - Sollte unsere Services deployen, nicht einen einzelnen Service
 
 **Lösung:**

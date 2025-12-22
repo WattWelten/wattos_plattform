@@ -36,3 +36,7 @@
 1. Python-Services (ingestion-service) von Type-Check ausschließen oder mypy installieren
 2. Type-Check für TypeScript-Packages ist erfolgreich
 
+
+
+
+

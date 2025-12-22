@@ -48,3 +48,7 @@ Die meisten TypeScript-Packages haben noch keine Tests implementiert. Einige Pac
 3. CI-Pipeline für Tests erweitern
 4. Coverage-Reports automatisch generieren
 
+
+
+
+

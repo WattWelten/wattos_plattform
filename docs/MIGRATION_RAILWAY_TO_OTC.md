@@ -81,8 +81,8 @@ Service Discovery erkennt automatisch Kubernetes über `KUBERNETES_SERVICE_HOST`
 docker login swr.eu-de.otc.t-systems.com
 
 # Images bauen und pushen
-docker build -t swr.eu-de.otc.t-systems.com/wattos-ki/api-gateway:latest -f apps/gateway/Dockerfile .
-docker push swr.eu-de.otc.t-systems.com/wattos-ki/api-gateway:latest
+docker build -t swr.eu-de.otc.t-systems.com/wattos_plattform/api-gateway:latest -f apps/gateway/Dockerfile .
+docker push swr.eu-de.otc.t-systems.com/wattos_plattform/api-gateway:latest
 
 # Für alle Services wiederholen
 ```

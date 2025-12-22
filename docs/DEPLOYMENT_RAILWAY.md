@@ -300,13 +300,13 @@ Alle Services verwenden optimierte Multi-Stage Docker Builds:
 
 ```bash
 # Gateway bauen
-docker build -f apps/gateway/Dockerfile -t wattos-ki-gateway:latest .
+docker build -f apps/gateway/Dockerfile -t wattos_plattform-gateway:latest .
 
 # Chat Service bauen
-docker build -f apps/services/chat-service/Dockerfile -t wattos-ki-chat:latest .
+docker build -f apps/services/chat-service/Dockerfile -t wattos_plattform-chat:latest .
 
 # Ingestion Service (Python) bauen
-docker build -f apps/services/ingestion-service/Dockerfile -t wattos-ki-ingestion:latest .
+docker build -f apps/services/ingestion-service/Dockerfile -t wattos_plattform-ingestion:latest .
 ```
 
 ### Docker Compose

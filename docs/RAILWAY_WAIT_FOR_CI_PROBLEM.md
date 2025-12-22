@@ -3,7 +3,7 @@
 ## Status
 
 ✅ GitHub Integration ist korrekt konfiguriert:
-- Source Repo: WattWelten/wattos-ki ✅
+- Source Repo: WattWelten/wattos_plattform ✅
 - Branch: main ✅
 - Root Directory: / ✅
 - **Wait for CI: Aktiviert** ⚠️

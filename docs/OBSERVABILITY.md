@@ -141,7 +141,7 @@ Für Production wird OpenTelemetry für Distributed Tracing empfohlen:
 // TODO: OpenTelemetry Integration
 import { trace } from '@opentelemetry/api';
 
-const tracer = trace.getTracer('wattos-ki');
+const tracer = trace.getTracer('wattos_plattform');
 const span = tracer.startSpan('llm_call');
 // ... operation
 span.end();
@@ -161,7 +161,7 @@ span.end();
 
 ```yaml
 scrape_configs:
-  - job_name: 'wattos-ki'
+  - job_name: 'wattos_plattform'
     static_configs:
       - targets: ['gateway:3001', 'chat-service:3006']
     metrics_path: '/health/metrics'

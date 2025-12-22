@@ -283,7 +283,7 @@ WattOS KI ist eine umfassende, modulare KI-Plattform, die es ermöglicht, intell
 **WattWeiser GmbH**
 - 📧 Email: support@wattweiser.de
 - 📚 Dokumentation: https://docs.wattweiser.de
-- 💻 GitHub: https://github.com/wattweiser/wattos-ki
+- 💻 GitHub: https://github.com/WattWelten/wattos_plattform
 
 ### Next Steps
 

@@ -369,11 +369,11 @@ healthcheckInterval = 10
 **Gefundene Probleme:**
 
 1. **Staging Deployment:**
-   - Verwendet `service: wattos-ki-staging` (hardcoded)
+   - Verwendet `service: wattos_plattform-staging` (hardcoded)
    - Sollte service-spezifisch sein für Monorepo
 
 2. **Production Deployment:**
-   - Verwendet `service: wattos-ki` (hardcoded)
+   - Verwendet `service: wattos_plattform` (hardcoded)
    - Keine Multi-Service-Strategie
 
 3. **Migration Workflow:**

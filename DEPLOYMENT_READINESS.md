@@ -2,7 +2,7 @@
 
 **Datum**: 2024-12-04  
 **Repository**: `D:\wattos_v2`  
-**Remote**: `https://github.com/WattWelten/wattos-ki.git`
+**Remote**: `https://github.com/WattWelten/wattos_plattform.git`
 
 ## ✅ Git-Status
 

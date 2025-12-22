@@ -19,7 +19,7 @@ Im **GitHub** Tab:
 
 1. **Repository auswählen:**
    - Klicke auf "Connect Repository" oder "Select Repository"
-   - Wähle: **WattWelten/wattos-ki**
+   - Wähle: **WattWelten/wattos_plattform**
 
 2. **Branch auswählen:**
    - Wähle: **main** (oder **production**)

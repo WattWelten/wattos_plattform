@@ -175,7 +175,7 @@ Der Workflow wird automatisch ausgelöst bei:
 
 ### Über GitHub Actions UI
 
-1. Gehe zu: https://github.com/WattWelten/wattos-ki/actions/workflows/deploy-railway.yml
+1. Gehe zu: https://github.com/WattWelten/wattos_plattform/actions/workflows/deploy-railway.yml
 2. Klicke "Run workflow"
 3. Wähle:
    - **Branch:** `main` oder `production`

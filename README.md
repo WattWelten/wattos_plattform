@@ -1,3 +1,7 @@
+﻿> ðŸ§­ **Cursor Global Playbook aktiv** Â· Diesen Leitfaden nutzen wir als Source of Truth.
+> Datei: \docs/CURSOR_GLOBAL_PLAYBOOK.md\ (oder zentral: \WattWelten/cursor.ai\).
+
+
 # WattOS KI - Modulare, DSGVO-konforme KI-Plattform
 
 [![CI](https://github.com/WattWelten/wattos_plattform/actions/workflows/ci.yml/badge.svg)](https://github.com/WattWelten/wattos_plattform/actions/workflows/ci.yml)
@@ -246,3 +250,4 @@ Proprietär - Alle Rechte vorbehalten
 
 - Website: https://www.wattweiser.com
 - GitHub: https://github.com/WattWelten/wattos_plattform
+
