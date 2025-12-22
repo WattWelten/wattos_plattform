@@ -73,11 +73,19 @@ export function decayAll(
 
 /**
  * Enable Morph Targets
- * Aktiviert Morph-Targets auf einem Mesh
+ * Aktiviert Morph-Targets auf einem Mesh oder Scene/Group
  */
-export function enableMorphTargets(mesh: THREE.SkinnedMesh): void {
-  if (mesh.morphTargetInfluences) {
-    mesh.morphTargetInfluences.fill(0);
+export function enableMorphTargets(scene: THREE.Scene | THREE.Group | THREE.SkinnedMesh): void {
+  if (scene instanceof THREE.SkinnedMesh) {
+    if (scene.morphTargetInfluences) {
+      scene.morphTargetInfluences.fill(0);
+    }
+  } else {
+    scene.traverse((object) => {
+      if (object instanceof THREE.SkinnedMesh && object.morphTargetInfluences) {
+        object.morphTargetInfluences.fill(0);
+      }
+    });
   }
 }
 
