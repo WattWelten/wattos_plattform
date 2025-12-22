@@ -98,7 +98,10 @@ export function LLMSwitcher({ currentModel, currentProvider, onModelChange }: LL
                 setSelectedProvider(e.target.value);
                 const provider = providers.find((p) => p.id === e.target.value);
                 if (provider && provider.models.length > 0) {
-                  setSelectedModel(provider.models[0].id);
+                  const firstModel = provider.models[0];
+                  if (firstModel) {
+                    setSelectedModel(firstModel.id);
+                  }
                 }
               }}
             >

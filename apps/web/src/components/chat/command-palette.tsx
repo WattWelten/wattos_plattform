@@ -10,7 +10,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command-palette';
 import { useChatStore } from '@/hooks/use-chat-store';
-import { MessageSquare, Settings, FileText, Bot, Sparkles } from 'lucide-react';
+import { MessageSquare, Settings, FileText, Bot } from 'lucide-react';
 
 interface CommandPaletteProps {
   onClose: () => void;

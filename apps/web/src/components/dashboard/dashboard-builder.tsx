@@ -174,7 +174,22 @@ export function DashboardBuilder({
             </div>
           )}
           {/* TODO: Use handleUpdateWidget when editing widget config */}
-          {selectedWidget && handleUpdateWidget && null}
+          {selectedWidget && (
+            <div className="mt-2 text-xs text-gray-400">
+              Selected: {selectedWidget} (Edit functionality TODO)
+              <button
+                onClick={() => {
+                  const widget = widgets.find((w) => w.id === selectedWidget);
+                  if (widget) {
+                    handleUpdateWidget(widget.id, { ...widget.config });
+                  }
+                }}
+                className="ml-2 text-blue-500"
+              >
+                (Test Update)
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

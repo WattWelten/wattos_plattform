@@ -3,7 +3,7 @@
 import { ChatMessage as ChatMessageType } from '@/types/chat';
 import { Citation } from '@/components/chat/citation';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Link as LinkIcon } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
