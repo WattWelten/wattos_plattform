@@ -140,15 +140,18 @@ export function DashboardBuilder({
       </div>
 
       <div className="dashboard-builder-content">
-        <WidgetLibrary onAddWidget={handleAddWidget} />
+        {/* TODO: Implement WidgetLibrary and DashboardLayout components */}
+        <div className="p-4 border rounded">
+          <p className="text-gray-500">Widget Library (TODO: Implement)</p>
+          <button onClick={() => handleAddWidget('overview')} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
+            Add Overview Widget
+          </button>
+        </div>
 
-        <DashboardLayout
-          widgets={widgets}
-          selectedWidget={selectedWidget}
-          onSelectWidget={setSelectedWidget}
-          onUpdateWidget={handleUpdateWidget}
-          onRemoveWidget={handleRemoveWidget}
-        />
+        <div className="p-4 border rounded mt-4">
+          <p className="text-gray-500">Dashboard Layout (TODO: Implement)</p>
+          <p className="text-sm text-gray-400 mt-2">Widgets: {widgets.length}</p>
+        </div>
       </div>
     </div>
   );
