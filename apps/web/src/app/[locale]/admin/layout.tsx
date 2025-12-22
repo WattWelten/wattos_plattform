@@ -1,9 +1,9 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Link, usePathname } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
+// import { useAuth } from '@/hooks/use-auth';
 import { useParams } from 'next/navigation';
 
 export default function AdminLayout({
