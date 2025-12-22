@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AppleCard, AppleButton } from '@wattweiser/ui';
+// import { AppleCard, AppleButton } from '@wattweiser/ui';
 
 interface Props {
   children: ReactNode;
@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen flex items-center justify-center p-4">
-          <AppleCard padding="lg" className="max-w-md w-full">
+          <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg border">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
               Ein Fehler ist aufgetreten
             </h1>
@@ -43,24 +43,25 @@ export class ErrorBoundary extends Component<Props, State> {
               {this.state.error?.message || 'Ein unerwarteter Fehler ist aufgetreten.'}
             </p>
             <div className="flex gap-4">
-              <AppleButton
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onClick={() => {
                   this.setState({ hasError: false, error: null });
                   window.location.reload();
                 }}
               >
                 Seite neu laden
-              </AppleButton>
-              <AppleButton
-                variant="outline"
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
                 onClick={() => {
                   window.location.href = '/overview';
                 }}
               >
                 Zur Startseite
-              </AppleButton>
+              </button>
             </div>
-          </AppleCard>
+          </div>
         </div>
       );
     }

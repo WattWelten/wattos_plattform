@@ -76,8 +76,8 @@ export interface ConversationMessage {
 }
 
 export async function getConversationMessages(
-  conversationId: string,
-  tenantId: string,
+  _conversationId: string,
+  _tenantId: string,
 ): Promise<ConversationMessage[]> {
   // TODO: Implement API endpoint for conversation messages
   // For now, return empty array
@@ -108,7 +108,7 @@ export async function getCrawls(tenantId: string): Promise<Crawl[]> {
   return apiRequest<Crawl[]>(`/admin/crawls?tenantId=${tenantId}`);
 }
 
-export async function triggerCrawl(tenantId: string, url: string): Promise<void> {
+export async function triggerCrawl(_tenantId: string, url: string): Promise<void> {
   await apiRequest(`/admin/crawls/trigger`, {
     method: 'POST',
     body: JSON.stringify({ url }),

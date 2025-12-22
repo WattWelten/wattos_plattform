@@ -49,7 +49,7 @@ export class ProxyService {
       pathRewrite: {
         [`^/api/${serviceName}`]: `/${serviceName}`,
       },
-      onProxyReq: (proxyReq, req: any) => {
+      onProxyReq: (proxyReq: any, req: any) => {
         // Forward user info to downstream services
         if (req.user) {
           proxyReq.setHeader('X-User-Id', req.user.id);
@@ -57,7 +57,7 @@ export class ProxyService {
           proxyReq.setHeader('X-Tenant-Id', req.user.tenantId || '');
         }
       },
-    });
+    } as any);
   }
 }
 

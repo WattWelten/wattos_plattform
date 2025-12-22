@@ -1,4 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Optional, Inject } from '@nestjs/common';
+// PrismaClient wird zur Laufzeit generiert
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
 import { PrismaClient } from '@prisma/client';
 
 // Optional: MetricsService from @wattweiser/shared (if available)
@@ -49,6 +52,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit() {
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - $connect wird nach Prisma-Generierung verfügbar sein
       await this.$connect();
       this.logger.log('Prisma Client connected to database');
     } catch (error: unknown) {
@@ -60,6 +65,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleDestroy() {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - $disconnect wird nach Prisma-Generierung verfügbar sein
     await this.$disconnect();
     this.logger.log('Prisma Client disconnected from database');
   }

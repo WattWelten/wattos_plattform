@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { FeatureFlagsService, FeatureNotEnabledError } from '../feature-flags.service';
+import { FeatureFlags } from '../types';
 
 /**
  * Feature Guard Metadata Key
@@ -80,7 +81,7 @@ export const createFeatureGuard = (feature: string) => {
       const tenantId = request.headers['x-tenant-id'] || request.user?.tenantId || 'default';
 
       try {
-        await this.featureFlags.requireFeature(tenantId, feature);
+        await this.featureFlags.requireFeature(tenantId, feature as keyof FeatureFlags);
         return true;
       } catch (error) {
         if (error instanceof FeatureNotEnabledError) {

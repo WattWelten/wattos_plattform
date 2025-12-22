@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { FeatureFlagsService } from '../feature-flags.service';
 
@@ -9,9 +9,11 @@ import { FeatureFlagsService } from '../feature-flags.service';
  */
 @Injectable()
 export class FeatureMiddleware implements NestMiddleware {
+  private readonly logger = new Logger(FeatureMiddleware.name);
+
   constructor(private readonly featureFlags: FeatureFlagsService) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: Request, _res: Response, next: NextFunction) {
     const tenantId = (req.headers['x-tenant-id'] as string) || (req as any).user?.tenantId || 'default';
 
     try {
