@@ -6,14 +6,16 @@ import { LineChart, BarChart, PieChart } from '@/components/charts/lazy-charts';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import { Users, MessageSquare, Zap, DollarSign, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState('7d');
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh] = useState(true);
+  // TODO: Implement auto-refresh toggle UI
+  // const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Real-time Updates mit React Query
   const { data: dashboardData, isLoading, refetch } = useQuery({
