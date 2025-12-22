@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-interface BarChartProps {
+export interface BarChartProps {
   data: Array<Record<string, any>>;
   dataKey: string;
   bars: Array<{ key: string; name: string; color?: string }>;

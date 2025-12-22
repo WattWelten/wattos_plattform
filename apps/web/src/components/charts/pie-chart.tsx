@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-interface PieChartProps {
+export interface PieChartProps {
   data: Array<{ name: string; value: number }>;
   colors?: string[];
   className?: string;
