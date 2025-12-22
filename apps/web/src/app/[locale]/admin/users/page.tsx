@@ -11,7 +11,8 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  // TODO: Implement user selection functionality
+  // const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
