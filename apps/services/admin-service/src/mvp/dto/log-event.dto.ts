@@ -16,3 +16,4 @@ export const logEventSchema = z.object({
 
 export type LogEventInput = z.infer<typeof logEventSchema>;
 
+

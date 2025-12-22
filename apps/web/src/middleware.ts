@@ -9,9 +9,6 @@ const intlMiddleware = createMiddleware(routing);
 const protectedRoutes = ['/chat', '/admin', '/onboarding'];
 const adminRoutes = ['/admin'];
 
-// Public routes that don't require authentication
-const publicRoutes = ['/login', '/register', '/', '/lösungen', '/branchen', '/ressourcen', '/partner', '/kontakt'];
-
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const locale = pathname.split('/')[1] || routing.defaultLocale;
@@ -20,7 +17,7 @@ export default async function middleware(request: NextRequest) {
   // Check if route is protected
   const isProtectedRoute = protectedRoutes.some((route) => pathWithoutLocale.startsWith(route));
   const isAdminRoute = adminRoutes.some((route) => pathWithoutLocale.startsWith(route));
-  const isPublicRoute = publicRoutes.some((route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route));
+  // const isPublicRoute = publicRoutes.some((route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route));
 
   // Get auth token from cookies
   const authToken = request.cookies.get('wattweiser_auth_token')?.value;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ChatMessage } from '@/types/chat';
+import { ChatMessage, Citation } from '@/types/chat';
 
 interface ChatHistory {
   id: string;
@@ -16,7 +16,7 @@ interface ChatStore {
   setCurrentChatId: (chatId: string | null) => void;
   addMessage: (message: ChatMessage) => void;
   updateStreamingMessage: (content: string) => void;
-  finalizeStreamingMessage: (citations?: any[]) => void;
+  finalizeStreamingMessage: (citations?: Citation[]) => void;
   setMessages: (messages: ChatMessage[]) => void;
   clearMessages: () => void;
   addChatHistory: (chat: ChatHistory) => void;
@@ -59,11 +59,19 @@ export const useChatStore = create<ChatStore>((set) => ({
   finalizeStreamingMessage: (citations) =>
     set((state) => {
       if (state.streamingMessageId) {
-        const updatedMessages = state.messages.map((msg) =>
-          msg.id === state.streamingMessageId
-            ? { ...msg, citations, isStreaming: false }
-            : msg,
-        );
+        const updatedMessages = state.messages.map((msg) => {
+          if (msg.id === state.streamingMessageId) {
+            const updated: ChatMessage = {
+              ...msg,
+              isStreaming: false,
+            };
+            if (citations !== undefined) {
+              updated.citations = citations;
+            }
+            return updated;
+          }
+          return msg;
+        });
         return { messages: updatedMessages, streamingMessageId: null };
       }
       return { streamingMessageId: null };

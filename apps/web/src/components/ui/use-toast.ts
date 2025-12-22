@@ -99,14 +99,15 @@ export const reducer = (state: State, action: Action): State => {
 
       return {
         ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
-            ? {
-                ...t,
-                open: false,
-              }
-            : t,
-        ),
+        toasts: state.toasts.map((t) => {
+          if (toastId === undefined || t.id === toastId) {
+            return {
+              ...t,
+              open: false as boolean,
+            };
+          }
+          return t;
+        }),
       };
     }
     case 'REMOVE_TOAST':
@@ -181,7 +182,13 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: 'DISMISS_TOAST', toastId }),
+    dismiss: (toastId?: string) => {
+      if (toastId !== undefined) {
+        dispatch({ type: 'DISMISS_TOAST', toastId });
+      } else {
+        dispatch({ type: 'DISMISS_TOAST' });
+      }
+    },
   };
 }
 

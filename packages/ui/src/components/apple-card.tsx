@@ -35,3 +35,4 @@ export const AppleCard = React.forwardRef<HTMLDivElement, AppleCardProps>(
 
 AppleCard.displayName = 'AppleCard';
 
+

@@ -129,3 +129,4 @@ ALTER TABLE "Index" ADD CONSTRAINT "Index_tenantId_fkey" FOREIGN KEY ("tenantId"
 ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+

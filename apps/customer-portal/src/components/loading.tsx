@@ -30,3 +30,4 @@ export function Loading({ className, size = 'md', text }: LoadingProps) {
   );
 }
 
+

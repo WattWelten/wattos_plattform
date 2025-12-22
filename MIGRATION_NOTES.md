@@ -33,3 +33,4 @@ psql $DATABASE_URL -f packages/db/migrations/20250122000000_add_mvp_models/migra
 - `ConversationMessage` - `latencyMs`, `sourcesJsonb` hinzugefügt
 - `Artifact` - `tenantId`, `hash` hinzugefügt, `characterId` optional gemacht
 
+
