@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "incremental": true,
+    "rootDir": ".",
     "plugins": [
       {
         "name": "next"
