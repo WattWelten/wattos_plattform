@@ -40,4 +40,7 @@ export function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+// Export sanitize utilities
+export * from './sanitize';
+
 

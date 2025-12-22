@@ -31,7 +31,11 @@ model Tenant {
   channelSessions ChannelSession[]
   characters Character[]
   roles     Role[]
-  // crawlJobs  CrawlJob[] // TODO: Add CrawlJob model
+  sources   Source[]
+  crawls    Crawl[]
+  events    Event[]
+  configs   Config?
+  indices   Index[]
   // kbArticles KBArticle[] // TODO: Add KBArticle model
   // f13Config  F13Config? // TODO: Add F13Config model
   // dashboards Dashboard[] // TODO: Add Dashboard model
@@ -276,18 +280,27 @@ model Character {
 
 model Artifact {
   id          String   @id @default(uuid())
-  characterId String
+  tenantId    String   // Für Multi-Tenant Support
+  characterId String?
+  sourceId    String?
   name        String
   description String?  @db.Text
-  url         String
+  url         String   @db.Text
+  hash        String?  // Content-Hash für Delta-Detection
   storageType String   @default("local") // local | s3 | url
   metadata    Json     @default("{}")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  character  Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  source      Source?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
 
+  @@index([tenantId])
   @@index([characterId])
+  @@index([sourceId])
+  @@index([hash])
+  @@index([url])
 }
 
 // ============================================
@@ -313,9 +326,12 @@ model Chat {
 model Conversation {
   id        String   @id @default(uuid())
   threadId  String   @unique @default(uuid())
+  sessionId String?  // Session-ID für Tracking
   characterId String?
   userId    String?
   tenantId  String?
+  userAgent String?  @db.Text
+  startedAt DateTime @default(now())
   metadata  Json     @default("{}")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -325,7 +341,10 @@ model Conversation {
 
   @@index([characterId])
   @@index([userId])
+  @@index([tenantId])
   @@index([threadId])
+  @@index([sessionId])
+  @@index([startedAt])
 }
 
 model ConversationMessage {
@@ -334,6 +353,8 @@ model ConversationMessage {
   role          String   // user | assistant | system
   content       String   @db.Text
   citations     Json?
+  latencyMs     Int?     // Latenz in Millisekunden
+  sourcesJsonb  Json?    // Quellen als JSON Array
   metadata      Json     @default("{}")
   createdAt     DateTime @default(now())
 
@@ -604,4 +625,94 @@ model ChannelMessage {
   session     ChannelSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt(sort: Desc)])
+}
+
+// ============================================
+// MVP MODELS: SOURCES, CRAWLS, EVENTS, CONFIGS, INDICES
+// ============================================
+
+model Source {
+  id        String   @id @default(uuid())
+  tenantId  String
+  url       String   @db.Text
+  type      String   // "domain" | "pattern" | "file"
+  enabled   Boolean  @default(true)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  artifacts Artifact[]
+  crawls    Crawl[]
+
+  @@index([tenantId])
+  @@index([url])
+  @@index([enabled])
+}
+
+model Crawl {
+  id          String   @id @default(uuid())
+  tenantId    String
+  sourceId    String?
+  startedAt   DateTime @default(now())
+  finishedAt  DateTime?
+  pages       Int      @default(0)
+  delta       Int      @default(0) // Anzahl neuer/geänderter Seiten
+  status      String   // "pending" | "running" | "completed" | "failed"
+  log         String?  @db.Text
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source      Source?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([sourceId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model Event {
+  id            String   @id @default(uuid())
+  tenantId      String
+  conversationId String?
+  sessionId     String?
+  type          String   // "viseme" | "tts" | "error" | "kpi"
+  payloadJsonb  Json     // Event-spezifische Daten
+  ts            DateTime @default(now())
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([conversationId])
+  @@index([sessionId])
+  @@index([type])
+  @@index([ts])
+}
+
+model Config {
+  tenantId  String   @id
+  jsonb     Json     // No-Code Config als JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model Index {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  statsJsonb  Json     @default("{}") // Statistiken (Anzahl Dokumente, Größe, etc.)
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([name])
 }

@@ -47,7 +47,7 @@ export class ProxyService {
       target,
       changeOrigin: true,
       pathRewrite: {
-        [`^/api/${serviceName}`]: '',
+        [`^/api/${serviceName}`]: `/${serviceName}`,
       },
       onProxyReq: (proxyReq, req: any) => {
         // Forward user info to downstream services

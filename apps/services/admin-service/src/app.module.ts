@@ -7,6 +7,7 @@ import { MetricsModule } from './metrics/metrics.module';
 import { DbModule } from './db/db.module';
 import { KnowledgeSpacesModule } from './knowledge-spaces/knowledge-spaces.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
+import { MvpModule } from './mvp/mvp.module';
 import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@wattweiser/shared';
 import configuration from './config/configuration';
 
@@ -30,6 +31,7 @@ import configuration from './config/configuration';
     DbModule,
     KnowledgeSpacesModule,
     FeatureFlagsModule,
+    MvpModule,
   ],
   controllers: [HealthController],
 })
