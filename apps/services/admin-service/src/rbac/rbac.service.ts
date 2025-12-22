@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@wattweiser/db';
-import { CreateRoleDto, UpdateRoleDto, AssignRoleDto } from './dto/rbac.dto';
+import { CreateRoleDto, UpdateRoleDto } from './dto/rbac.dto';
 
 /**
  * RBAC Service
@@ -192,7 +192,7 @@ export class RbacService {
       throw new NotFoundException(`User ${userId} not found`);
     }
 
-    return user.userRoles.map((ur) => ur.role);
+    return user.userRoles.map((ur: any) => ur.role);
   }
 }
 

@@ -19,7 +19,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*"],
+  "rootDir": ".",`n    "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
 

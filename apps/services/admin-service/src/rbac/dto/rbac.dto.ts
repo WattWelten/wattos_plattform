@@ -21,10 +21,10 @@ export class UpdateRoleDto {
 
 export class AssignRoleDto {
   @IsString()
-  userId: string;
+  userId!: string;
 
   @IsString()
-  roleId: string;
+  roleId!: string;
 }
 
 
