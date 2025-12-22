@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { Suspense, useEffect } from 'react';
 import { AvatarScene } from './AvatarScene';
 import { AvatarSceneSkeleton } from './AvatarSceneSkeleton';
@@ -38,7 +36,6 @@ export function AvatarV2Container({
     sceneConfig,
     visemes,
     audioUrl,
-    isPlaying,
     isLoadingConfig,
     generateAvatar,
   } = useAvatarV2(agentId);
@@ -46,7 +43,7 @@ export function AvatarV2Container({
   // Avatar generieren wenn Text vorhanden
   useEffect(() => {
     if (text && agentId) {
-      generateAvatar(text, voiceId).catch((error) => {
+      generateAvatar(text, voiceId).catch((error: unknown) => {
         if (onError) {
           onError(error instanceof Error ? error : new Error(String(error)));
         }
@@ -63,10 +60,10 @@ export function AvatarV2Container({
       <Suspense fallback={<AvatarSceneSkeleton />}>
         <AvatarScene
           sceneConfig={sceneConfig as AvatarV2SceneConfig}
-          visemes={visemes}
-          audioUrl={audioUrl}
-          onAnimationComplete={onAnimationComplete}
-          onError={onError}
+          {...(visemes !== undefined && { visemes })}
+          {...(audioUrl !== undefined && { audioUrl })}
+          {...(onAnimationComplete && { onAnimationComplete })}
+          {...(onError && { onError })}
           enableControls={enableControls}
           enableEnvironment={enableEnvironment}
         />

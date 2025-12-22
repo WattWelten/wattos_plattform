@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { AvatarV2Props } from './types';
@@ -27,7 +27,6 @@ export function AvatarV2({
   onError,
 }: AvatarV2Props) {
   const groupRef = useRef<THREE.Group>(null);
-  const clockRef = useRef(new THREE.Clock());
   const morphDictRef = useRef<Map<string, { mesh: THREE.SkinnedMesh; idx: number }[]>>(new Map());
 
   // GLTF-Modell laden (falls vorhanden)
@@ -117,23 +116,26 @@ export function AvatarV2({
   useEffect(() => {
     if (audioUrl) {
       const audio = new Audio(audioUrl);
-      audio.play().catch((error) => {
+      audio.play().catch((error: Error) => {
         if (onError) {
           onError(error);
         }
       });
 
-      audio.addEventListener('ended', () => {
+      const handleEnded = () => {
         if (onAnimationComplete) {
           onAnimationComplete();
         }
-      });
+      };
+
+      audio.addEventListener('ended', handleEnded);
 
       return () => {
         audio.pause();
-        audio.removeEventListener('ended', () => {});
+        audio.removeEventListener('ended', handleEnded);
       };
     }
+    return undefined;
   }, [audioUrl, onAnimationComplete, onError]);
 
   // Idle-Animation starten

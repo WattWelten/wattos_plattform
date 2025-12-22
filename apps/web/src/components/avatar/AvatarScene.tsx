@@ -94,8 +94,8 @@ export function AvatarScene({
             config={sceneConfig}
             visemes={visemes}
             audioUrl={audioUrl}
-            onAnimationComplete={onAnimationComplete}
-            onError={onError}
+            {...(onAnimationComplete && { onAnimationComplete })}
+            {...(onError && { onError })}
           />
 
           {/* Controls */}

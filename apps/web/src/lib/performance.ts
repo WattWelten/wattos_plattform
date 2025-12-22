@@ -103,3 +103,16 @@ export function prefetchRoute(href: string) {
     });
   }
 }
+
+/**
+ * Get Capped Device Pixel Ratio
+ * Desktop ≤2.0, Mobile ≤1.5
+ */
+export function getCappedDPR(): number {
+  if (typeof window === 'undefined') {
+    return 1;
+  }
+  const dpr = window.devicePixelRatio || 1;
+  const isMobile = window.innerWidth < 768;
+  return isMobile ? Math.min(dpr, 1.5) : Math.min(dpr, 2.0);
+}
