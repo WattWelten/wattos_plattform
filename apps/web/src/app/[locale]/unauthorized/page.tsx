@@ -9,7 +9,7 @@ export default async function UnauthorizedPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations('Common');
+  // const t = await getTranslations('Common');
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

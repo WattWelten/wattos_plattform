@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LineChart, BarChart, PieChart } from '@/components/charts/lazy-charts';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
+// import { EmptyState } from '@/components/ui/empty-state';
 // import { Badge } from '@/components/ui/badge';
 import { Users, MessageSquare, Zap, DollarSign, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
