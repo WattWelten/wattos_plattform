@@ -72,7 +72,7 @@ export function AvatarV2({
     if (!gltfScene || !groupRef.current) return;
 
     // Decay für alle Morph Targets (Glättung)
-    decayAll(gltfScene, delta, 12);
+    decayAll(morphDictRef.current, 0.1);
 
     // Visemes anwenden
     if (visemes && visemes.length > 0) {

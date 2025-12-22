@@ -16,7 +16,7 @@ export interface MorphDictEntry {
  * Erstellt ein Dictionary für Morph-Targets
  */
 export function buildMorphDict(
-  scene: THREE.Scene,
+  scene: THREE.Scene | THREE.Group | THREE.Object3D,
 ): Map<string, MorphDictEntry[]> {
   const morphDict = new Map<string, MorphDictEntry[]>();
 
@@ -99,11 +99,21 @@ export function filterMorphTracks(animations: THREE.AnimationClip[]): THREE.Anim
  * Enhance Eye Material
  * Verbessert das Augen-Material für bessere Darstellung
  */
-export function enhanceEyeMaterial(mesh: THREE.SkinnedMesh): void {
-  if (mesh.material instanceof THREE.MeshStandardMaterial) {
-    mesh.material.metalness = 0.1;
-    mesh.material.roughness = 0.2;
-    mesh.material.emissive = new THREE.Color(0x000000);
+export function enhanceEyeMaterial(scene: THREE.Scene | THREE.Group | THREE.SkinnedMesh): void {
+  if (scene instanceof THREE.SkinnedMesh) {
+    if (scene.material instanceof THREE.MeshStandardMaterial) {
+      scene.material.metalness = 0.1;
+      scene.material.roughness = 0.2;
+      scene.material.emissive = new THREE.Color(0x000000);
+    }
+  } else {
+    scene.traverse((object) => {
+      if (object instanceof THREE.SkinnedMesh && object.material instanceof THREE.MeshStandardMaterial) {
+        object.material.metalness = 0.1;
+        object.material.roughness = 0.2;
+        object.material.emissive = new THREE.Color(0x000000);
+      }
+    });
   }
 }
 
