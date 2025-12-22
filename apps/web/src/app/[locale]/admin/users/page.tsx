@@ -11,8 +11,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
-  // TODO: Implement user selection functionality
-  // const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -100,7 +99,15 @@ export default function AdminUsersPage() {
                 <td>{user.tenantId}</td>
                 <td>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedUser(user.id)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedUser(user.id);
+                        // TODO: Open edit dialog for user
+                      }}
+                      aria-label={`Edit user ${user.name}`}
+                    >
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button
