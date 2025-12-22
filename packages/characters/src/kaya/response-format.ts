@@ -23,11 +23,19 @@ export function formatKayaResponse(
   steps?: string[],
   escalation?: { phone?: string; email?: string },
 ): KayaResponse {
-  return {
+  const response: KayaResponse = {
     answer,
     sources,
-    steps,
-    escalation,
   };
+  
+  if (steps !== undefined) {
+    response.steps = steps;
+  }
+  
+  if (escalation !== undefined) {
+    response.escalation = escalation;
+  }
+  
+  return response;
 }
 

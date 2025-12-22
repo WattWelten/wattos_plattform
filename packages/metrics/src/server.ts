@@ -28,13 +28,25 @@ export class MetricsServer {
       throw new Error('tenant_id is required');
     }
 
-    await this.service.persistEvent({
+    const eventPayload: EventPayload = {
       tenant_id: tenantId,
-      conversation_id: (payload as EventPayload).conversation_id,
-      session_id: (payload as EventPayload).session_id,
       event: validated,
-      metadata: (payload as EventPayload).metadata,
-    });
+    };
+    
+    const payloadTyped = payload as EventPayload;
+    if (payloadTyped.conversation_id !== undefined) {
+      eventPayload.conversation_id = payloadTyped.conversation_id;
+    }
+    
+    if (payloadTyped.session_id !== undefined) {
+      eventPayload.session_id = payloadTyped.session_id;
+    }
+    
+    if (payloadTyped.metadata !== undefined) {
+      eventPayload.metadata = payloadTyped.metadata;
+    }
+    
+    await this.service.persistEvent(eventPayload);
   }
 }
 

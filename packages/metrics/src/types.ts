@@ -48,9 +48,9 @@ export type Event = z.infer<typeof eventSchema>;
 
 export interface EventPayload {
   tenant_id: string;
-  conversation_id?: string;
-  session_id?: string;
+  conversation_id?: string | undefined;
+  session_id?: string | undefined;
   event: Event;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> | undefined;
 }
 

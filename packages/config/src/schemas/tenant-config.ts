@@ -49,13 +49,13 @@ export const tenantConfigSchema = z.object({
   tenant_id: z.string(),
   character: z.string().default('kaya'),
   locales: z.array(z.string()).default(['de-DE']),
-  sources: sourceConfigSchema.default({}),
-  crawler: crawlerConfigSchema.default({}),
-  retrieval: retrievalConfigSchema.default({}),
+  sources: sourceConfigSchema,
+  crawler: crawlerConfigSchema,
+  retrieval: retrievalConfigSchema,
   skills: z.array(z.string()).default([]),
-  answer_policy: answerPolicySchema.default({}),
-  tts: ttsConfigSchema.default({}),
-  escalation: escalationConfigSchema.default({}),
+  answer_policy: answerPolicySchema,
+  tts: ttsConfigSchema,
+  escalation: escalationConfigSchema,
 });
 
 export type TenantConfig = z.infer<typeof tenantConfigSchema>;

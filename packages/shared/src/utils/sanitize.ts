@@ -8,13 +8,19 @@
  */
 export function sanitizeHtml(html: string): string {
   // DOMPurify wird lazy geladen, um Bundle-Größe zu reduzieren
-  if (typeof window !== 'undefined') {
-    // Client-side: DOMPurify verwenden
-    const DOMPurify = require('dompurify');
-    return DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li'],
-      ALLOWED_ATTR: ['href', 'target'],
-    });
+  // Type-Guard für Browser-Umgebung
+  if (typeof globalThis !== 'undefined' && 'window' in globalThis && typeof (globalThis as any).window !== 'undefined') {
+    try {
+      // Client-side: DOMPurify verwenden
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const DOMPurify = require('dompurify');
+      return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li'],
+        ALLOWED_ATTR: ['href', 'target'],
+      });
+    } catch {
+      // Fallback wenn DOMPurify nicht verfügbar
+    }
   }
   // Server-side: Basis-Sanitization (entferne alle HTML-Tags)
   return html.replace(/<[^>]*>/g, '');

@@ -12,7 +12,7 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "zod": "^4.2.1"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

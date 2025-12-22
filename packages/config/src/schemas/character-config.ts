@@ -19,13 +19,13 @@ export const characterConfigSchema = z.object({
       tone: z.enum(['formal', 'casual', 'friendly', 'professional']).optional(),
     })
     .optional(),
-  customParameters: z.record(z.any()).default({}),
+  customParameters: z.record(z.string(), z.unknown()).default({}),
   knowledgeBase: z
     .object({
       enabled: z.boolean().default(true),
       sources: z.array(z.string()).default([]),
     })
-    .default({}),
+    .optional(),
   voice: z
     .object({
       voiceId: z.string().optional(),

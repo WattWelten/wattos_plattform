@@ -56,17 +56,17 @@ const envSchema = z.object({
     .string()
     .transform((val) => val !== 'false')
     .pipe(z.boolean())
-    .default('true'),
+    .default(true),
   WEBSOCKET_ENABLED: z
     .string()
     .transform((val) => val !== 'false')
     .pipe(z.boolean())
-    .default('true'),
+    .default(true),
   SANDBOX_ENABLED: z
     .string()
     .transform((val) => val === 'true')
     .pipe(z.boolean())
-    .default('false'),
+    .default(false),
 });
 
 export type Env = z.infer<typeof envSchema>;

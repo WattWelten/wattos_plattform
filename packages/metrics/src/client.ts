@@ -47,15 +47,16 @@ export class MetricsClient {
     conversationId?: string,
     sessionId?: string,
   ): Promise<void> {
-    await this.logEvent({
-      conversation_id: conversationId,
-      session_id: sessionId,
+    const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
         type: 'viseme',
         viseme,
         timestamp,
       },
-    });
+    };
+    if (conversationId) payload.conversation_id = conversationId;
+    if (sessionId) payload.session_id = sessionId;
+    await this.logEvent(payload);
   }
 
   /**
@@ -68,8 +69,7 @@ export class MetricsClient {
     latency: number,
     conversationId?: string,
   ): Promise<void> {
-    await this.logEvent({
-      conversation_id: conversationId,
+    const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
         type: 'tts',
         text,
@@ -77,7 +77,9 @@ export class MetricsClient {
         duration,
         latency,
       },
-    });
+    };
+    if (conversationId) payload.conversation_id = conversationId;
+    await this.logEvent(payload);
   }
 
   /**
@@ -89,15 +91,16 @@ export class MetricsClient {
     stack?: string,
     conversationId?: string,
   ): Promise<void> {
-    await this.logEvent({
-      conversation_id: conversationId,
+    const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
         type: 'error',
         error,
         message,
-        stack,
+        ...(stack && { stack }),
       },
-    });
+    };
+    if (conversationId) payload.conversation_id = conversationId;
+    await this.logEvent(payload);
   }
 
   /**
@@ -109,15 +112,16 @@ export class MetricsClient {
     unit?: string,
     conversationId?: string,
   ): Promise<void> {
-    await this.logEvent({
-      conversation_id: conversationId,
+    const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
         type: 'kpi',
         metric,
         value,
-        unit,
+        ...(unit && { unit }),
       },
-    });
+    };
+    if (conversationId) payload.conversation_id = conversationId;
+    await this.logEvent(payload);
   }
 }
 
