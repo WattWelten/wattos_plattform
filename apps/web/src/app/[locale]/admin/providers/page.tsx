@@ -11,7 +11,10 @@ import { Plus, Settings, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminProvidersPage() {
   const queryClient = useQueryClient();
+  // selectedProvider wird für zukünftige Edit-Funktionalität verwendet
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _selectedProvider = selectedProvider;
 
   const { data: providers, isLoading } = useQuery({
     queryKey: ['admin-providers'],

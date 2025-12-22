@@ -11,7 +11,10 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
+  // selectedUser wird für zukünftige Edit-Funktionalität verwendet
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _selectedUser = selectedUser;
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
