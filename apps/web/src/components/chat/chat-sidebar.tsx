@@ -8,7 +8,7 @@ import { MessageSquare, Plus, X, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
-interface ChatSidebarProps {
+export interface ChatSidebarProps {
   onClose: () => void;
   onSelectChat: (chatId: string) => void;
 }

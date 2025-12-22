@@ -12,7 +12,7 @@ import {
 import { useChatStore } from '@/hooks/use-chat-store';
 import { MessageSquare, Settings, FileText, Bot } from 'lucide-react';
 
-interface CommandPaletteProps {
+export interface CommandPaletteProps {
   onClose: () => void;
 }
 
