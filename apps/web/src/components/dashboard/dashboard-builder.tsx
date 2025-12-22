@@ -154,10 +154,17 @@ export function DashboardBuilder({
           {widgets.length > 0 && (
             <div className="mt-2">
               {widgets.map((widget) => (
-                <div key={widget.id} className="flex items-center justify-between p-2 bg-gray-50 rounded mt-1">
+                <div
+                  key={widget.id}
+                  className="flex items-center justify-between p-2 bg-gray-50 rounded mt-1 cursor-pointer"
+                  onClick={() => setSelectedWidget(widget.id)}
+                >
                   <span className="text-sm">{widget.type}</span>
                   <button
-                    onClick={() => handleRemoveWidget(widget.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveWidget(widget.id);
+                    }}
                     className="text-red-500 text-xs"
                   >
                     Remove
@@ -166,6 +173,8 @@ export function DashboardBuilder({
               ))}
             </div>
           )}
+          {/* TODO: Use handleUpdateWidget when editing widget config */}
+          {selectedWidget && handleUpdateWidget && null}
         </div>
       </div>
     </div>
