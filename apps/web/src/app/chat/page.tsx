@@ -7,7 +7,7 @@ import { ChatInput } from '@/components/chat/chat-input';
 import { LazyChatSidebar as ChatSidebar, LazyCommandPalette as CommandPalette } from '@/components/lazy-loading';
 import { LLMSwitcher } from '@/components/chat/llm-switcher';
 import { EmptyState } from '@/components/ui/empty-state';
-import { MessageSquare, Settings } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useChatStore } from '@/hooks/use-chat-store';
 import { io, Socket } from 'socket.io-client';
 

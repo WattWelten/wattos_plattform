@@ -5,7 +5,6 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import { AvatarV2 } from './AvatarV2';
 import { AvatarSceneProps } from './types';
-import { AvatarSceneSkeleton } from './AvatarSceneSkeleton';
 import { getCappedDPR } from '@/lib/performance';
 
 /**
@@ -92,8 +91,8 @@ export function AvatarScene({
           {/* Avatar */}
           <AvatarV2
             config={sceneConfig}
-            visemes={visemes}
-            audioUrl={audioUrl}
+            {...(visemes !== undefined && { visemes })}
+            {...(audioUrl !== undefined && { audioUrl })}
             {...(onAnimationComplete && { onAnimationComplete })}
             {...(onError && { onError })}
           />

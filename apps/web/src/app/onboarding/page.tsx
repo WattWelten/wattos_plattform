@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, ArrowRight, ArrowLeft, Sparkles, Database, Bot, MessageSquare } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ArrowLeft, Sparkles, Database, Bot } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { createCharacter } from '@/lib/api/characters';
 import { createKnowledgeSpace } from '@/lib/api/knowledge-spaces';
@@ -174,7 +174,7 @@ export default function OnboardingPage() {
         <Card>
           <CardHeader>
             <CardTitle>
-              Schritt {step} von {steps.length}: {steps[step - 1].title}
+              Schritt {step} von {steps.length}: {steps[step - 1]?.title || 'Unbekannt'}
             </CardTitle>
             <CardDescription>
               {step === 1 && 'Willkommen bei WattWeiser! Lassen Sie uns gemeinsam starten.'}
