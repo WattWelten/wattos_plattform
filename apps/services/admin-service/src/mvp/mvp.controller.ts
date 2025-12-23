@@ -78,7 +78,7 @@ export class MvpController {
     @Body() config: unknown,
   ) {
     // Zod-Validierung mit tenantConfigSchema
-    const validated = tenantConfigSchema.safeParse({ ...config, tenant_id: id });
+    const validated = tenantConfigSchema.safeParse({ tenant_id: id, ...config });
     if (!validated.success) {
       throw new BadRequestException({
         message: 'Invalid tenant config',

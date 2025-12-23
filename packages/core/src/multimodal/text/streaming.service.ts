@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventBusService } from '../../events/bus.service';
 import { EventDomain, IntentEventSchema } from '../../events/types';
 import { v4 as uuid } from 'uuid';
