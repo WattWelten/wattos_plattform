@@ -384,7 +384,9 @@ export class AvatarV2Service {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      return await this.ttsService.healthCheck();
+      // TtsService hat kein healthCheck - verwende try-catch als Health-Check
+      await this.ttsService.textToSpeech('test', 'test-session', 'test-tenant');
+      return true;
     } catch {
       return false;
     }

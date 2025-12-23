@@ -10,7 +10,7 @@ import { v4 as uuid } from 'uuid';
  */
 @Injectable()
 export class TextStreamingService {
-  private readonly logger = new Logger(TextStreamingService.name);
+  // private readonly logger = new Logger(TextStreamingService.name);
 
   constructor(private readonly eventBus: EventBusService) {}
 

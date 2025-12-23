@@ -48,7 +48,7 @@ export class MvpController {
     if (!validated.success) {
       throw new BadRequestException({
         message: 'Invalid crawl request',
-        errors: validated.error.errors,
+        errors: validated.error.issues,
       });
     }
     return this.mvpService.triggerCrawl(tenantId, validated.data.url, validated.data.schedule);
@@ -82,7 +82,7 @@ export class MvpController {
     if (!validated.success) {
       throw new BadRequestException({
         message: 'Invalid tenant config',
-        errors: validated.error.errors,
+        errors: validated.error.issues,
       });
     }
     return this.mvpService.updateTenantConfig(id, validated.data);
@@ -107,7 +107,7 @@ export class MvpController {
     if (!validated.success) {
       throw new BadRequestException({
         message: 'Invalid event payload',
-        errors: validated.error.errors,
+        errors: validated.error.issues,
       });
     }
     return this.mvpService.logEvent(tenantId, validated.data);
