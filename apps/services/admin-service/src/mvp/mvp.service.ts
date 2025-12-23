@@ -82,7 +82,7 @@ export class MvpService {
           .map((e: any) => (e.payloadJsonb as any)?.score)
           .filter((s: number) => s != null) as number[];
         ragMetrics.avgScore =
-          scores.reduce((a, b) => a + b, 0) / scores.length || 0;
+          scores.reduce((a: number, b: number) => a + b, 0) / scores.length || 0;
 
         // Count top queries
         const queryCounts = new Map<string, number>();
@@ -185,7 +185,7 @@ export class MvpService {
           maxPages: 1500,
           maxDepth: 3,
         }),
-      );
+      ) as { data: { status?: string; id?: string } };
 
       // Update crawl record with crawler-service response
       const responseData = response.data;

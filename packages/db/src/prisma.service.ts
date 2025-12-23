@@ -13,10 +13,10 @@ type MetricsService = {
  * PrismaService - Singleton Service für PrismaClient
  * Verhindert Connection Pool Exhaustion durch mehrfache Instanziierung
  */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error - PrismaClient wird nach `prisma generate` verfügbar sein
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
+export class PrismaService extends (PrismaClient as any) implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
 
   constructor(
