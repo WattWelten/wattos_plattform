@@ -60,19 +60,6 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
         throw error;
       }
     });
-
-    // Proxy für transparente Delegation aller PrismaClient-Methoden
-    // Dies ermöglicht die Verwendung von PrismaService wie PrismaClient
-    return new Proxy(this, {
-      get: (target, prop) => {
-        // Eigene Methoden und Properties haben Priorität
-        if (prop in target && typeof (target as any)[prop] !== 'undefined') {
-          return (target as any)[prop];
-        }
-        // Alle anderen Zugriffe werden an PrismaClient delegiert
-        return (target.client as any)[prop];
-      },
-    }) as PrismaService & PrismaClient;
   }
 
   async onModuleInit() {
@@ -98,8 +85,34 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Direkter Zugriff auf PrismaClient (für erweiterte Nutzung)
+   * 
+   * Verwendung: prismaService.prisma.user.findMany()
+   * Oder: prismaService.client.user.findMany()
    */
   get prisma(): PrismaClient {
     return this.client;
   }
 }
+
+// Proxy für transparente Delegation aller PrismaClient-Methoden
+// Wird außerhalb der Klasse erstellt, um Decorator-Probleme zu vermeiden
+const createPrismaServiceProxy = <T extends PrismaService>(instance: T): T & PrismaClient => {
+  return new Proxy(instance, {
+    get: (target, prop) => {
+      // Eigene Methoden und Properties haben Priorität
+      if (prop in target && typeof (target as any)[prop] !== 'undefined') {
+        const value = (target as any)[prop];
+        // Wenn es eine Funktion ist, binde sie an die Instanz
+        if (typeof value === 'function' && prop !== 'constructor') {
+          return value.bind(target);
+        }
+        return value;
+      }
+      // Alle anderen Zugriffe werden an PrismaClient delegiert
+      return (target.client as any)[prop];
+    },
+  }) as T & PrismaClient;
+};
+
+// Exportiere Factory-Funktion für erweiterte Nutzung
+export { createPrismaServiceProxy };
