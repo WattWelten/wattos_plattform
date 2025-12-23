@@ -35,7 +35,7 @@ export class MvpController {
     @Tenant() tenantId: string,
     @Query('status') status?: string,
   ) {
-    return this.mvpService.getCrawls(tenantId, status);
+    return this.mvpService.getCrawls(tenantId);
   }
 
   @Post('crawls/trigger')

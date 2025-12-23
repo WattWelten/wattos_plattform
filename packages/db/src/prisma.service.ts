@@ -20,7 +20,7 @@ type MetricsService = {
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
   public readonly client: PrismaClient;
-  private readonly metricsService?: MetricsService;
+  private readonly metricsService: MetricsService | undefined;
 
   constructor(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

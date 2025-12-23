@@ -31,7 +31,7 @@ export class TenantConfigDto {
     rate: number;
     pitch: number;
   };
-  escalation: {
+  escalation?: {
     phone?: string;
     email?: string;
   };
