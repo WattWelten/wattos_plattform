@@ -232,7 +232,7 @@ export class AvatarV2Service {
           color: '#1a1a2e',
         },
         renderSettings: {
-          antialias: true,
+          antialiasing: true,
           shadowMap: true,
           toneMapping: 'linear',
         },

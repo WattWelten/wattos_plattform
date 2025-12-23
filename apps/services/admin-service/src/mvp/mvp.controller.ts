@@ -61,7 +61,7 @@ export class MvpController {
 
   @Delete('artifacts/:id')
   async deleteArtifact(
-    @Tenant() tenantId: string,
+    @Tenant() _tenantId: string,
     @Param('id') id: string,
   ) {
     return this.mvpService.deleteArtifact(id);
@@ -78,7 +78,8 @@ export class MvpController {
     @Body() config: unknown,
   ) {
     // Zod-Validierung mit tenantConfigSchema
-    const validated = tenantConfigSchema.safeParse({ tenant_id: id, ...config });
+    const configObj = config && typeof config === 'object' ? config as Record<string, unknown> : {};
+    const validated = tenantConfigSchema.safeParse({ tenant_id: id, ...configObj });
     if (!validated.success) {
       throw new BadRequestException({
         message: 'Invalid tenant config',
