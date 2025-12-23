@@ -15,7 +15,7 @@ export class ReportingController {
   }
 
   @Post(':tenantId')
-  async generateReport(
+  async generateReportPost(
     @Param('tenantId') tenantId: string,
     @Body() body: { type: string; options?: Record<string, any> },
   ) {
