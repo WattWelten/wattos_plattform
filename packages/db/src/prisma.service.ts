@@ -23,6 +23,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly metricsService?: MetricsService;
 
   constructor(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - Decorators werden zur Laufzeit von NestJS verarbeitet
     @Optional() @Inject('MetricsService') metricsService?: MetricsService,
   ) {
     this.metricsService = metricsService;
