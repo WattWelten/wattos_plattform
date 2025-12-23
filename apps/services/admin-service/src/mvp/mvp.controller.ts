@@ -64,7 +64,7 @@ export class MvpController {
     @Tenant() tenantId: string,
     @Param('id') id: string,
   ) {
-    return this.mvpService.deleteArtifact(tenantId, id);
+    return this.mvpService.deleteArtifact(id);
   }
 
   @Get('tenants/:id/config')
