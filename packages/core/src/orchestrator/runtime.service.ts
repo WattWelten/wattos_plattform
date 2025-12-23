@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EventBusService } from '../events/bus.service';
-import { Event, EventHandler } from '../events/types';
+// import { EventBusService } from '../events/bus.service';
+import { Event } from '../events/types';
 
 /**
  * Agent Runtime
