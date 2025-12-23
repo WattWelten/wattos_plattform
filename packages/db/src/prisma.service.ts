@@ -19,7 +19,7 @@ type MetricsService = {
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
-  private readonly client: PrismaClient;
+  public readonly client: PrismaClient;
   private readonly metricsService?: MetricsService;
 
   constructor(
