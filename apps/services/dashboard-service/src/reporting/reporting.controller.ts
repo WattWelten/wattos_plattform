@@ -15,11 +15,10 @@ export class ReportingController {
   }
 
   @Post(':tenantId')
-  async generateReportPost(
+  async createReport(
     @Param('tenantId') tenantId: string,
     @Body() body: { type: string; options?: Record<string, any> },
   ) {
     return await this.reportingService.generateReport(tenantId, body.type, body.options);
   }
 }
-
