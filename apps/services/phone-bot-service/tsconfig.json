@@ -1,4 +1,4 @@
-{
+﻿{
   "extends": "../../../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
@@ -19,7 +19,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
   },
-  "rootDir": ".",`n    "include": ["src/**/*"],
+  "rootDir": ".",    "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
 

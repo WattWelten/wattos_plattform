@@ -23,7 +23,7 @@ export const FEATURE_KEY = 'feature';
  * ```
  */
 export const Feature = (feature: string) => {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => {
     Reflect.defineMetadata(FEATURE_KEY, feature, descriptor.value);
   };
 };

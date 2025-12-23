@@ -18,12 +18,12 @@ export class TtsService {
    * Text zu Audio konvertieren (nicht-streaming)
    */
   async textToSpeech(
-    text: string,
+    _text: string,
     sessionId: string,
     tenantId: string,
-    language?: string,
-    voice?: string,
-    prosody?: ProsodyConfig,
+    _language?: string,
+    _voice?: string,
+    _prosody?: ProsodyConfig,
   ): Promise<Buffer> {
     // TODO: Integration mit TTS-Provider (OpenAI, ElevenLabs, Azure, etc.)
     this.logger.debug(`Processing TTS for session: ${sessionId}`);

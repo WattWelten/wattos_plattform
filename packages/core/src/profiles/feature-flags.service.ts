@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { FeatureFlags } from './types';
 

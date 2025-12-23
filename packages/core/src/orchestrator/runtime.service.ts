@@ -18,9 +18,9 @@ export interface Agent {
 export class AgentRuntimeService {
   private readonly logger = new Logger(AgentRuntimeService.name);
   private readonly agents: Map<string, Agent> = new Map();
-  private handlers: Map<string, EventHandler[]> = new Map();
+  // private _handlers: Map<string, EventHandler[]> = new Map();
 
-  constructor(private readonly eventBus: EventBusService) {}
+  constructor(/* private readonly _eventBus: EventBusService */) {}
 
   /**
    * Agent registrieren

@@ -79,14 +79,14 @@ export class MvpService {
       ragMetrics.totalSearches = searchEvents.length;
       if (searchEvents.length > 0) {
         const scores = searchEvents
-          .map((e) => (e.payloadJsonb as any)?.score)
+          .map((e: any) => (e.payloadJsonb as any)?.score)
           .filter((s: number) => s != null) as number[];
         ragMetrics.avgScore =
           scores.reduce((a, b) => a + b, 0) / scores.length || 0;
 
         // Count top queries
         const queryCounts = new Map<string, number>();
-        searchEvents.forEach((e) => {
+        searchEvents.forEach((e: any) => {
           const query = (e.payloadJsonb as any)?.query;
           if (query) {
             queryCounts.set(query, (queryCounts.get(query) || 0) + 1);
@@ -125,7 +125,7 @@ export class MvpService {
       skip: offset,
     });
 
-    return conversations.map((c) => ({
+    return conversations.map((c: any) => ({
       id: c.id,
       sessionId: c.sessionId || '',
       startedAt: c.startedAt.toISOString(),
@@ -179,7 +179,7 @@ export class MvpService {
       // Call crawler-service via HTTP
       const crawlerUrl = this.serviceDiscovery.getServiceUrl('crawler-service', 3015);
       const response = await firstValueFrom(
-        this.httpService.post(`${crawlerUrl}/api/v1/crawler/start`, {
+        this.httpService.post<{ status?: string; id?: string }>(`${crawlerUrl}/api/v1/crawler/start`, {
           url: crawlUrl,
           tenantId,
           maxPages: 1500,
@@ -188,11 +188,12 @@ export class MvpService {
       );
 
       // Update crawl record with crawler-service response
+      const responseData = response.data;
       await this.prisma.crawl.update({
         where: { id: crawl.id },
         data: {
-          status: response.data.status || 'running',
-          externalId: response.data.id,
+          status: responseData.status || 'running',
+          externalId: responseData.id,
         },
       });
 
@@ -306,7 +307,7 @@ export class MvpService {
       orderBy: { ts: 'asc' },
     });
 
-    return events.map((e) => ({
+    return events.map((e: any) => ({
       viseme: (e.payloadJsonb as any).viseme,
       timestamp: new Date(e.ts).getTime(),
     }));
