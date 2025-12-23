@@ -11,7 +11,7 @@ export const logEventSchema = z.object({
     query: z.string().optional(),
     score: z.number().min(0).max(1).optional(),
   }).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type LogEventInput = z.infer<typeof logEventSchema>;
