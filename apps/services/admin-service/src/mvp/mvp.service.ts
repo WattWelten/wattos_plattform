@@ -31,7 +31,7 @@ export class MvpService {
     const sessionsPerDay = conversations.length; // Simplified
     const fcr = 0.75; // Placeholder - should calculate from feedback
     const latencies = conversations
-      .flatMap((c) => c.messages)
+      .flatMap((c: any) => c.messages)
       .map((m: any) => m.latencyMs)
       .filter((l: number) => l != null) as number[];
 

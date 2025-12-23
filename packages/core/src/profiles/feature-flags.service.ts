@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { FeatureFlags } from './types';
 
@@ -19,7 +19,7 @@ export class FeatureNotEnabledError extends Error {
  */
 @Injectable()
 export class FeatureFlagsService {
-  private readonly logger = new Logger(FeatureFlagsService.name);
+  // private readonly logger = new Logger(FeatureFlagsService.name);
 
   constructor(private readonly profileService: ProfileService) {}
 

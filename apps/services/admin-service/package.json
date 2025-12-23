@@ -17,6 +17,7 @@
     "@nestjs/core": "^11.1.9",
     "@nestjs/platform-express": "^11.1.9",
     "@nestjs/throttler": "^6.5.0",
+    "@wattweiser/config": "workspace:*",
     "@wattweiser/db": "workspace:*",
     "@wattweiser/shared": "workspace:*",
     "class-transformer": "^0.5.1",
