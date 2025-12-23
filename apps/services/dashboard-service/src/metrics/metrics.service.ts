@@ -40,7 +40,7 @@ export class MetricsService {
 
     // Aggregiere Metrics nach Typ
     const aggregated = metrics.reduce(
-      (acc: Record<string, any>, r: any) => {
+      (acc: Record<string, { count: number; total: number }>, r: { type: string | null }) => {
         const type = r.type || 'unknown';
         if (!acc[type]) {
           acc[type] = { count: 0, total: 0 };
@@ -49,7 +49,7 @@ export class MetricsService {
         acc[type].total += 1;
         return acc;
       },
-      {} as Record<string, any>,
+      {} as Record<string, { count: number; total: number }>,
     );
 
     return {
