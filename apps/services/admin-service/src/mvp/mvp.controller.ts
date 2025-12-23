@@ -33,7 +33,7 @@ export class MvpController {
   @Get('crawls')
   async getCrawls(
     @Tenant() tenantId: string,
-    @Query('status') status?: string,
+    @Query('status') _status?: string,
   ) {
     return this.mvpService.getCrawls(tenantId);
   }

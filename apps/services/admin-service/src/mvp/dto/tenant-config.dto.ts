@@ -19,13 +19,13 @@ export class TenantConfigDto {
     };
   };
   skills: string[];
-  answer_policy: {
+  answer_policy?: {
     style: string;
     show_sources: boolean;
     show_date: boolean;
     max_tokens: number;
   };
-  tts: {
+  tts?: {
     voice: string;
     visemes: boolean;
     rate: number;
