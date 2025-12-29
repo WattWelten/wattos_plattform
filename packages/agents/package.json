@@ -14,8 +14,8 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@langchain/anthropic": "^1.3.2",
-    "@langchain/core": "^1.1.7",
+    "@langchain/anthropic": "^1.3.3",
+    "@langchain/core": "^1.1.8",
     "@langchain/langgraph": "^1.0.7",
     "@langchain/openai": "^1.2.0",
     "@wattweiser/shared": "workspace:*",
