@@ -37,10 +37,10 @@ export class AnalyticsService {
 
     return {
       totalConversations: conversations.length,
-      totalMessages: conversations.reduce((sum, c) => sum + c.messages.length, 0),
+      totalMessages: conversations.reduce((sum: number, c: any) => sum + c.messages.length, 0),
       avgMessagesPerConversation:
         conversations.length > 0
-          ? conversations.reduce((sum, c) => sum + c.messages.length, 0) / conversations.length
+          ? conversations.reduce((sum: number, c: any) => sum + c.messages.length, 0) / conversations.length
           : 0,
       timeRange,
     };
@@ -59,7 +59,7 @@ export class AnalyticsService {
     };
 
     const ms = ranges[timeRange] || ranges['7d'];
-    return new Date(now.getTime() - ms);
+    return new Date(now.getTime() - (ms ?? 0));
   }
 }
 
