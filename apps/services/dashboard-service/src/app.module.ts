@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { HttpModule } from '@nestjs/axios';
+// import { HttpModule } from '@nestjs/axios';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { MetricsModule } from './metrics/metrics.module';
@@ -12,7 +12,7 @@ import { ReportingModule } from './reporting/reporting.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    HttpModule,
+    // HttpModule,
     DashboardModule,
     AnalyticsModule,
     MetricsModule,
