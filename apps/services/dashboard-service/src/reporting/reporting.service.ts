@@ -3,7 +3,7 @@ import { ReportGeneratorService } from './report-generator.service';
 
 @Injectable()
 export class ReportingService {
-  private readonly logger = new Logger(ReportingService.name);
+  // private readonly logger = new Logger(ReportingService.name);
 
   constructor(private readonly reportGenerator: ReportGeneratorService) {}
 

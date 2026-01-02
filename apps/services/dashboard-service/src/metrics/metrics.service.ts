@@ -72,7 +72,7 @@ export class MetricsService {
     };
 
     const ms = ranges[timeRange] || ranges['1h'];
-    return new Date(now.getTime() - ms);
+    return new Date(now.getTime() - (ms ?? 0));
   }
 }
 

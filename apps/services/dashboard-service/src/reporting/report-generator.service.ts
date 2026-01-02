@@ -3,7 +3,7 @@ import { PrismaClient } from '@wattweiser/db';
 
 @Injectable()
 export class ReportGeneratorService {
-  private readonly logger = new Logger(ReportGeneratorService.name);
+  // private readonly logger = new Logger(ReportGeneratorService.name);
   private readonly prisma: PrismaClient;
 
   constructor() {
@@ -46,7 +46,7 @@ export class ReportGeneratorService {
     return {
       type: 'conversations',
       total: conversations.length,
-      conversations: conversations.map((c) => ({
+      conversations: conversations.map((c: any) => ({
         id: c.id,
         startedAt: c.startedAt,
         messageCount: c.messages.length,
@@ -69,7 +69,7 @@ export class ReportGeneratorService {
     return {
       type: 'metrics',
       total: events.length,
-      events: events.map((e) => ({
+      events: events.map((e: any) => ({
         id: e.id,
         type: e.type,
         timestamp: e.ts,
