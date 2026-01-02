@@ -162,7 +162,7 @@ export class AgentService {
       const graph = this.graphService.createAgentGraph(agentId, agentData.toolsConfig as string[]);
 
       // Agent-Run in DB erstellen
-      const agentRun = await this.prisma.agentRun.create({
+      const agentRun = await this.prismaService.client.agentRun.create({
         data: {
           agentId,
           userId,

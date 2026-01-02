@@ -144,7 +144,7 @@ export class WidgetService {
       ...(updateDto.config && updateDto.config),
     };
 
-    const widget = await this.prisma.widget.update({
+    const widget = await this.prismaService.client.widget.update({
       where: { id: widgetId },
       data: {
         ...(updateDto.name && { name: updateDto.name }),
@@ -306,7 +306,7 @@ export class WidgetService {
    * A/B-Test-Varianten abrufen
    */
   async getABTestVariants(tenantId: string, baseWidgetId: string): Promise<any[]> {
-    const baseWidget = await this.prisma.widget.findFirst({
+    const baseWidget = await this.prismaService.client.widget.findFirst({
       where: {
         id: baseWidgetId,
         tenantId,
@@ -318,7 +318,7 @@ export class WidgetService {
     }
 
     // Alle Varianten mit gleichem Namen (aber unterschiedlicher abTestVariant)
-    const variants = await this.prisma.widget.findMany({
+    const variants = await this.prismaService.client.widget.findMany({
       where: {
         tenantId,
         name: baseWidget.name,
