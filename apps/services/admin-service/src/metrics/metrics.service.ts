@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 /**
  * Metrics Service
@@ -8,25 +8,22 @@ import { PrismaClient } from '@wattweiser/db';
 @Injectable()
 export class MetricsService {
   private readonly logger = new Logger(MetricsService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Dashboard-Metriken
    */
   async getDashboardMetrics(tenantId: string) {
     const [users, chats, agentRuns, llmUsage] = await Promise.all([
-      this.prisma.user.count({ where: { tenantId } }),
-      this.prisma.chat.count({ where: { tenantId } }),
-      this.prisma.agentRun.count({
+      this.prismaService.client.user.count({ where: { tenantId } }),
+      this.prismaService.client.chat.count({ where: { tenantId } }),
+      this.prismaService.client.agentRun.count({
         where: {
           agent: { tenantId },
         },
       }),
-      this.prisma.lLMUsage.findMany({
+      this.prismaService.client.lLMUsage.findMany({
         where: { tenantId },
         select: {
           costUsd: true,
@@ -36,10 +33,10 @@ export class MetricsService {
       }),
     ]);
 
-    const totalCost = llmUsage.reduce((sum, usage) => sum + Number(usage.costUsd), 0);
-    const totalTokens = llmUsage.reduce((sum, usage) => sum + usage.totalTokens, 0);
+    const totalCost = llmUsage.reduce((sum: number, usage: any) => sum + Number(usage.costUsd), 0);
+    const totalTokens = llmUsage.reduce((sum: number, usage: any) => sum + usage.totalTokens, 0);
 
-    const usageByProvider = llmUsage.reduce((acc, usage) => {
+    const usageByProvider = llmUsage.reduce((acc: Record<string, { cost: number; tokens: number }>, usage: any) => {
       const provider = usage.provider;
       if (!acc[provider]) {
         acc[provider] = { cost: 0, tokens: 0 };
@@ -77,31 +74,39 @@ export class MetricsService {
       }
     }
 
-    const usage = await this.prisma.lLMUsage.findMany({
+    const usage = await this.prismaService.client.lLMUsage.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalCost = usage.reduce((sum, u) => sum + Number(u.costUsd), 0);
-    const totalTokens = usage.reduce((sum, u) => sum + u.totalTokens, 0);
+    const totalCost = usage.reduce((sum: number, u: any) => sum + Number(u.costUsd), 0);
+    const totalTokens = usage.reduce((sum: number, u: any) => sum + u.totalTokens, 0);
 
-    const byProvider = usage.reduce((acc, u) => {
-      if (!acc[u.provider]) {
-        acc[u.provider] = { cost: 0, tokens: 0, count: 0 };
+    const byProvider = usage.reduce((acc: Record<string, { cost: number; tokens: number; count: number }>, u: any) => {
+      const provider = u.provider;
+      if (!acc[provider]) {
+        acc[provider] = { cost: 0, tokens: 0, count: 0 };
       }
-      acc[u.provider].cost += Number(u.costUsd);
-      acc[u.provider].tokens += u.totalTokens;
-      acc[u.provider].count += 1;
+      const entry = acc[provider];
+      if (entry) {
+        entry.cost += Number(u.costUsd);
+        entry.tokens += u.totalTokens;
+        entry.count += 1;
+      }
       return acc;
     }, {} as Record<string, { cost: number; tokens: number; count: number }>);
 
-    const byModel = usage.reduce((acc, u) => {
-      if (!acc[u.model]) {
-        acc[u.model] = { cost: 0, tokens: 0, count: 0 };
+    const byModel = usage.reduce((acc: Record<string, { cost: number; tokens: number; count: number }>, u: any) => {
+      const model = u.model;
+      if (!acc[model]) {
+        acc[model] = { cost: 0, tokens: 0, count: 0 };
       }
-      acc[u.model].cost += Number(u.costUsd);
-      acc[u.model].tokens += u.totalTokens;
-      acc[u.model].count += 1;
+      const entry = acc[model];
+      if (entry) {
+        entry.cost += Number(u.costUsd);
+        entry.tokens += u.totalTokens;
+        entry.count += 1;
+      }
       return acc;
     }, {} as Record<string, { cost: number; tokens: number; count: number }>);
 
@@ -126,24 +131,24 @@ export class MetricsService {
       where.agentId = agentId;
     }
 
-    const runs = await this.prisma.agentRun.findMany({
+    const runs = await this.prismaService.client.agentRun.findMany({
       where,
       include: {
         agent: true,
       },
     });
 
-    const completed = runs.filter((r) => r.status === 'completed');
-    const failed = runs.filter((r) => r.status === 'failed');
+    const completed = runs.filter((r: any) => r.status === 'completed');
+    const failed = runs.filter((r: any) => r.status === 'failed');
 
     const avgDuration = completed.length > 0
-      ? completed.reduce((sum, r) => {
+      ? completed.reduce((sum: number, r: any) => {
           const metrics = r.metrics as any;
           return sum + (metrics.duration || 0);
         }, 0) / completed.length
       : 0;
 
-    const byAgent = runs.reduce((acc, r) => {
+    const byAgent = runs.reduce((acc: Record<string, { total: number; completed: number; failed: number; avgDuration: number }>, r: any) => {
       if (!acc[r.agentId]) {
         acc[r.agentId] = {
           total: 0,
@@ -152,14 +157,17 @@ export class MetricsService {
           avgDuration: 0,
         };
       }
-      acc[r.agentId].total += 1;
-      if (r.status === 'completed') {
-        acc[r.agentId].completed += 1;
-        const metrics = r.metrics as any;
-        acc[r.agentId].avgDuration += metrics.duration || 0;
-      }
-      if (r.status === 'failed') {
-        acc[r.agentId].failed += 1;
+      const agentEntry = acc[r.agentId];
+      if (agentEntry) {
+        agentEntry.total += 1;
+        if (r.status === 'completed') {
+          agentEntry.completed += 1;
+          const metrics = r.metrics as any;
+          agentEntry.avgDuration += metrics.duration || 0;
+        }
+        if (r.status === 'failed') {
+          agentEntry.failed += 1;
+        }
       }
       return acc;
     }, {} as Record<string, { total: number; completed: number; failed: number; avgDuration: number }>);

@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { CreateRoleDto, UpdateRoleDto } from './dto/rbac.dto';
 
 /**
@@ -9,17 +9,14 @@ import { CreateRoleDto, UpdateRoleDto } from './dto/rbac.dto';
 @Injectable()
 export class RbacService {
   private readonly logger = new Logger(RbacService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Rolle erstellen
    */
   async createRole(tenantId: string, dto: CreateRoleDto) {
-    const role = await this.prisma.role.create({
+    const role = await this.prismaService.client.role.create({
       data: {
         tenantId,
         name: dto.name,
@@ -35,7 +32,7 @@ export class RbacService {
    * Rolle aktualisieren
    */
   async updateRole(roleId: string, dto: UpdateRoleDto) {
-    const role = await this.prisma.role.findUnique({
+    const role = await this.prismaService.client.role.findUnique({
       where: { id: roleId },
     });
 
@@ -43,7 +40,7 @@ export class RbacService {
       throw new NotFoundException(`Role ${roleId} not found`);
     }
 
-    const updated = await this.prisma.role.update({
+    const updated = await this.prismaService.client.role.update({
       where: { id: roleId },
       data: {
         name: dto.name,
@@ -59,7 +56,7 @@ export class RbacService {
    * Rolle löschen
    */
   async deleteRole(roleId: string) {
-    const role = await this.prisma.role.findUnique({
+    const role = await this.prismaService.client.role.findUnique({
       where: { id: roleId },
     });
 
@@ -67,7 +64,7 @@ export class RbacService {
       throw new NotFoundException(`Role ${roleId} not found`);
     }
 
-    await this.prisma.role.delete({
+    await this.prismaService.client.role.delete({
       where: { id: roleId },
     });
 
@@ -79,7 +76,7 @@ export class RbacService {
    * Rollen auflisten
    */
   async listRoles(tenantId: string) {
-    return this.prisma.role.findMany({
+    return this.prismaService.client.role.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
     });
@@ -89,7 +86,7 @@ export class RbacService {
    * Rolle abrufen
    */
   async getRole(roleId: string) {
-    const role = await this.prisma.role.findUnique({
+    const role = await this.prismaService.client.role.findUnique({
       where: { id: roleId },
     });
 
@@ -105,7 +102,7 @@ export class RbacService {
    */
   async assignRole(userId: string, roleId: string) {
     // Prüfen ob Rolle existiert
-    const role = await this.prisma.role.findUnique({
+    const role = await this.prismaService.client.role.findUnique({
       where: { id: roleId },
     });
 
@@ -114,7 +111,7 @@ export class RbacService {
     }
 
     // Prüfen ob User existiert
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prismaService.client.user.findUnique({
       where: { id: userId },
     });
 
@@ -123,7 +120,7 @@ export class RbacService {
     }
 
     // User-Role-Zuweisung in DB speichern
-    await this.prisma.userRole.upsert({
+    await this.prismaService.client.userRole.upsert({
       where: {
         userId_roleId: {
           userId,
@@ -145,7 +142,7 @@ export class RbacService {
    * Berechtigungen prüfen
    */
   async checkPermission(userId: string, permission: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prismaService.client.user.findUnique({
       where: { id: userId },
       include: {
         userRoles: {
@@ -177,7 +174,7 @@ export class RbacService {
    * User-Rollen abrufen
    */
   async getUserRoles(userId: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prismaService.client.user.findUnique({
       where: { id: userId },
       include: {
         userRoles: {

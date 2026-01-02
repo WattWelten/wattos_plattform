@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaModule } from '@wattweiser/db';
 import { RbacModule } from './rbac/rbac.module';
 import { AuditModule } from './audit/audit.module';
 import { MetricsModule } from './metrics/metrics.module';
@@ -23,6 +24,7 @@ import configuration from './config/configuration';
         limit: 100, // 100 requests per minute
       },
     ]),
+    PrismaModule,
     ObservabilityModule,
     ServiceDiscoveryModule,
     RbacModule,

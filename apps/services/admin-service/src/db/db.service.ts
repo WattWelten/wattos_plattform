@@ -1,18 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 @Injectable()
 export class DbService {
   private readonly logger = new Logger(DbService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   async createDocument(dto: { id: string; knowledgeSpaceId: string; fileName: string; filePath: string; fileType?: string; fileSize: number }) {
     try {
-      const document = await this.prisma.document.upsert({
+      const document = await this.prismaService.client.document.upsert({
         where: { id: dto.id },
         update: {
           fileName: dto.fileName,
@@ -43,7 +40,7 @@ export class DbService {
       const createdChunks = [];
       
       for (const chunk of chunks) {
-        const created = await this.prisma.chunk.upsert({
+        const created = await this.prismaService.client.chunk.upsert({
           where: { id: chunk.id },
           update: {
             content: chunk.content,
@@ -72,7 +69,7 @@ export class DbService {
   }
 
   async getDocument(id: string) {
-    const document = await this.prisma.document.findUnique({
+    const document = await this.prismaService.client.document.findUnique({
       where: { id },
       include: {
         chunks: true,

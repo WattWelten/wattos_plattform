@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { HttpService } from '@nestjs/axios';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
 import { firstValueFrom } from 'rxjs';
@@ -10,18 +10,16 @@ import { logEventSchema } from './dto/log-event.dto';
 @Injectable()
 export class MvpService {
   private readonly logger = new Logger(MvpService.name);
-  private readonly prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly httpService: HttpService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   async getMetrics(tenantId: string) {
     // Calculate KPIs
-    const conversations = await this.prisma.conversation.findMany({
+    const conversations = await this.prismaService.client.conversation.findMany({
       where: { tenantId },
       include: {
         messages: true,
@@ -40,7 +38,7 @@ export class MvpService {
         ? latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)]
         : 0;
 
-    const artifacts = await this.prisma.artifact.findMany({
+    const artifacts = await this.prismaService.client.artifact.findMany({
       where: { tenantId },
     });
     const contentFreshness =
@@ -67,7 +65,7 @@ export class MvpService {
 
     try {
       // Calculate from events (RAG-Service doesn't have metrics endpoint yet)
-      const searchEvents = await this.prisma.event.findMany({
+      const searchEvents = await this.prismaService.client.event.findMany({
         where: {
           tenantId,
           type: 'search',
@@ -115,7 +113,7 @@ export class MvpService {
     limit = 50,
     offset = 0,
   ) {
-    const conversations = await this.prisma.conversation.findMany({
+    const conversations = await this.prismaService.client.conversation.findMany({
       where: { tenantId },
       include: {
         messages: true,
@@ -135,13 +133,13 @@ export class MvpService {
   }
 
   async getSources(tenantId: string) {
-    return this.prisma.source.findMany({
+    return this.prismaService.client.source.findMany({
       where: { tenantId },
     });
   }
 
   async getCrawls(tenantId: string) {
-    return this.prisma.crawl.findMany({
+    return this.prismaService.client.crawl.findMany({
       where: { tenantId },
       orderBy: { startedAt: 'desc' },
       take: 20,
@@ -153,7 +151,7 @@ export class MvpService {
     let crawlUrl = url;
     if (!url && schedule) {
       // If schedule provided but no URL, get from source config
-      const source = await this.prisma.source.findFirst({
+      const source = await this.prismaService.client.source.findFirst({
         where: { tenantId },
       });
       if (source) {
@@ -166,7 +164,7 @@ export class MvpService {
     }
 
     // Create crawl record in DB
-    const crawl = await this.prisma.crawl.create({
+    const crawl = await this.prismaService.client.crawl.create({
       data: {
         tenantId,
         url: crawlUrl,
@@ -189,7 +187,7 @@ export class MvpService {
 
       // Update crawl record with crawler-service response
       const responseData = response.data;
-      await this.prisma.crawl.update({
+      await this.prismaService.client.crawl.update({
         where: { id: crawl.id },
         data: {
           status: responseData.status || 'running',
@@ -202,7 +200,7 @@ export class MvpService {
     } catch (error: any) {
       this.logger.error(`Failed to trigger crawl: ${error.message}`);
       // Update crawl status to failed
-      await this.prisma.crawl.update({
+      await this.prismaService.client.crawl.update({
         where: { id: crawl.id },
         data: { status: 'failed' },
       });
@@ -211,21 +209,21 @@ export class MvpService {
   }
 
   async getArtifacts(tenantId: string) {
-    return this.prisma.artifact.findMany({
+    return this.prismaService.client.artifact.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async deleteArtifact(id: string) {
-    await this.prisma.artifact.delete({
+    await this.prismaService.client.artifact.delete({
       where: { id },
     });
     return { success: true };
   }
 
   async getTenantConfig(tenantId: string) {
-    const config = await this.prisma.config.findUnique({
+    const config = await this.prismaService.client.config.findUnique({
       where: { tenantId },
     });
 
@@ -276,7 +274,7 @@ export class MvpService {
       tenant_id: tenantId,
     });
 
-    await this.prisma.config.upsert({
+    await this.prismaService.client.config.upsert({
       where: { tenantId },
       create: {
         tenantId,
@@ -302,7 +300,7 @@ export class MvpService {
       where.type = type;
     }
 
-    const events = await this.prisma.event.findMany({
+    const events = await this.prismaService.client.event.findMany({
       where,
       orderBy: { ts: 'asc' },
     });
@@ -317,7 +315,7 @@ export class MvpService {
     // Validierung mit Zod Schema (aus log-event.dto.ts)
     const validated = logEventSchema.parse(payload);
     
-    const event = await this.prisma.event.create({
+    const event = await this.prismaService.client.event.create({
       data: {
         tenantId,
         conversationId: validated.conversation_id,

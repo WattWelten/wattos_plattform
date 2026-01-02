@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { AuditLogQueryDto } from './dto/audit.dto';
 
 /**
@@ -9,11 +9,8 @@ import { AuditLogQueryDto } from './dto/audit.dto';
 @Injectable()
 export class AuditService {
   private readonly logger = new Logger(AuditService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Audit-Logs abrufen
@@ -48,7 +45,7 @@ export class AuditService {
     }
 
     const [logs, total] = await Promise.all([
-      this.prisma.auditLog.findMany({
+      this.prismaService.client.auditLog.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         take: query.limit || 100,
@@ -69,7 +66,7 @@ export class AuditService {
    * Audit-Log abrufen
    */
   async getAuditLog(logId: string) {
-    return this.prisma.auditLog.findUnique({
+    return this.prismaService.client.auditLog.findUnique({
       where: { id: logId },
     });
   }
@@ -91,13 +88,13 @@ export class AuditService {
     }
 
     const [totalLogs, actionsByType, topUsers] = await Promise.all([
-      this.prisma.auditLog.count({ where }),
-      this.prisma.auditLog.groupBy({
+      this.prismaService.client.auditLog.count({ where }),
+      this.prismaService.client.auditLog.groupBy({
         by: ['action'],
         where,
         _count: true,
       }),
-      this.prisma.auditLog.groupBy({
+      this.prismaService.client.auditLog.groupBy({
         by: ['userId'],
         where: { ...where, userId: { not: null } },
         _count: true,
@@ -108,11 +105,11 @@ export class AuditService {
 
     return {
       totalLogs,
-      actionsByType: actionsByType.map((item) => ({
+      actionsByType: actionsByType.map((item: any) => ({
         action: item.action,
         count: item._count,
       })),
-      topUsers: topUsers.map((item) => ({
+      topUsers: topUsers.map((item: any) => ({
         userId: item.userId,
         count: item._count,
       })),
