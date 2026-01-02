@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@wattweiser/db';
 
 @Injectable()
 export class AnalyticsService {
-  private readonly logger = new Logger(AnalyticsService.name);
+  // private readonly logger = new Logger(AnalyticsService.name);
   private readonly prisma: PrismaClient;
 
   constructor() {
