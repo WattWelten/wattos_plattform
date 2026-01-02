@@ -12,7 +12,7 @@ export class ReportingController {
     @Query('options') options?: string,
   ) {
     const parsedOptions = options ? JSON.parse(options) : {};
-    return await this.reportingService.generateReport(tenantId, type, parsedOptions);
+    return this.reportingService.generateReport(tenantId, type, parsedOptions);
   }
 
   @Post(':tenantId')
@@ -20,6 +20,6 @@ export class ReportingController {
     @Param('tenantId') tenantId: string,
     @Body() body: { type: string; options?: Record<string, any> },
   ) {
-    return await this.reportingService.generateReport(tenantId, body.type, body.options);
+    return this.reportingService.generateReport(tenantId, body.type, body.options);
   }
 }
