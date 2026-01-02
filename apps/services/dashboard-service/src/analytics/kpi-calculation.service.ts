@@ -5,7 +5,7 @@ export class KpiCalculationService {
   /**
    * KPI berechnen
    */
-  calculateKPI(data: any): any {
+  calculateKPI(_data: any): any {
     // MVP: Placeholder für KPI-Berechnungen
     return {
       score: 0,

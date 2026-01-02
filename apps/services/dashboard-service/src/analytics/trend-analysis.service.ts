@@ -5,7 +5,7 @@ export class TrendAnalysisService {
   /**
    * Trend-Analyse durchführen
    */
-  analyzeTrend(data: any[]): any {
+  analyzeTrend(_data: any[]): any {
     // MVP: Placeholder für Trend-Analysen
     return {
       trend: 'stable',
