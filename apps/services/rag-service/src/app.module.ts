@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaModule } from '@wattweiser/db';
 import { SearchModule } from './search/search.module';
 import { ContextModule } from './context/context.module';
 import { CitationsModule } from './citations/citations.module';
@@ -19,6 +20,7 @@ import configuration from './config/configuration';
         limit: 100, // 100 requests per minute
       },
     ]),
+    PrismaModule,
     ObservabilityModule,
     CacheModule,
     ServiceDiscoveryModule,

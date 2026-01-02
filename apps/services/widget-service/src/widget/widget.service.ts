@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { EmbeddingCodeGeneratorService } from './embedding-code-generator.service';
 import { CreateWidgetConfigDto } from './dto/create-widget-config.dto';
 import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
@@ -12,13 +12,11 @@ import { UpdateWidgetConfigDto } from './dto/update-widget-config.dto';
 @Injectable()
 export class WidgetService {
   private readonly logger = new Logger(WidgetService.name);
-  private readonly prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly codeGenerator: EmbeddingCodeGeneratorService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Widget erstellen
@@ -29,7 +27,7 @@ export class WidgetService {
   ): Promise<any> {
     this.logger.log(`Creating widget for tenant: ${tenantId}`, { name: createDto.name });
 
-    const widget = await this.prisma.widget.create({
+    const widget = await this.prismaService.client.widget.create({
       data: {
         tenantId,
         characterId: createDto.characterId || null,
@@ -59,7 +57,7 @@ export class WidgetService {
       ...widget.config as any,
     });
 
-    await this.prisma.widget.update({
+    await this.prismaService.client.widget.update({
       where: { id: widget.id },
       data: { embeddingCode },
     });
@@ -71,7 +69,7 @@ export class WidgetService {
    * Widget abrufen
    */
   async getWidget(tenantId: string, widgetId: string): Promise<any> {
-    const widget = await this.prisma.widget.findFirst({
+    const widget = await this.prismaService.client.widget.findFirst({
       where: {
         id: widgetId,
         tenantId,
@@ -99,7 +97,7 @@ export class WidgetService {
       type?: string;
     },
   ): Promise<any[]> {
-    const widgets = await this.prisma.widget.findMany({
+    const widgets = await this.prismaService.client.widget.findMany({
       where: {
         tenantId,
         ...(options?.characterId && { characterId: options.characterId }),
@@ -125,7 +123,7 @@ export class WidgetService {
     widgetId: string,
     updateDto: UpdateWidgetConfigDto,
   ): Promise<any> {
-    const existingWidget = await this.prisma.widget.findFirst({
+    const existingWidget = await this.prismaService.client.widget.findFirst({
       where: {
         id: widgetId,
         tenantId,
@@ -170,7 +168,7 @@ export class WidgetService {
       ...widget.config as any,
     });
 
-    await this.prisma.widget.update({
+    await this.prismaService.client.widget.update({
       where: { id: widget.id },
       data: { embeddingCode },
     });
@@ -182,7 +180,7 @@ export class WidgetService {
    * Widget löschen
    */
   async deleteWidget(tenantId: string, widgetId: string): Promise<void> {
-    const widget = await this.prisma.widget.findFirst({
+    const widget = await this.prismaService.client.widget.findFirst({
       where: {
         id: widgetId,
         tenantId,
@@ -193,7 +191,7 @@ export class WidgetService {
       throw new NotFoundException(`Widget not found: ${widgetId}`);
     }
 
-    await this.prisma.widget.delete({
+    await this.prismaService.client.widget.delete({
       where: { id: widgetId },
     });
 
@@ -217,7 +215,7 @@ export class WidgetService {
     });
 
     // Code in DB speichern
-    await this.prisma.widget.update({
+    await this.prismaService.client.widget.update({
       where: { id: widgetId },
       data: { embeddingCode: code },
     });
@@ -235,7 +233,7 @@ export class WidgetService {
     sessionId?: string,
     userId?: string,
   ): Promise<void> {
-    await this.prisma.widgetAnalytics.create({
+    await this.prismaService.client.widgetAnalytics.create({
       data: {
         widgetId,
         eventType,
@@ -260,7 +258,7 @@ export class WidgetService {
       eventType?: string;
     },
   ): Promise<any> {
-    const widget = await this.prisma.widget.findFirst({
+    const widget = await this.prismaService.client.widget.findFirst({
       where: {
         id: widgetId,
         tenantId,
@@ -271,7 +269,7 @@ export class WidgetService {
       throw new NotFoundException(`Widget not found: ${widgetId}`);
     }
 
-    const analytics = await this.prisma.widgetAnalytics.findMany({
+    const analytics = await this.prismaService.client.widgetAnalytics.findMany({
       where: {
         widgetId,
         ...(options?.startDate && { timestamp: { gte: options.startDate } }),

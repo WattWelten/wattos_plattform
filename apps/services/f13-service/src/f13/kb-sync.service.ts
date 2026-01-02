@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { F13Client } from '@wattweiser/f13';
 
 /**
@@ -10,13 +10,11 @@ import { F13Client } from '@wattweiser/f13';
 @Injectable()
 export class KBSyncService {
   private readonly logger = new Logger(KBSyncService.name);
-  private readonly prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly f13Client: F13Client,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * KB-Artikel zu F13-OS synchronisieren
@@ -33,7 +31,7 @@ export class KBSyncService {
     status: string;
   }> {
     try {
-      const article = await this.prisma.kBArticle.findUnique({
+      const article = await this.prismaService.client.kBArticle.findUnique({
         where: { id: kbArticleId },
       });
 
@@ -52,7 +50,7 @@ export class KBSyncService {
       }
 
       // Status auf "syncing" setzen
-      await this.prisma.kBArticle.update({
+      await this.prismaService.client.kBArticle.update({
         where: { id: kbArticleId },
         data: {
           f13SyncStatus: 'syncing',
@@ -75,7 +73,7 @@ export class KBSyncService {
       const f13ArticleId = f13Response.id || f13Response.data?.id;
 
       // Status auf "synced" setzen
-      await this.prisma.kBArticle.update({
+      await this.prismaService.client.kBArticle.update({
         where: { id: kbArticleId },
         data: {
           f13SyncStatus: 'synced',
@@ -97,7 +95,7 @@ export class KBSyncService {
       this.logger.error(`KB sync failed: ${errorMessage}`, errorStack, { kbArticleId });
 
       // Status auf "error" setzen
-      await this.prisma.kBArticle.update({
+      await this.prismaService.client.kBArticle.update({
         where: { id: kbArticleId },
         data: {
           f13SyncStatus: 'error',
@@ -120,7 +118,7 @@ export class KBSyncService {
     skipped: number;
   }> {
     try {
-      const config = await this.prisma.f13Config.findUnique({
+      const config = await this.prismaService.client.f13Config.findUnique({
         where: { tenantId },
       });
 
@@ -130,7 +128,7 @@ export class KBSyncService {
       }
 
       // Artikel finden, die synchronisiert werden müssen
-      const articlesToSync = await this.prisma.kBArticle.findMany({
+      const articlesToSync = await this.prismaService.client.kBArticle.findMany({
         where: {
           tenantId,
           status: 'published',
@@ -141,7 +139,7 @@ export class KBSyncService {
             {
               AND: [
                 { f13SyncStatus: 'synced' },
-                { updatedAt: { gt: this.prisma.kBArticle.fields.syncedAt } },
+                { updatedAt: { gt: this.prismaService.client.kBArticle.fields.syncedAt } },
               ],
             },
           ],
@@ -192,7 +190,7 @@ export class KBSyncService {
    */
   async healthCheck(tenantId: string): Promise<boolean> {
     try {
-      const config = await this.prisma.f13Config.findUnique({
+      const config = await this.prismaService.client.f13Config.findUnique({
         where: { tenantId },
       });
 

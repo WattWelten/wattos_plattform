@@ -32,11 +32,8 @@ const MODEL_RATES: Record<string, { prompt: number; completion: number }> = {
 @Injectable()
 export class CostTrackingService {
   private readonly logger = new Logger(CostTrackingService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Berechnet die Kosten für einen LLM-Aufruf ohne sie zu speichern
@@ -63,7 +60,7 @@ export class CostTrackingService {
 
       // In Datenbank persistieren
       if (input.tenantId) {
-        await this.prisma.lLMUsage.create({
+        await this.prismaService.client.lLMUsage.create({
           data: {
             tenantId: input.tenantId,
             provider: input.provider,
@@ -110,7 +107,7 @@ export class CostTrackingService {
         if (endDate) where.createdAt.lte = endDate;
       }
 
-      const usage = await this.prisma.lLMUsage.findMany({
+      const usage = await this.prismaService.client.lLMUsage.findMany({
         where,
         orderBy: { createdAt: 'desc' },
       });

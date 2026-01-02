@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 /**
  * KPI Service
@@ -8,17 +8,14 @@ import { PrismaClient } from '@wattweiser/db';
 @Injectable()
 export class KpiService {
   private readonly logger = new Logger(KpiService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * KPIs für Agent berechnen
    */
   async calculateKPIs(agentId: string, timeRange?: { start: Date; end: Date }) {
-    const runs = await this.prisma.agentRun.findMany({
+    const runs = await this.prismaService.client.agentRun.findMany({
       where: {
         agentId,
         createdAt: timeRange

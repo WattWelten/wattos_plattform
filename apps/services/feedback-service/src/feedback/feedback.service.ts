@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 
 /**
@@ -9,11 +9,8 @@ import { CreateFeedbackDto } from './dto/create-feedback.dto';
 @Injectable()
 export class FeedbackService {
   private readonly logger = new Logger(FeedbackService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Feedback erstellen
@@ -25,7 +22,7 @@ export class FeedbackService {
       }
 
       // Feedback in DB speichern
-      const feedback = await this.prisma.feedback.create({
+      const feedback = await this.prismaService.client.feedback.create({
         data: {
           userId: dto.userId,
           type: dto.type,
@@ -53,7 +50,7 @@ export class FeedbackService {
    */
   async getChatFeedback(chatId: string) {
     try {
-      const feedbacks = await this.prisma.feedback.findMany({
+      const feedbacks = await this.prismaService.client.feedback.findMany({
         where: {
           metadata: {
             path: ['resourceId'],
@@ -96,7 +93,7 @@ export class FeedbackService {
    */
   async getAgentFeedback(agentId: string) {
     try {
-      const feedbacks = await this.prisma.feedback.findMany({
+      const feedbacks = await this.prismaService.client.feedback.findMany({
         where: {
           metadata: {
             path: ['resourceId'],
@@ -139,7 +136,7 @@ export class FeedbackService {
    */
   async getFeedbackStats(tenantId: string) {
     try {
-      const allFeedback = await this.prisma.feedback.findMany({
+      const allFeedback = await this.prismaService.client.feedback.findMany({
         where: {
           metadata: {
             path: ['tenantId'],

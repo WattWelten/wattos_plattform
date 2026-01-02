@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { BaseAgent, AgentConfig, AgentState } from '@wattweiser/agents';
 import { GraphService } from '../graph/graph.service';
 import { GraphStateService } from '../graph/graph-state.service';
@@ -14,15 +14,13 @@ import { GraphState } from '../graph/graph-state.service';
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
   private agents: Map<string, BaseAgent> = new Map();
-  private prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly graphService: GraphService,
     private readonly graphStateService: GraphStateService,
     private readonly configService: ConfigService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Agent-Run starten
@@ -30,7 +28,7 @@ export class AgentService {
   async runAgent(agentId: string, input: string, userId?: string) {
     try {
       // Agent aus DB laden
-      const agentData = await this.prisma.agent.findUnique({
+      const agentData = await this.prismaService.client.agent.findUnique({
         where: { id: agentId },
       });
 
@@ -52,7 +50,7 @@ export class AgentService {
       const agentRun = await agent!.run(input, userId);
 
       // In DB speichern
-      await this.prisma.agentRun.create({
+      await this.prismaService.client.agentRun.create({
         data: {
           id: agentRun.id,
           agentId: agentRun.agentId,
@@ -78,7 +76,7 @@ export class AgentService {
    */
   async resumeRun(runId: string, approval: any): Promise<any> {
     try {
-      const agentRun = await this.prisma.agentRun.findUnique({
+      const agentRun = await this.prismaService.client.agentRun.findUnique({
         where: { id: runId },
         include: { agent: true },
       });
@@ -129,7 +127,7 @@ export class AgentService {
       const result = await this.graphService.executeGraph(graph, initialState);
 
       // Agent-Run aktualisieren
-      await this.prisma.agentRun.update({
+      await this.prismaService.client.agentRun.update({
         where: { id: runId },
         data: {
           status: 'completed',
@@ -152,7 +150,7 @@ export class AgentService {
   async runAgentWithGraph(agentId: string, input: string, userId?: string) {
     try {
       // Agent aus DB laden
-      const agentData = await this.prisma.agent.findUnique({
+      const agentData = await this.prismaService.client.agent.findUnique({
         where: { id: agentId },
       });
 
@@ -216,7 +214,7 @@ export class AgentService {
       const toolCallsCount = Object.keys(result.toolResults).length;
 
       // Agent-Run aktualisieren
-      await this.prisma.agentRun.update({
+      await this.prismaService.client.agentRun.update({
         where: { id: agentRun.id },
         data: {
           output,
@@ -286,7 +284,7 @@ export class AgentService {
    * Agent-Run Status abrufen
    */
   async getRunStatus(runId: string) {
-    const run = await this.prisma.agentRun.findUnique({
+    const run = await this.prismaService.client.agentRun.findUnique({
       where: { id: runId },
     });
 

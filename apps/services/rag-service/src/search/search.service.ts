@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { IVectorStore, VectorStoreFactory, VectorStoreConfig } from '@wattweiser/vector-store';
 import { CacheService } from '@wattweiser/shared';
 import { SearchResult, SearchRequest } from './interfaces/search.interface';
@@ -12,14 +12,13 @@ import { SearchResult, SearchRequest } from './interfaces/search.interface';
 @Injectable()
 export class SearchService {
   private readonly logger = new Logger(SearchService.name);
-  private prisma: PrismaClient;
   private vectorStore: IVectorStore | null = null;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly cacheService?: CacheService,
   ) {
-    this.prisma = new PrismaClient();
     this.initializeVectorStore();
   }
 
@@ -66,7 +65,7 @@ export class SearchService {
 
     try {
       // Wissensraum validieren
-      const knowledgeSpace = await this.prisma.knowledgeSpace.findUnique({
+      const knowledgeSpace = await this.prismaService.client.knowledgeSpace.findUnique({
         where: { id: request.knowledgeSpaceId },
       });
 
@@ -91,7 +90,7 @@ export class SearchService {
 
       // Chunks aus DB abrufen (optimiert: select statt include für bessere Performance)
       const chunkIds = results.map((r) => r.id);
-      const chunks = await this.prisma.chunk.findMany({
+      const chunks = await this.prismaService.client.chunk.findMany({
         where: {
           id: { in: chunkIds },
         },

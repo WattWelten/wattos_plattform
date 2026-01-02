@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HttpModule } from '@nestjs/axios';
+import { PrismaModule } from '@wattweiser/db';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation';
 import { LlmModule } from './llm/llm.module';
@@ -21,6 +22,7 @@ import { ObservabilityModule, ResilienceModule } from '@wattweiser/shared';
         limit: 120,
       },
     ]),
+    PrismaModule,
     HttpModule.register({ timeout: 1000 * 30 }),
     ObservabilityModule,
     ResilienceModule,

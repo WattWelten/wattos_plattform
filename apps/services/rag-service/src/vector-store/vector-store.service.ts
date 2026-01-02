@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { IVectorStore, VectorStoreFactory, VectorStoreConfig } from '@wattweiser/vector-store';
 import { VECTOR_STORE_TYPES } from '@wattweiser/shared';
 
@@ -12,10 +12,11 @@ import { VECTOR_STORE_TYPES } from '@wattweiser/shared';
 export class VectorStoreService {
   private readonly logger = new Logger(VectorStoreService.name);
   private vectorStore: IVectorStore | null = null;
-  private prisma: PrismaClient;
 
-  constructor(private readonly configService: ConfigService) {
-    this.prisma = new PrismaClient();
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService,
+  ) {
     this.initialize();
   }
 
@@ -26,7 +27,7 @@ export class VectorStoreService {
       let connection: any;
       if (vectorStoreType === VECTOR_STORE_TYPES.PGVECTOR) {
         // Prisma Client als Connection für pgvector
-        connection = this.prisma;
+        connection = this.prismaService.client;
       } else if (vectorStoreType === VECTOR_STORE_TYPES.OPENSEARCH) {
         // OpenSearch Client (wenn implementiert)
         const opensearchUrl = this.configService.get<string>('OPENSEARCH_URL', 'http://localhost:9200');

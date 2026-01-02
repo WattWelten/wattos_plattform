@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaModule } from '@wattweiser/db';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@wattweiser/shared';
 import configuration from './config/configuration';
@@ -17,6 +18,7 @@ import configuration from './config/configuration';
         limit: 100,
       },
     ]),
+    PrismaModule,
     ObservabilityModule,
     ServiceDiscoveryModule,
     FeedbackModule,

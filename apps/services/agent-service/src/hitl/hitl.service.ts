@@ -1,5 +1,5 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
@@ -13,18 +13,16 @@ import { ServiceDiscoveryService } from '@wattweiser/shared';
 @Injectable()
 export class HitlService {
   private readonly logger = new Logger(HitlService.name);
-  private prisma: PrismaClient;
   private pendingApprovals: Map<string, any> = new Map();
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => AgentService))
     private readonly agentService: AgentService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Approval anfordern
@@ -55,7 +53,7 @@ export class HitlService {
       await this.sendNotification(approverId, approval);
     } else {
       // Fallback: Notification an Agent-Besitzer oder Admin
-      const agentRun = await this.prisma.agentRun.findUnique({
+      const agentRun = await this.prismaService.client.agentRun.findUnique({
         where: { id: runId },
         include: { agent: { include: { tenant: { include: { users: { include: { userRoles: { include: { role: true } } } } } } } } } },
       });
@@ -73,7 +71,7 @@ export class HitlService {
     }
 
     // Agent-Run Status aktualisieren
-    await this.prisma.agentRun.update({
+    await this.prismaService.client.agentRun.update({
       where: { id: runId },
       data: { status: 'waiting_approval' },
     });
@@ -87,7 +85,7 @@ export class HitlService {
   private async sendNotification(userId: string, approval: any): Promise<void> {
     try {
       // User aus DB laden
-      const user = await this.prisma.user.findUnique({
+      const user = await this.prismaService.client.user.findUnique({
         where: { id: userId },
       });
 
@@ -227,7 +225,7 @@ export class HitlService {
   private async resumeAgentRun(runId: string, approval: any): Promise<void> {
     try {
       // Agent-Run aus DB laden
-      const agentRun = await this.prisma.agentRun.findUnique({
+      const agentRun = await this.prismaService.client.agentRun.findUnique({
         where: { id: runId },
         include: { agent: true },
       });
@@ -237,7 +235,7 @@ export class HitlService {
       }
 
       // Status auf "running" setzen
-      await this.prisma.agentRun.update({
+      await this.prismaService.client.agentRun.update({
         where: { id: runId },
         data: { status: 'running' },
       });
@@ -262,7 +260,7 @@ export class HitlService {
    */
   private async cancelAgentRun(runId: string, reason?: string): Promise<void> {
     try {
-      await this.prisma.agentRun.update({
+      await this.prismaService.client.agentRun.update({
         where: { id: runId },
         data: {
           status: 'failed',
