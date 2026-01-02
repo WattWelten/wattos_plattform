@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaModule } from '@wattweiser/db';
 import { ChatModule } from './chat/chat.module';
 import { ConversationsModule } from './conversations/conversations.module';
 import { WebSocketModule } from './websocket/websocket.module';
@@ -21,6 +22,7 @@ import configuration from './config/configuration';
         limit: 100, // 100 requests per minute
       },
     ]),
+    PrismaModule,
     ObservabilityModule,
     ServiceDiscoveryModule,
     ChatModule,

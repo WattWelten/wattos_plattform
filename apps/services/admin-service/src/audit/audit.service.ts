@@ -51,7 +51,7 @@ export class AuditService {
         take: query.limit || 100,
         skip: query.offset || 0,
       }),
-      this.prisma.auditLog.count({ where }),
+      this.prismaService.client.auditLog.count({ where }),
     ]);
 
     return {

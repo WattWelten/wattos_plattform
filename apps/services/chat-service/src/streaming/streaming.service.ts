@@ -4,7 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { Observable } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 import { SendMessageDto } from '../chat/dto/send-message.dto';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
 
 /**
@@ -14,15 +14,13 @@ import { ServiceDiscoveryService } from '@wattweiser/shared';
 @Injectable()
 export class StreamingService {
   private readonly logger = new Logger(StreamingService.name);
-  private prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Chat-Message streamen
@@ -127,12 +125,12 @@ export class StreamingService {
       response.data.on('end', async () => {
         // Finale Nachricht in DB speichern
         try {
-          const chat = await this.prisma.chat.findUnique({
+          const chat = await this.prismaService.client.chat.findUnique({
             where: { id: chatId },
           });
 
           if (chat) {
-            await this.prisma.message.create({
+            await this.prismaService.client.message.create({
               data: {
                 chatId,
                 role: 'assistant',
@@ -261,12 +259,12 @@ export class StreamingService {
       response.data.on('end', async () => {
         // Finale Nachricht in DB speichern
         try {
-          const conversation = await this.prisma.conversation.findUnique({
+          const conversation = await this.prismaService.client.conversation.findUnique({
             where: { threadId },
           });
 
           if (conversation) {
-            await this.prisma.conversationMessage.create({
+            await this.prismaService.client.conversationMessage.create({
               data: {
                 conversationId: conversation.id,
                 role: 'assistant',
@@ -275,7 +273,7 @@ export class StreamingService {
               },
             });
 
-            await this.prisma.conversation.update({
+            await this.prismaService.client.conversation.update({
               where: { id: conversation.id },
               data: { updatedAt: new Date() },
             });

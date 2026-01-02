@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ChatRequest, ChatResponse, ChatMessage } from './interfaces/chat.interface';
@@ -13,15 +13,13 @@ import { StreamingService } from '../streaming/streaming.service';
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
-  private prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly streamingService: StreamingService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Chat-Nachricht senden
@@ -29,7 +27,7 @@ export class ChatService {
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     try {
       // Chat aus DB laden oder erstellen
-      let chat = await this.prisma.chat.findUnique({
+      let chat = await this.prismaService.client.chat.findUnique({
         where: { id: request.chatId },
         include: {
           messages: {
@@ -43,7 +41,7 @@ export class ChatService {
       }
 
       // User-Nachricht speichern
-      const userMessage = await this.prisma.message.create({
+      const userMessage = await this.prismaService.client.message.create({
         data: {
           chatId: request.chatId,
           role: 'user',
@@ -82,7 +80,7 @@ export class ChatService {
       const assistantContent = response.data.choices[0]?.message?.content || '';
 
       // Assistant-Nachricht speichern
-      const assistantMessage = await this.prisma.message.create({
+      const assistantMessage = await this.prismaService.client.message.create({
         data: {
           chatId: request.chatId,
           role: 'assistant',
@@ -97,7 +95,7 @@ export class ChatService {
       });
 
       // Chat aktualisieren
-      await this.prisma.chat.update({
+      await this.prismaService.client.chat.update({
         where: { id: request.chatId },
         data: { updatedAt: new Date() },
       });
@@ -199,7 +197,7 @@ export class ChatService {
    * Chat erstellen
    */
   async createChat(userId: string, tenantId: string, title?: string) {
-    const chat = await this.prisma.chat.create({
+    const chat = await this.prismaService.client.chat.create({
       data: {
         userId,
         tenantId,
@@ -215,7 +213,7 @@ export class ChatService {
    * Chat abrufen
    */
   async getChat(chatId: string) {
-    const chat = await this.prisma.chat.findUnique({
+    const chat = await this.prismaService.client.chat.findUnique({
       where: { id: chatId },
       include: {
         messages: {
@@ -235,7 +233,7 @@ export class ChatService {
    * Chats auflisten
    */
   async listChats(userId: string, tenantId: string, limit = 20, offset = 0) {
-    const chats = await this.prisma.chat.findMany({
+    const chats = await this.prismaService.client.chat.findMany({
       where: {
         userId,
         tenantId,

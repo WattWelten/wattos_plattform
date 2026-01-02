@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { SendConversationMessageDto } from './dto/send-message.dto';
@@ -10,16 +10,14 @@ import { ServiceDiscoveryService } from '@wattweiser/shared';
 @Injectable()
 export class ConversationsService {
   private readonly logger = new Logger(ConversationsService.name);
-  private prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly streamingService: StreamingService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Conversation erstellen
@@ -27,7 +25,7 @@ export class ConversationsService {
   async createConversation(role: string) {
     try {
       // Character nach role finden
-      const character = await this.prisma.character.findFirst({
+      const character = await this.prismaService.client.character.findFirst({
         where: { role },
       });
 
@@ -36,7 +34,7 @@ export class ConversationsService {
       }
 
       // Conversation erstellen
-      const conversation = await this.prisma.conversation.create({
+      const conversation = await this.prismaService.client.conversation.create({
         data: {
           characterId: character.id,
         },
@@ -56,7 +54,7 @@ export class ConversationsService {
    * Conversation abrufen
    */
   async getConversation(threadId: string) {
-    const conversation = await this.prisma.conversation.findUnique({
+    const conversation = await this.prismaService.client.conversation.findUnique({
       where: { threadId },
       include: {
         character: true,
@@ -88,7 +86,7 @@ export class ConversationsService {
   async sendMessage(dto: SendConversationMessageDto) {
     try {
       // Conversation laden
-      const conversation = await this.prisma.conversation.findUnique({
+      const conversation = await this.prismaService.client.conversation.findUnique({
         where: { threadId: dto.thread_id },
         include: {
           character: true,
@@ -103,7 +101,7 @@ export class ConversationsService {
       }
 
       // User-Nachricht speichern
-      await this.prisma.conversationMessage.create({
+      await this.prismaService.client.conversationMessage.create({
         data: {
           conversationId: conversation.id,
           role: 'user',
@@ -146,7 +144,7 @@ export class ConversationsService {
       const assistantContent = response.data.choices[0]?.message?.content || '';
 
       // Assistant-Nachricht speichern
-      await this.prisma.conversationMessage.create({
+      await this.prismaService.client.conversationMessage.create({
         data: {
           conversationId: conversation.id,
           role: 'assistant',
@@ -156,7 +154,7 @@ export class ConversationsService {
       });
 
       // Conversation aktualisieren
-      await this.prisma.conversation.update({
+      await this.prismaService.client.conversation.update({
         where: { id: conversation.id },
         data: { updatedAt: new Date() },
       });
@@ -180,7 +178,7 @@ export class ConversationsService {
     return new Observable(async (subscriber) => {
       try {
         // Conversation laden
-        const conversation = await this.prisma.conversation.findUnique({
+        const conversation = await this.prismaService.client.conversation.findUnique({
           where: { threadId: dto.thread_id },
           include: {
             character: true,
@@ -196,7 +194,7 @@ export class ConversationsService {
         }
 
         // User-Nachricht speichern
-        await this.prisma.conversationMessage.create({
+        await this.prismaService.client.conversationMessage.create({
           data: {
             conversationId: conversation.id,
             role: 'user',
