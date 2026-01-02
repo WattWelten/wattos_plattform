@@ -195,7 +195,7 @@ export class DashboardDataAggregationService {
   /**
    * KB-Sync-Daten
    */
-  private async getKBSyncData(tenantId: string, config?: any): Promise<any> {
+  private async getKBSyncData(tenantId: string, _config?: any): Promise<any> {
     return await this.getKBSyncStatus(tenantId);
   }
 
@@ -238,6 +238,6 @@ export class DashboardDataAggregationService {
     };
 
     const ms = ranges[timeRange] || ranges['7d'];
-    return new Date(now.getTime() - ms);
+    return new Date(now.getTime() - (ms ?? 0));
   }
 }
