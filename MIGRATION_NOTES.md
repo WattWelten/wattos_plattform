@@ -34,3 +34,4 @@ psql $DATABASE_URL -f packages/db/migrations/20250122000000_add_mvp_models/migra
 - `Artifact` - `tenantId`, `hash` hinzugefügt, `characterId` optional gemacht
 
 
+

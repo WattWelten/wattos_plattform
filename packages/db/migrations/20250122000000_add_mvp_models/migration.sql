@@ -130,3 +130,4 @@ ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_tenantId_fkey" FOREIGN KEY ("ten
 ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 
+

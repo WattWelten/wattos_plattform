@@ -9,9 +9,10 @@ export class ReportingController {
   async getReport(
     @Param('tenantId') tenantId: string,
     @Query('type') type: string,
-    @Query() options: Record<string, any>,
+    @Query('options') options?: string,
   ) {
-    return await this.reportingService.generateReport(tenantId, type, options);
+    const parsedOptions = options ? JSON.parse(options) : {};
+    return await this.reportingService.generateReport(tenantId, type, parsedOptions);
   }
 
   @Post(':tenantId')
