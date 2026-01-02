@@ -147,7 +147,7 @@ export class DashboardDataAggregationService {
   /**
    * Agents-Daten
    */
-  private async getAgentsData(tenantId: string, config?: any): Promise<any> {
+  private async getAgentsData(tenantId: string, _config?: any): Promise<any> {
     const agents = await this.prisma.agent.findMany({
       where: { tenantId },
       select: {
@@ -164,7 +164,7 @@ export class DashboardDataAggregationService {
     return {
       agents,
       total: agents.length,
-      active: agents.filter((a) => a.status === 'active').length,
+      active: agents.filter((a: any) => a.status === 'active').length,
     };
   }
 
