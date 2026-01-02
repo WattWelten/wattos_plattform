@@ -13,7 +13,7 @@ export class MetricsController {
   ) {
     const typesArray = types ? types.split(',') : undefined;
     return await this.metricsService.getMetrics(tenantId, {
-      types: typesArray,
+      ...(typesArray && { types: typesArray }),
       timeRange: timeRange || '1h',
     });
   }
