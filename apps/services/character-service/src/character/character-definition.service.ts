@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { ProfileService, ProfilesModule } from '@wattweiser/core';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
 
@@ -14,16 +14,14 @@ import { ServiceDiscoveryService } from '@wattweiser/shared';
 @Injectable()
 export class CharacterDefinitionService {
   private readonly logger = new Logger(CharacterDefinitionService.name);
-  private readonly prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly profileService: ProfileService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Charakter aus Prompt definieren

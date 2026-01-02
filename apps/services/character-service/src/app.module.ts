@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '@wattweiser/db';
 import { CharacterModule } from './character/character.module';
 import { ArtifactsModule } from './artifacts/artifacts.module';
 import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@wattweiser/shared';
@@ -10,6 +11,7 @@ import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@
       isGlobal: true,
       envFilePath: '.env',
     }),
+    PrismaModule,
     ObservabilityModule,
     ServiceDiscoveryModule,
     CharacterModule,

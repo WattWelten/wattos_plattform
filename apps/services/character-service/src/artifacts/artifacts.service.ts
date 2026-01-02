@@ -1,15 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { AddArtifactDto } from './dto/add-artifact.dto';
 
 @Injectable()
 export class ArtifactsService {
   private readonly logger = new Logger(ArtifactsService.name);
-  private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Artefakt per URL hinzufügen
