@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '@wattweiser/db';
 // import { HttpModule } from '@nestjs/axios';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -12,6 +13,7 @@ import { ReportingModule } from './reporting/reporting.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    PrismaModule,
     // HttpModule,
     DashboardModule,
     AnalyticsModule,

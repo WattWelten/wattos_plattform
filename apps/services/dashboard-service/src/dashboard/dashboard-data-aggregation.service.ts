@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { MetricsService } from '../metrics/metrics.service';
 
@@ -11,14 +11,12 @@ import { MetricsService } from '../metrics/metrics.service';
 @Injectable()
 export class DashboardDataAggregationService {
   private readonly logger = new Logger(DashboardDataAggregationService.name);
-  private readonly prisma: PrismaClient;
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly analytics: AnalyticsService,
     private readonly metrics: MetricsService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Dashboard-Daten aggregieren
@@ -99,9 +97,9 @@ export class DashboardDataAggregationService {
    */
   private async getOverviewData(tenantId: string): Promise<any> {
     const [conversations, agents, kbArticles, syncStatus] = await Promise.all([
-      this.prisma.conversation.count({ where: { tenantId } }),
-      this.prisma.agent.count({ where: { tenantId } }),
-      this.prisma.kBArticle.count({ where: { tenantId } }),
+      this.prismaService.client.conversation.count({ where: { tenantId } }),
+      this.prismaService.client.agent.count({ where: { tenantId } }),
+      this.prismaService.client.kBArticle.count({ where: { tenantId } }),
       this.getKBSyncStatus(tenantId),
     ]);
 
@@ -120,7 +118,7 @@ export class DashboardDataAggregationService {
     const limit = config?.limit || 10;
     const timeRange = config?.timeRange || '7d';
 
-    const conversations = await this.prisma.conversation.findMany({
+    const conversations = await this.prismaService.client.conversation.findMany({
       where: {
         tenantId,
         createdAt: {
@@ -148,7 +146,7 @@ export class DashboardDataAggregationService {
    * Agents-Daten
    */
   private async getAgentsData(tenantId: string, _config?: any): Promise<any> {
-    const agents = await this.prisma.agent.findMany({
+    const agents = await this.prismaService.client.agent.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -204,14 +202,14 @@ export class DashboardDataAggregationService {
    */
   private async getKBSyncStatus(tenantId: string): Promise<any> {
     const [total, synced, pending, error] = await Promise.all([
-      this.prisma.kBArticle.count({ where: { tenantId } }),
-      this.prisma.kBArticle.count({
+      this.prismaService.client.kBArticle.count({ where: { tenantId } }),
+      this.prismaService.client.kBArticle.count({
         where: { tenantId, f13SyncStatus: 'synced' },
       }),
-      this.prisma.kBArticle.count({
+      this.prismaService.client.kBArticle.count({
         where: { tenantId, f13SyncStatus: 'pending' },
       }),
-      this.prisma.kBArticle.count({
+      this.prismaService.client.kBArticle.count({
         where: { tenantId, f13SyncStatus: 'error' },
       }),
     ]);

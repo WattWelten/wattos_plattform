@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 import { DashboardDataAggregationService } from './dashboard-data-aggregation.service';
 import { CacheService } from '@wattweiser/shared';
 
@@ -11,15 +11,13 @@ import { CacheService } from '@wattweiser/shared';
 @Injectable()
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
-  private readonly prisma: PrismaClient;
   private readonly cacheTTL = 300; // 5 Minuten
 
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly dataAggregation: DashboardDataAggregationService,
     private readonly cache: CacheService,
-  ) {
-    this.prisma = new PrismaClient();
-  }
+  ) {}
 
   /**
    * Dashboard für Tenant abrufen
@@ -37,7 +35,7 @@ export class DashboardService {
     // Dashboard aus DB laden oder Default erstellen
     let dashboard;
     if (dashboardId) {
-      dashboard = await this.prisma.dashboard.findUnique({
+      dashboard = await this.prismaService.client.dashboard.findUnique({
         where: {
           id: dashboardId,
           tenantId,
@@ -45,7 +43,7 @@ export class DashboardService {
       });
     } else {
       // Default Dashboard laden oder erstellen
-      dashboard = await this.prisma.dashboard.findFirst({
+      dashboard = await this.prismaService.client.dashboard.findFirst({
         where: {
           tenantId,
           isDefault: true,
@@ -92,13 +90,13 @@ export class DashboardService {
   }> {
     // Wenn Default, andere Defaults deaktivieren
     if (isDefault) {
-      await this.prisma.dashboard.updateMany({
+      await this.prismaService.client.dashboard.updateMany({
         where: { tenantId, isDefault: true },
         data: { isDefault: false },
       });
     }
 
-    const dashboard = await this.prisma.dashboard.create({
+    const dashboard = await this.prismaService.client.dashboard.create({
       data: {
         tenantId,
         name,
@@ -134,13 +132,13 @@ export class DashboardService {
   }> {
     // Wenn Default, andere Defaults deaktivieren
     if (updates.isDefault) {
-      await this.prisma.dashboard.updateMany({
+      await this.prismaService.client.dashboard.updateMany({
         where: { tenantId, isDefault: true },
         data: { isDefault: false },
       });
     }
 
-    const dashboard = await this.prisma.dashboard.update({
+    const dashboard = await this.prismaService.client.dashboard.update({
       where: {
         id: dashboardId,
         tenantId,
@@ -162,7 +160,7 @@ export class DashboardService {
    * Dashboard löschen
    */
   async deleteDashboard(tenantId: string, dashboardId: string): Promise<void> {
-    await this.prisma.dashboard.delete({
+    await this.prismaService.client.dashboard.delete({
       where: {
         id: dashboardId,
         tenantId,
@@ -182,7 +180,7 @@ export class DashboardService {
     isDefault: boolean;
     createdAt: Date;
   }>> {
-    const dashboards = await this.prisma.dashboard.findMany({
+    const dashboards = await this.prismaService.client.dashboard.findMany({
       where: { tenantId },
       orderBy: {
         createdAt: 'desc',
@@ -221,7 +219,7 @@ export class DashboardService {
       ],
     };
 
-    return await this.prisma.dashboard.create({
+    return await this.prismaService.client.dashboard.create({
       data: {
         tenantId,
         name: 'Default Dashboard',

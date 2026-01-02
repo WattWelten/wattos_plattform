@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 @Injectable()
 export class MetricsService {
-  private readonly prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Metrics abrufen
@@ -22,7 +18,7 @@ export class MetricsService {
     const timeRange = options?.timeRange || '1h';
     const startTime = this.getTimeRangeStart(timeRange);
 
-    const metrics = await this.prisma.event.findMany({
+    const metrics = await this.prismaService.client.event.findMany({
       where: {
         tenantId,
         ts: {

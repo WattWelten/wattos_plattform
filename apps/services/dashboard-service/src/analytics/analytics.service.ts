@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 @Injectable()
 export class AnalyticsService {
   // private readonly logger = new Logger(AnalyticsService.name);
-  private readonly prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Analytics abrufen
@@ -23,7 +20,7 @@ export class AnalyticsService {
     const timeRange = options?.timeRange || '7d';
     const startTime = this.getTimeRangeStart(timeRange);
 
-    const conversations = await this.prisma.conversation.findMany({
+    const conversations = await this.prismaService.client.conversation.findMany({
       where: {
         tenantId,
         startedAt: {

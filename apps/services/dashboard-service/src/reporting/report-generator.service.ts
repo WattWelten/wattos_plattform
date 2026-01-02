@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 @Injectable()
 export class ReportGeneratorService {
   // private readonly logger = new Logger(ReportGeneratorService.name);
-  private readonly prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private readonly prismaService: PrismaService) {}
 
   /**
    * Report generieren
@@ -35,7 +32,7 @@ export class ReportGeneratorService {
     tenantId: string,
     options?: Record<string, any>,
   ): Promise<any> {
-    const conversations = await this.prisma.conversation.findMany({
+    const conversations = await this.prismaService.client.conversation.findMany({
       where: { tenantId },
       include: {
         messages: true,
@@ -61,7 +58,7 @@ export class ReportGeneratorService {
     tenantId: string,
     options?: Record<string, any>,
   ): Promise<any> {
-    const events = await this.prisma.event.findMany({
+    const events = await this.prismaService.client.event.findMany({
       where: { tenantId },
       take: options?.limit || 1000,
     });
