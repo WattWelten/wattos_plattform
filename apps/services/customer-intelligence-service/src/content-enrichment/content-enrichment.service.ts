@@ -23,7 +23,7 @@ export class ContentEnrichmentService {
   async enrichContent(dto: EnrichContentDto) {
     try {
       // Target Group prüfen
-      const targetGroup = await this.prisma.targetGroup.findUnique({
+      const targetGroup = await this.prisma.client.targetGroup.findUnique({
         where: { id: dto.targetGroupId },
       });
 
@@ -39,7 +39,7 @@ export class ContentEnrichmentService {
       const language = dto.language ?? (await this.detectLanguage(dto.content));
 
       // Content Enrichment in DB speichern
-      const enrichment = await this.prisma.contentEnrichment.create({
+      const enrichment = await this.prisma.client.contentEnrichment.create({
         data: {
           targetGroupId: dto.targetGroupId,
           sourceType: dto.sourceType,
@@ -134,7 +134,7 @@ Antworte nur mit einer Zahl zwischen 0.0 und 1.0.`;
   async mapToTargetGroup(content: string, analysisId: string): Promise<string | null> {
     try {
       // Target Groups der Analyse laden
-      const targetGroups = await this.prisma.targetGroup.findMany({
+      const targetGroups = await this.prisma.client.targetGroup.findMany({
         where: { analysisId },
       });
 
@@ -166,7 +166,7 @@ Antworte nur mit einer Zahl zwischen 0.0 und 1.0.`;
    * Angereicherten Content für Target Group abrufen
    */
   async getEnrichedContent(targetGroupId: string, minRelevanceScore: number = 0.5) {
-    return this.prisma.contentEnrichment.findMany({
+    return this.prisma.client.contentEnrichment.findMany({
       where: {
         targetGroupId,
         relevanceScore: {

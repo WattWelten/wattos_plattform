@@ -81,7 +81,7 @@ Antworte als JSON-Array.`;
       // Zielgruppen in DB speichern
       const createdTargetGroups = [];
       for (const tg of targetGroups) {
-        const created = await this.prisma.targetGroup.create({
+        const created = await this.prisma.client.targetGroup.create({
           data: {
             analysisId,
             name: tg.name,

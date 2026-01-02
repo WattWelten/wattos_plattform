@@ -23,7 +23,7 @@ export class AgentGenerationService {
   async generateAgents(dto: GenerateAgentsDto) {
     try {
       // Analyse mit Personas und Target Groups laden
-      const analysis = await this.prisma.customerAnalysis.findUnique({
+      const analysis = await this.prisma.client.customerAnalysis.findUnique({
         where: { id: dto.analysisId },
         include: {
           personas: dto.personaIds
@@ -75,7 +75,7 @@ export class AgentGenerationService {
   ): Promise<any> {
     try {
       // Agent Generation in DB erstellen
-      const generation = await this.prisma.agentGeneration.create({
+      const generation = await this.prisma.client.agentGeneration.create({
         data: {
           analysisId,
           personaId,
@@ -102,7 +102,7 @@ export class AgentGenerationService {
         }
 
         // Agent direkt in DB erstellen (Agent-Service hat keinen CREATE-Endpunkt)
-        const analysis = await this.prisma.customerAnalysis.findUnique({
+        const analysis = await this.prisma.client.customerAnalysis.findUnique({
           where: { id: analysisId },
           select: { tenantId: true },
         });
@@ -111,7 +111,7 @@ export class AgentGenerationService {
           throw new NotFoundException(`Analysis ${analysisId} not found`);
         }
 
-        const agent = await this.prisma.agent.create({
+        const agent = await this.prisma.client.agent.create({
           data: {
             tenantId: analysis.tenantId,
             name: `${persona.name} - Agent`,
@@ -137,7 +137,7 @@ export class AgentGenerationService {
         const agentId = agent.id;
 
         // Agent Generation aktualisieren
-        await this.prisma.agentGeneration.update({
+        await this.prisma.client.agentGeneration.update({
           where: { id: generation.id },
           data: {
             agentId,
@@ -155,7 +155,7 @@ export class AgentGenerationService {
         return { ...generation, agentId, status: 'completed' };
       } catch (error: any) {
         // Fehler in Generation speichern
-        await this.prisma.agentGeneration.update({
+        await this.prisma.client.agentGeneration.update({
           where: { id: generation.id },
           data: {
             status: 'failed',
@@ -246,7 +246,7 @@ Antworte nur mit dem System-Prompt-Text.`;
   private async linkKnowledgeBase(analysisId: string): Promise<any> {
     try {
       // Analyse mit Tenant laden
-      const analysis = await this.prisma.customerAnalysis.findUnique({
+      const analysis = await this.prisma.client.customerAnalysis.findUnique({
         where: { id: analysisId },
         include: {
           tenant: {
@@ -309,7 +309,7 @@ Antworte nur mit dem System-Prompt-Text.`;
    * Generation-Status abrufen
    */
   async getGeneration(id: string) {
-    const generation = await this.prisma.agentGeneration.findUnique({
+    const generation = await this.prisma.client.agentGeneration.findUnique({
       where: { id },
       include: {
         analysis: true,

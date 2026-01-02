@@ -22,7 +22,7 @@ export class AnalysisService {
   async createAnalysis(tenantId: string, dto: CreateAnalysisDto) {
     try {
       // Analyse in DB erstellen
-      const analysis = await this.prisma.customerAnalysis.create({
+      const analysis = await this.prisma.client.customerAnalysis.create({
         data: {
           tenantId,
           customerType: dto.customerType,
@@ -37,7 +37,7 @@ export class AnalysisService {
       // Asynchron: Daten aggregieren und analysieren
       this.runAnalysis(analysis.id, tenantId, dto).catch((error) => {
         this.logger.error(`Analysis ${analysis.id} failed: ${error.message}`);
-        this.prisma.customerAnalysis.update({
+        this.prisma.client.customerAnalysis.update({
           where: { id: analysis.id },
           data: { status: 'failed', metadata: { error: error.message } },
         });
@@ -81,7 +81,7 @@ export class AnalysisService {
       }
 
       // 4. Analyse als abgeschlossen markieren
-      await this.prisma.customerAnalysis.update({
+      await this.prisma.client.customerAnalysis.update({
         where: { id: analysisId },
         data: {
           status: 'completed',
@@ -97,7 +97,7 @@ export class AnalysisService {
       this.logger.log(`Analysis ${analysisId} completed with ${targetGroups.length} target groups`);
     } catch (error: any) {
       this.logger.error(`Analysis ${analysisId} failed: ${error.message}`);
-      await this.prisma.customerAnalysis.update({
+      await this.prisma.client.customerAnalysis.update({
         where: { id: analysisId },
         data: { status: 'failed', metadata: { error: error.message } },
       });
@@ -109,7 +109,7 @@ export class AnalysisService {
    * Analyse-Status abrufen
    */
   async getAnalysis(id: string) {
-    const analysis = await this.prisma.customerAnalysis.findUnique({
+    const analysis = await this.prisma.client.customerAnalysis.findUnique({
       where: { id },
       include: {
         targetGroups: true,

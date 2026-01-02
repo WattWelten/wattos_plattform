@@ -76,7 +76,7 @@ export class WebhooksController {
       }
 
       // Dokument aus DB laden (falls vorhanden)
-      const document = await this.prisma.document.findUnique({
+      const document = await this.prisma.client.document.findUnique({
         where: { id: document_id },
         include: {
           knowledgeSpace: {
@@ -105,7 +105,7 @@ export class WebhooksController {
 
       if (activeAnalyses && activeAnalyses.length > 0) {
         // Dokument-Content aus Chunks extrahieren (vereinfacht)
-        const chunks = await this.prisma.chunk.findMany({
+        const chunks = await this.prisma.client.chunk.findMany({
           where: { documentId: document_id },
           select: { content: true },
           take: 10, // Erste 10 Chunks für Content-Anreicherung

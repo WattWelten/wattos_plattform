@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HttpModule } from '@nestjs/axios';
+import { PrismaModule } from '@wattweiser/db';
 import { AnalysisModule } from './analysis/analysis.module';
 import { PersonasModule } from './personas/personas.module';
 import { AgentGenerationModule } from './agent-generation/agent-generation.module';
@@ -23,6 +24,7 @@ import configuration from './config/configuration';
         limit: 100, // 100 requests per minute
       },
     ]),
+    PrismaModule,
     HttpModule,
     ServiceDiscoveryModule,
     AnalysisModule,

@@ -23,7 +23,7 @@ export class PersonasService {
   async generatePersonas(analysisId: string, targetGroupIds?: string[]): Promise<any[]> {
     try {
       // Analyse mit Target Groups laden
-      const analysis = await this.prisma.customerAnalysis.findUnique({
+      const analysis = await this.prisma.client.customerAnalysis.findUnique({
         where: { id: analysisId },
         include: {
           targetGroups: targetGroupIds
@@ -123,7 +123,7 @@ Antworte als JSON-Objekt.`;
       }
 
       // Persona in DB speichern
-      const persona = await this.prisma.persona.create({
+      const persona = await this.prisma.client.persona.create({
         data: {
           analysisId,
           targetGroupId,
@@ -148,7 +148,7 @@ Antworte als JSON-Objekt.`;
    * Persona abrufen
    */
   async getPersona(id: string) {
-    const persona = await this.prisma.persona.findUnique({
+    const persona = await this.prisma.client.persona.findUnique({
       where: { id },
       include: {
         analysis: true,
@@ -167,7 +167,7 @@ Antworte als JSON-Objekt.`;
    * Personas für eine Analyse abrufen
    */
   async getPersonasByAnalysis(analysisId: string) {
-    return this.prisma.persona.findMany({
+    return this.prisma.client.persona.findMany({
       where: { analysisId },
       include: {
         targetGroup: true,
@@ -179,7 +179,7 @@ Antworte als JSON-Objekt.`;
    * Persona manuell verfeinern
    */
   async refinePersona(id: string, dto: RefinePersonaDto) {
-    const persona = await this.prisma.persona.findUnique({
+    const persona = await this.prisma.client.persona.findUnique({
       where: { id },
     });
 
@@ -187,7 +187,7 @@ Antworte als JSON-Objekt.`;
       throw new NotFoundException(`Persona ${id} not found`);
     }
 
-    return this.prisma.persona.update({
+    return this.prisma.client.persona.update({
       where: { id },
       data: {
         name: dto.name ?? persona.name,
