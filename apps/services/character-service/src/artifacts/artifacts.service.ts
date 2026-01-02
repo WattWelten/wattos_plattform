@@ -14,7 +14,7 @@ export class ArtifactsService {
   async addArtifactByUrl(dto: AddArtifactDto) {
     try {
       // Character nach role finden
-      const character = await this.prisma.character.findFirst({
+      const character = await this.prismaService.client.character.findFirst({
         where: { role: dto.character },
       });
 
@@ -23,7 +23,7 @@ export class ArtifactsService {
       }
 
       // Artefakt erstellen
-      const artifact = await this.prisma.artifact.create({
+      const artifact = await this.prismaService.client.artifact.create({
         data: {
           characterId: character.id,
           name: dto.name,
@@ -47,7 +47,7 @@ export class ArtifactsService {
   async listArtifacts(characterRole?: string) {
     const where: any = {};
     if (characterRole) {
-      const character = await this.prisma.character.findFirst({
+      const character = await this.prismaService.client.character.findFirst({
         where: { role: characterRole },
       });
       if (character) {
@@ -55,7 +55,7 @@ export class ArtifactsService {
       }
     }
 
-    const artifacts = await this.prisma.artifact.findMany({
+    const artifacts = await this.prismaService.client.artifact.findMany({
       where,
       include: {
         character: true,
@@ -70,7 +70,7 @@ export class ArtifactsService {
    * Artefakt abrufen
    */
   async getArtifact(id: string) {
-    const artifact = await this.prisma.artifact.findUnique({
+    const artifact = await this.prismaService.client.artifact.findUnique({
       where: { id },
       include: {
         character: true,
@@ -88,7 +88,7 @@ export class ArtifactsService {
    * Artefakt löschen
    */
   async deleteArtifact(id: string) {
-    await this.prisma.artifact.delete({
+    await this.prismaService.client.artifact.delete({
       where: { id },
     });
 

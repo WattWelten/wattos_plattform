@@ -19,7 +19,7 @@ export class CharacterService {
         where.tenantId = tenantId;
       }
 
-      const existing = await this.prisma.character.findFirst({
+      const existing = await this.prismaService.client.character.findFirst({
         where,
       });
 
@@ -30,7 +30,7 @@ export class CharacterService {
       }
 
       // Neuen Character erstellen
-      const character = await this.prisma.character.create({
+      const character = await this.prismaService.client.character.create({
         data: {
           tenantId: tenantId || 'default', // MVP: Fallback zu 'default'
           role: dto.role,
@@ -57,7 +57,7 @@ export class CharacterService {
    */
   async listCharacters(tenantId?: string) {
     const where = tenantId ? { tenantId } : {};
-    const characters = await this.prisma.character.findMany({
+    const characters = await this.prismaService.client.character.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
@@ -74,7 +74,7 @@ export class CharacterService {
       where.tenantId = tenantId;
     }
 
-    const character = await this.prisma.character.findFirst({
+    const character = await this.prismaService.client.character.findFirst({
       where,
       include: {
         artifacts: true,
@@ -92,7 +92,7 @@ export class CharacterService {
    * Character nach ID abrufen
    */
   async getCharacterById(id: string) {
-    const character = await this.prisma.character.findUnique({
+    const character = await this.prismaService.client.character.findUnique({
       where: { id },
       include: {
         artifacts: true,
@@ -110,7 +110,7 @@ export class CharacterService {
    * Character aktualisieren
    */
   async updateCharacter(id: string, dto: Partial<CreateCharacterDto>) {
-    const character = await this.prisma.character.update({
+    const character = await this.prismaService.client.character.update({
       where: { id },
       data: {
         ...(dto.system_prompt && { systemPrompt: dto.system_prompt }),
@@ -128,7 +128,7 @@ export class CharacterService {
    * Character löschen
    */
   async deleteCharacter(id: string) {
-    await this.prisma.character.delete({
+    await this.prismaService.client.character.delete({
       where: { id },
     });
 

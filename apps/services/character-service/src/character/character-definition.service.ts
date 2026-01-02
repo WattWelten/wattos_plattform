@@ -47,7 +47,7 @@ export class CharacterDefinitionService {
       const extracted = await this.extractCharacterFromPrompt(prompt);
 
       // 2. Character erstellen
-      const character = await this.prisma.character.create({
+      const character = await this.prismaService.client.character.create({
         data: {
           tenantId,
           role: extracted.role,
@@ -230,7 +230,7 @@ Antworte NUR mit dem JSON-Objekt, keine zusätzlichen Erklärungen.`;
   ): Promise<boolean> {
     try {
       // Prüfen ob Profile bereits existiert
-      const existingProfile = await this.prisma.tenantProfile.findUnique({
+      const existingProfile = await this.prismaService.client.tenantProfile.findUnique({
         where: { tenantId },
       });
 
@@ -252,7 +252,7 @@ Antworte NUR mit dem JSON-Objekt, keine zusätzlichen Erklärungen.`;
       }
 
       // Profile erstellen
-      await this.prisma.tenantProfile.create({
+      await this.prismaService.client.tenantProfile.create({
         data: {
           tenantId,
           market,
