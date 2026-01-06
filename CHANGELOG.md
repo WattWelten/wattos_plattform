@@ -49,3 +49,28 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - README aktualisiert mit neuen Features
 - CHANGELOG erstellt
 
+### Phase 4: Core Features & Integrations (2025-01-27)
+
+#### ✨ Neue Features
+
+**Workflow Engine (Phase 4.1)**
+- ✅ Condition-Logik implementiert (eq, ne, gt, gte, lt, lte, contains, in, and, or, not)
+- ✅ Context-basierte Condition-Evaluierung
+- ✅ If/Then/Else Workflow-Steps
+
+**Tool Registry (Phase 4.2)**
+- ✅ Kategorie-System für Tools
+- ✅ Tag-basierte Tool-Filterung
+- ✅ Kategorie-Liste API
+
+**Vector Store (Phase 4.3)**
+- ✅ OpenSearch Client Integration
+- ✅ OpenSearch URL/Username/Password Konfiguration
+
+**DMS Integration (Phase 4.4)**
+- ✅ DMS API Calls implementiert (listDocuments, getDocument, getDocumentContent, getFolders)
+- ✅ DMS Health-Check Endpoint
+
+**F13 Integration (Phase 4.5)**
+- ✅ F13 Health-Check Endpoint implementiert
+

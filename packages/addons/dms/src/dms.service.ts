@@ -14,7 +14,7 @@ export interface DMSSyncStatus {
 
 /**
  * DMS Service
- * 
+ *
  * Service für DMS-Integration: Dokumente synchronisieren, importieren, verwalten
  */
 @Injectable()
@@ -26,10 +26,10 @@ export class DMSService {
 
   /**
    * Dokumente aus DMS abrufen
-   * 
+   *
    * @note Diese Methode ist noch nicht vollständig implementiert.
    * Die DMS API-Integration wird in einer zukünftigen Version hinzugefügt.
-   * 
+   *
    * @throws {Error} Wenn die DMS API noch nicht konfiguriert ist
    */
   async listDocuments(
@@ -39,31 +39,21 @@ export class DMSService {
       limit?: number;
       offset?: number;
       updatedSince?: Date;
-    },
+    }
   ): Promise<DMSDocument[]> {
     try {
       this.logger.debug('Fetching documents from DMS', options);
 
-      // TODO: DMS API Call implementieren
-      // Die Implementierung erfordert:
-      // 1. Konfiguration der DMS API Base URL (DMS_BASE_URL)
-      // 2. API Key/Secret Setup (DMS_API_KEY, DMS_API_SECRET)
-      // 3. Integration mit dmsClient.get('/documents', { params: {...} })
-      // 
-      // const response = await this.dmsClient.get('/documents', {
-      //   params: {
-      //     folder_id: options?.folderId,
-      //     limit: options?.limit || 100,
-      //     offset: options?.offset || 0,
-      //     updated_since: options?.updatedSince?.toISOString(),
-      //   },
-      // });
-      // return response.data;
-
-      this.logger.warn('DMS API integration not yet implemented. Returning empty array.');
-      const documents: DMSDocument[] = [];
-
-      return documents;
+      // DMS API Call implementiert
+      const response = await this.dmsClient.get('/documents', {
+        params: {
+          folder_id: options?.folderId,
+          limit: options?.limit || 100,
+          offset: options?.offset || 0,
+          updated_since: options?.updatedSince?.toISOString(),
+        },
+      });
+      return response.data as DMSDocument[];
     } catch (error: any) {
       this.logger.error(`Failed to fetch documents: ${error.message}`, error.stack);
       throw error;
@@ -72,24 +62,19 @@ export class DMSService {
 
   /**
    * Dokument aus DMS abrufen
-   * 
+   *
    * @note Diese Methode ist noch nicht vollständig implementiert.
    * Die DMS API-Integration wird in einer zukünftigen Version hinzugefügt.
-   * 
+   *
    * @throws {Error} Wenn die DMS API noch nicht konfiguriert ist
    */
   async getDocument(_tenantId: string, documentId: string): Promise<DMSDocument> {
     try {
       this.logger.debug(`Fetching document: ${documentId}`);
 
-      // TODO: DMS API Call implementieren
-      // const response = await this.dmsClient.get(`/documents/${documentId}`);
-      // return response.data;
-
-      throw new Error(
-        `DMS document fetch not yet implemented. Document ID: ${documentId}. ` +
-        'Please configure DMS_BASE_URL, DMS_API_KEY, and DMS_API_SECRET to enable this feature.',
-      );
+      // DMS API Call implementiert
+      const response = await this.dmsClient.get(`/documents/${documentId}`);
+      return response.data as DMSDocument;
     } catch (error: any) {
       if (error instanceof DMSApiError) {
         this.logger.error(`DMS API error: ${error.statusCode}`, error.response);
@@ -102,26 +87,21 @@ export class DMSService {
 
   /**
    * Dokument-Inhalt abrufen
-   * 
+   *
    * @note Diese Methode ist noch nicht vollständig implementiert.
    * Die DMS API-Integration wird in einer zukünftigen Version hinzugefügt.
-   * 
+   *
    * @throws {Error} Wenn die DMS API noch nicht konfiguriert ist
    */
   async getDocumentContent(documentId: string): Promise<Buffer> {
     try {
       this.logger.debug(`Fetching document content: ${documentId}`);
 
-      // TODO: DMS API Call für Dokument-Inhalt implementieren
-      // const response = await this.dmsClient.get(`/documents/${documentId}/content`, {
-      //   responseType: 'arraybuffer',
-      // });
-      // return Buffer.from(response.data);
-
-      throw new Error(
-        `DMS document content fetch not yet implemented. Document ID: ${documentId}. ` +
-        'Please configure DMS_BASE_URL, DMS_API_KEY, and DMS_API_SECRET to enable this feature.',
-      );
+      // DMS API Call für Dokument-Inhalt implementiert
+      const response = await this.dmsClient.get(`/documents/${documentId}/content`, {
+        responseType: 'arraybuffer',
+      });
+      return Buffer.from(response.data);
     } catch (error: any) {
       this.logger.error(`Failed to fetch document content: ${error.message}`, error.stack);
       throw error;
@@ -130,7 +110,7 @@ export class DMSService {
 
   /**
    * Ordner aus DMS abrufen
-   * 
+   *
    * @note Diese Methode ist noch nicht vollständig implementiert.
    * Die DMS API-Integration wird in einer zukünftigen Version hinzugefügt.
    */
@@ -142,20 +122,15 @@ export class DMSService {
     try {
       this.logger.debug('Fetching folders from DMS', options);
 
-      // TODO: DMS API Call implementieren
-      // const response = await this.dmsClient.get('/folders', {
-      //   params: {
-      //     parent_id: options?.parentId,
-      //     limit: options?.limit || 100,
-      //     offset: options?.offset || 0,
-      //   },
-      // });
-      // return response.data;
-
-      this.logger.warn('DMS API integration not yet implemented. Returning empty array.');
-      const folders: DMSFolder[] = [];
-
-      return folders;
+      // DMS API Call implementiert
+      const response = await this.dmsClient.get('/folders', {
+        params: {
+          parent_id: options?.parentId,
+          limit: options?.limit || 100,
+          offset: options?.offset || 0,
+        },
+      });
+      return response.data as DMSFolder[];
     } catch (error: any) {
       this.logger.error(`Failed to fetch folders: ${error.message}`, error.stack);
       throw error;
@@ -172,7 +147,7 @@ export class DMSService {
       folderId?: string;
       updatedSince?: Date;
       batchSize?: number;
-    },
+    }
   ): Promise<{
     synced: number;
     failed: number;
@@ -279,7 +254,7 @@ export class DMSService {
   async importDocument(
     tenantId: string,
     knowledgeSpaceId: string,
-    document: DMSDocument,
+    document: DMSDocument
   ): Promise<string> {
     try {
       this.logger.debug(`Importing document: ${document.id}`, {
@@ -310,7 +285,7 @@ export class DMSService {
 
       // Placeholder - wird durch echte Ingestion-Service Integration ersetzt
       this.logger.warn(
-        `Document import not yet fully implemented. Using placeholder ID for document: ${document.id}`,
+        `Document import not yet fully implemented. Using placeholder ID for document: ${document.id}`
       );
       const documentId = `dms-${document.id}`;
 

@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { F13Client } from '../client';
-import { RAGProvider, RAGContext, RAGResponse, RAGResult } from '@wattweiser/core';
+import type { RAGProvider, RAGContext, RAGResponse, RAGResult } from '@wattweiser/shared';
 
 /**
  * F13 RAG Provider
- * 
+ *
  * Adapter für F13 RAG API
  */
 @Injectable()
@@ -16,9 +16,12 @@ export class F13RAGProvider implements RAGProvider {
   /**
    * RAG-Suche mit Fallback-Logik
    */
-  async search(query: string, context: RAGContext & {
-    fallback?: () => Promise<RAGResponse>;
-  }): Promise<RAGResponse> {
+  async search(
+    query: string,
+    context: RAGContext & {
+      fallback?: () => Promise<RAGResponse>;
+    }
+  ): Promise<RAGResponse> {
     try {
       this.logger.debug('F13 RAG search', { query, knowledgeSpaceId: context.knowledgeSpaceId });
 
@@ -81,7 +84,7 @@ export class F13RAGProvider implements RAGProvider {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // TODO: F13 RAG Health-Check
+      // F13 RAG Health-Check implementiert
       return await this.f13Client.healthCheck();
     } catch {
       return false;

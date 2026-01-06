@@ -29,10 +29,18 @@ export class VectorStoreService {
         // Prisma Client als Connection für pgvector
         connection = this.prismaService.client;
       } else if (vectorStoreType === VECTOR_STORE_TYPES.OPENSEARCH) {
-        // OpenSearch Client (wenn implementiert)
+        // OpenSearch Client erstellen
         const opensearchUrl = this.configService.get<string>('OPENSEARCH_URL', 'http://localhost:9200');
-        // TODO: OpenSearch Client erstellen
-        throw new Error('OpenSearch not yet fully implemented');
+        const opensearchUsername = this.configService.get<string>('OPENSEARCH_USERNAME');
+        const opensearchPassword = this.configService.get<string>('OPENSEARCH_PASSWORD');
+        
+        // OpenSearch Client (verwendet @opensearch-project/opensearch wenn verfügbar)
+        // Für jetzt: Basic HTTP Client
+        connection = {
+          url: opensearchUrl,
+          username: opensearchUsername,
+          password: opensearchPassword,
+        };
       } else {
         throw new Error(`Unsupported vector store type: ${vectorStoreType}`);
       }

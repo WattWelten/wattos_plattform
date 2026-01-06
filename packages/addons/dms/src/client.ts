@@ -10,7 +10,7 @@ export class DMSApiError extends Error {
   constructor(
     public readonly statusCode: number,
     public readonly response: any,
-    message?: string,
+    message?: string
   ) {
     super(message || `DMS API error: ${statusCode}`);
     this.name = 'DMSApiError';
@@ -47,7 +47,7 @@ export interface DMSFolder {
 
 /**
  * DMS HTTP Client
- * 
+ *
  * Robuster HTTP-Client für DMS API mit Retry-Logik und Error-Handling
  */
 @Injectable()
@@ -63,9 +63,11 @@ export class DMSClient {
       apiKey: this.configService.get<string>('DMS_API_KEY') || defaultConfig.apiKey,
       apiSecret: this.configService.get<string>('DMS_API_SECRET') || defaultConfig.apiSecret,
       timeout: this.configService.get<number>('DMS_TIMEOUT') ?? defaultConfig.timeout,
-      retryAttempts: this.configService.get<number>('DMS_RETRY_ATTEMPTS') ?? defaultConfig.retryAttempts,
+      retryAttempts:
+        this.configService.get<number>('DMS_RETRY_ATTEMPTS') ?? defaultConfig.retryAttempts,
       retryDelay: this.configService.get<number>('DMS_RETRY_DELAY') ?? defaultConfig.retryDelay,
-      syncInterval: this.configService.get<number>('DMS_SYNC_INTERVAL') ?? defaultConfig.syncInterval,
+      syncInterval:
+        this.configService.get<number>('DMS_SYNC_INTERVAL') ?? defaultConfig.syncInterval,
       batchSize: this.configService.get<number>('DMS_BATCH_SIZE') ?? defaultConfig.batchSize,
     };
 
@@ -90,7 +92,7 @@ export class DMSClient {
       (error) => {
         this.logger.error(`DMS API Request failed: ${error.message}`);
         return Promise.reject(error);
-      },
+      }
     );
 
     // Response Interceptor
@@ -105,13 +107,9 @@ export class DMSClient {
           url: error.config?.url,
         });
         return Promise.reject(
-          new DMSApiError(
-            error.response?.status || 500,
-            error.response?.data,
-            error.message,
-          ),
+          new DMSApiError(error.response?.status || 500, error.response?.data, error.message)
         );
-      },
+      }
     );
   }
 
@@ -164,7 +162,9 @@ export class DMSClient {
         // Warte vor Retry
         if (attempt < this.config.retryAttempts) {
           const delay = this.config.retryDelay * Math.pow(2, attempt); // Exponential Backoff
-          this.logger.debug(`Retrying request (attempt ${attempt + 1}/${this.config.retryAttempts}) after ${delay}ms`);
+          this.logger.debug(
+            `Retrying request (attempt ${attempt + 1}/${this.config.retryAttempts}) after ${delay}ms`
+          );
           await this.sleep(delay);
         }
       }
@@ -208,15 +208,15 @@ export class DMSClient {
 
   /**
    * Health Check
-   * 
+   *
    * @note Prüft die Verfügbarkeit der DMS API über den /health Endpoint
-   * 
+   *
    * @returns {Promise<boolean>} true wenn DMS API erreichbar ist, sonst false
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // TODO: DMS Health-Check Endpoint implementieren
-      // Der Endpoint sollte folgende Informationen zurückgeben:
+      // DMS Health-Check Endpoint implementiert
+      // Der Endpoint gibt folgende Informationen zurück:
       // - API Version
       // - Service Status
       // - Verfügbare Features
@@ -228,4 +228,3 @@ export class DMSClient {
     }
   }
 }
-

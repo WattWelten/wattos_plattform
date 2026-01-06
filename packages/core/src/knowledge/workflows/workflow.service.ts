@@ -48,6 +48,8 @@ export class WorkflowService {
   private executions: Map<string, WorkflowContext> = new Map();
 
   constructor(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-expect-error - unused but may be needed in future
     private readonly eventBus: EventBusService,
     private readonly toolExecution: ToolExecutionService,
     private readonly ragService: RAGService,
@@ -91,8 +93,38 @@ export class WorkflowService {
 
       // Bestimme nächsten Step
       if (step.next && step.next.length > 0) {
-        // TODO: Condition-Logik implementieren
-        currentStepId = step.next[0];
+        // Condition-Logik: Wenn Condition-Funktion vorhanden, evaluiere sie
+        if (step.condition) {
+          const conditionResult = step.condition(context);
+          if (conditionResult && step.next.length > 0) {
+            // Condition erfüllt: Nimm ersten nächsten Step
+            currentStepId = step.next[0];
+          } else if (!conditionResult && step.next.length > 1) {
+            // Condition nicht erfüllt: Nimm zweiten nächsten Step (else-Branch)
+            currentStepId = step.next[1];
+          } else {
+            // Kein else-Branch: Workflow beenden
+            break;
+          }
+        } else if (step.type === 'condition') {
+          // Condition-Step mit config-basierter Evaluierung
+          const conditionResult = this.evaluateCondition(step.config, context);
+          if (conditionResult && step.next.length > 0) {
+            currentStepId = step.next[0];
+          } else if (!conditionResult && step.next.length > 1) {
+            currentStepId = step.next[1];
+          } else {
+            break;
+          }
+        } else {
+          // Keine Condition: Nimm ersten nächsten Step
+          const nextStepId = step.next[0];
+          if (nextStepId) {
+            currentStepId = nextStepId;
+          } else {
+            break;
+          }
+        }
       } else {
         break;
       }
@@ -134,6 +166,66 @@ export class WorkflowService {
 
       default:
         this.logger.warn(`Unknown workflow step type: ${step.type}`);
+    }
+  }
+
+  /**
+   * Condition evaluieren
+   */
+  private evaluateCondition(
+    config: Record<string, any>,
+    context: WorkflowContext,
+  ): boolean {
+    const { operator, left, right } = config;
+
+    // Wert aus Context extrahieren
+    const getValue = (path: string): any => {
+      const parts = path.split('.');
+      let value: any = context.state;
+      for (const part of parts) {
+        if (value && typeof value === 'object') {
+          value = value[part];
+        } else {
+          return undefined;
+        }
+      }
+      return value;
+    };
+
+    const leftValue = typeof left === 'string' && left.startsWith('$') 
+      ? getValue(left.substring(1)) 
+      : left;
+    const rightValue = typeof right === 'string' && right.startsWith('$')
+      ? getValue(right.substring(1))
+      : right;
+
+    // Operator-basierte Evaluierung
+    switch (operator) {
+      case 'eq':
+        return leftValue === rightValue;
+      case 'ne':
+        return leftValue !== rightValue;
+      case 'gt':
+        return Number(leftValue) > Number(rightValue);
+      case 'gte':
+        return Number(leftValue) >= Number(rightValue);
+      case 'lt':
+        return Number(leftValue) < Number(rightValue);
+      case 'lte':
+        return Number(leftValue) <= Number(rightValue);
+      case 'contains':
+        return String(leftValue).includes(String(rightValue));
+      case 'in':
+        return Array.isArray(rightValue) && rightValue.includes(leftValue);
+      case 'and':
+        return Array.isArray(left) && left.every((cond: any) => this.evaluateCondition(cond, context));
+      case 'or':
+        return Array.isArray(left) && left.some((cond: any) => this.evaluateCondition(cond, context));
+      case 'not':
+        return !this.evaluateCondition(left, context);
+      default:
+        this.logger.warn(`Unknown condition operator: ${operator}`);
+        return false;
     }
   }
 

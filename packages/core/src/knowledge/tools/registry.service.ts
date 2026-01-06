@@ -6,6 +6,8 @@ import { Injectable, Logger } from '@nestjs/common';
 export interface Tool {
   name: string;
   description: string;
+  category?: string;
+  tags?: string[];
   parameters: ToolParameter[];
   execute: (input: Record<string, any>) => Promise<any>;
   healthCheck?: () => Promise<boolean>;
@@ -70,8 +72,31 @@ export class ToolRegistryService {
    * Tools nach Kategorie filtern
    */
   getToolsByCategory(category: string): Tool[] {
-    // TODO: Kategorie-System implementieren
-    return Array.from(this.tools.values());
+    return Array.from(this.tools.values()).filter(
+      (tool) => tool.category === category,
+    );
+  }
+
+  /**
+   * Tools nach Tags filtern
+   */
+  getToolsByTags(tags: string[]): Tool[] {
+    return Array.from(this.tools.values()).filter((tool) =>
+      tags.some((tag) => tool.tags?.includes(tag)),
+    );
+  }
+
+  /**
+   * Alle Kategorien auflisten
+   */
+  getCategories(): string[] {
+    const categories = new Set<string>();
+    this.tools.forEach((tool) => {
+      if (tool.category) {
+        categories.add(tool.category);
+      }
+    });
+    return Array.from(categories);
   }
 
   /**

@@ -10,7 +10,7 @@ export class F13ApiError extends Error {
   constructor(
     public readonly statusCode: number,
     public readonly response: any,
-    message?: string,
+    message?: string
   ) {
     super(message || `F13 API error: ${statusCode}`);
     this.name = 'F13ApiError';
@@ -19,7 +19,7 @@ export class F13ApiError extends Error {
 
 /**
  * F13 HTTP Client
- * 
+ *
  * Robuster HTTP-Client für F13 API mit Retry-Logik und Error-Handling
  */
 @Injectable()
@@ -34,7 +34,8 @@ export class F13Client {
       baseUrl: this.configService.get<string>('F13_BASE_URL') || defaultConfig.baseUrl,
       apiKey: this.configService.get<string>('F13_API_KEY') || defaultConfig.apiKey,
       timeout: this.configService.get<number>('F13_TIMEOUT') ?? defaultConfig.timeout,
-      retryAttempts: this.configService.get<number>('F13_RETRY_ATTEMPTS') ?? defaultConfig.retryAttempts,
+      retryAttempts:
+        this.configService.get<number>('F13_RETRY_ATTEMPTS') ?? defaultConfig.retryAttempts,
       retryDelay: this.configService.get<number>('F13_RETRY_DELAY') ?? defaultConfig.retryDelay,
     };
 
@@ -58,7 +59,7 @@ export class F13Client {
       (error) => {
         this.logger.error(`F13 API Request failed: ${error.message}`);
         return Promise.reject(error);
-      },
+      }
     );
 
     // Response Interceptor
@@ -73,13 +74,9 @@ export class F13Client {
           url: error.config?.url,
         });
         return Promise.reject(
-          new F13ApiError(
-            error.response?.status || 500,
-            error.response?.data,
-            error.message,
-          ),
+          new F13ApiError(error.response?.status || 500, error.response?.data, error.message)
         );
-      },
+      }
     );
   }
 
@@ -132,7 +129,9 @@ export class F13Client {
         // Warte vor Retry
         if (attempt < this.config.retryAttempts) {
           const delay = this.config.retryDelay * Math.pow(2, attempt); // Exponential Backoff
-          this.logger.debug(`Retrying request (attempt ${attempt + 1}/${this.config.retryAttempts}) after ${delay}ms`);
+          this.logger.debug(
+            `Retrying request (attempt ${attempt + 1}/${this.config.retryAttempts}) after ${delay}ms`
+          );
           await this.sleep(delay);
         }
       }
@@ -179,7 +178,7 @@ export class F13Client {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // TODO: F13 Health-Check Endpoint
+      // F13 Health-Check Endpoint implementiert
       await this.get('/health', { timeout: 5000 });
       return true;
     } catch {
@@ -187,4 +186,3 @@ export class F13Client {
     }
   }
 }
-
