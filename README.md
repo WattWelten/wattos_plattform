@@ -5,6 +5,12 @@
 # WattOS KI - Modulare, DSGVO-konforme KI-Plattform
 
 [![CI](https://github.com/WattWelten/wattos_plattform/actions/workflows/ci.yml/badge.svg)](https://github.com/WattWelten/wattos_plattform/actions/workflows/ci.yml)
+[![CD](https://github.com/WattWelten/wattos_plattform/actions/workflows/cd.yml/badge.svg)](https://github.com/WattWelten/wattos_plattform/actions/workflows/cd.yml)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.9.0-brightgreen.svg)](https://nodejs.org/)
+[![pnpm Version](https://img.shields.io/badge/pnpm-%3E%3D9.0.0-orange.svg)](https://pnpm.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Production Ready](https://img.shields.io/badge/status-production%20ready-success.svg)](docs/PRODUCTION_READINESS_CHECKLIST.md)
 
 WattOS KI ist eine modulare, DSGVO-konforme KI-Plattform für kleine und mittlere Unternehmen (KMU), Schulen und öffentliche Verwaltungen. Die Plattform bietet Multi-LLM-Support, RAG (Retrieval-Augmented Generation), Digitale Mitarbeiter (Agents) und eine vollständige Admin-Konsole.
 
@@ -13,6 +19,15 @@ WattOS KI ist eine modulare, DSGVO-konforme KI-Plattform für kleine und mittler
 - **Multi-LLM-Support**: OpenAI, Anthropic, Azure OpenAI, Google, Ollama
 - **RAG-System**: Dokumentenbasierte Wissensräume mit Vector Stores (pgvector, OpenSearch)
 - **Digitale Mitarbeiter**: Vorkonfigurierte Agenten für IT-Support, Sales, Marketing, Legal, Meetings
+- **Dashboard Builder**: Low-Code Dashboard-Erstellung mit Drag & Drop Widgets
+- **Widget System**: Wiederverwendbare Widgets für Metriken, Analytics, Conversations, Agents
+- **Alert System**: Konfigurierbare Alert Rules und Alert Management
+- **Knowledge Base**: KBArticle Management für strukturierte Wissensdatenbanken
+- **F13 Integration**: F13Config für Government-Compliance
+- **Cost Tracking**: Detaillierte LLM-Kosten-Tracking und Metriken
+- **Agent Instanzen**: Automatische Agent-Erstellung basierend auf roleType
+- **Avatar System**: 3D Avatar-Rendering mit LipSync und Animationen
+- **Command Palette**: Keyboard-Shortcuts (Cmd/Ctrl+K) für schnelle Navigation
 - **DSGVO-konform**: Alle Daten bleiben in der EU, vollständige Kontrolle
 - **Admin-Konsole**: Nutzerverwaltung, Provider-Konfiguration, Metriken, Audit-Logs
 - **i18n**: Deutsch und Englisch
@@ -24,11 +39,11 @@ WattOS KI ist eine modulare, DSGVO-konforme KI-Plattform für kleine und mittler
 
 ## 📋 Voraussetzungen
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
-- PostgreSQL 15+ (mit pgvector Extension)
+- Node.js >= 20.9.0
+- pnpm >= 9.0.0
+- PostgreSQL 16+ (mit pgvector Extension)
 - Redis 7+
-- Docker & Docker Compose (optional)
+- Docker & Docker Compose (optional, für Container-Deployment)
 
 ## 🛠️ Installation
 
@@ -143,11 +158,16 @@ ANTHROPIC_API_KEY=your-anthropic-key
 Die Plattform verfügt über eine vollständig automatisierte CI/CD-Pipeline:
 
 - **GitHub Actions** - Automatisches Testing, Building, Deployment
-- **Railway** - Backend Services Deployment
-- **Vercel** - Frontend Deployment
-- **Automated Testing** - Unit, Integration, E2E Tests
-- **Automated Monitoring** - Log Analysis, Error Detection
-- **Automated Rollback** - Bei Fehlern
+  - CI: Lint, Type Check, Unit/Integration Tests, Build, Security Audit
+  - CD: Docker Image Build & Push, Staging/Production Deployment
+- **Docker** - Multi-stage Builds für optimierte Container
+  - Gateway, Web, Customer Portal mit standalone output
+  - Health Checks, Non-root User, Security Headers
+- **Railway** - Backend Services Deployment (optional)
+- **Vercel** - Frontend Deployment (optional)
+- **Automated Testing** - Unit, Integration, E2E Tests (Vitest, Playwright)
+- **Automated Monitoring** - Log Analysis, Error Detection, Metrics
+- **Observability** - Request-ID Tracking, Structured Logging (Pino), Metrics (Prometheus), OpenTelemetry (optional)
 
 Siehe [Deployment Automation](docs/DEPLOYMENT_AUTOMATION.md) für Details.
 
@@ -176,9 +196,38 @@ cd apps/web && pnpm build
 
 ## 🚢 Deployment
 
-Die Plattform kann auf Railway, Vercel oder anderen Cloud-Providern deployed werden.
+Die Plattform kann mit Docker, Railway, Vercel oder anderen Cloud-Providern deployed werden.
 
-### Railway (Empfohlen)
+### Docker (Empfohlen für Production)
+
+**Lokale Entwicklung mit Docker Compose:**
+```bash
+cd docker
+docker-compose up -d
+```
+
+**Services:**
+- PostgreSQL (Port 5432)
+- Redis (Port 6379)
+- Gateway (Port 3001)
+- Web (Port 3000)
+- Customer Portal (Port 3002)
+
+**Docker Images bauen:**
+```bash
+# Gateway
+docker build -f docker/Dockerfile.gateway -t wattos-gateway:latest .
+
+# Web
+docker build -f docker/Dockerfile.web -t wattos-web:latest \
+  --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001/api .
+
+# Customer Portal
+docker build -f docker/Dockerfile.customer-portal -t wattos-customer-portal:latest \
+  --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001/api .
+```
+
+### Railway (Alternative)
 
 Siehe [Railway Deployment Guide](./docs/DEPLOYMENT_RAILWAY.md) für detaillierte Anleitung.
 
@@ -240,11 +289,45 @@ Siehe [DEPLOYMENT_RAILWAY.md](./docs/DEPLOYMENT_RAILWAY.md) für vollständige A
 
 ## 🤝 Beitragen
 
-Beiträge sind willkommen! Bitte erstellen Sie einen Issue oder einen Pull Request.
+Beiträge sind willkommen! Bitte lesen Sie unseren [Contributing Guide](docs/CONTRIBUTING.md) bevor Sie einen Pull Request erstellen.
+
+### Quick Start für Contributors
+
+1. Fork das Repository
+2. Erstellen Sie einen Feature-Branch (`git checkout -b feature/amazing-feature`)
+3. Committen Sie Ihre Änderungen (`git commit -m 'feat: Add amazing feature'`)
+4. Pushen Sie zum Branch (`git push origin feature/amazing-feature`)
+5. Öffnen Sie einen Pull Request
+
+### Code Standards
+
+- **Conventional Commits**: Verwenden Sie [Conventional Commits](https://www.conventionalcommits.org/)
+- **TypeScript**: Strict Mode aktiviert
+- **Tests**: Neue Features müssen Tests enthalten
+- **Linting**: Code muss ESLint-Regeln erfüllen
+- **Type Safety**: Alle Typen müssen explizit definiert sein
+
+Siehe [Code Quality Standards](docs/CODE_QUALITY_STANDARDS.md) für Details.
 
 ## 📄 Lizenz
 
 Proprietär - Alle Rechte vorbehalten
+
+Siehe [LICENSE](LICENSE) für Details.
+
+## 🔒 Security
+
+Wenn Sie ein Sicherheitsproblem gefunden haben, bitte **nicht** ein öffentliches Issue erstellen. Kontaktieren Sie uns stattdessen über [SECURITY.md](SECURITY.md).
+
+## 📊 Projekt-Status
+
+✅ **Production Ready** - Alle Phasen (1-14) des MVP Production Readiness Plans abgeschlossen
+
+- ✅ Phase 1-12: Core Features & Infrastructure
+- ✅ Phase 13: Dokumentation
+- ✅ Phase 14: Finale Optimierungen & Cleanup
+
+Siehe [Production Readiness Checklist](docs/PRODUCTION_READINESS_CHECKLIST.md) für Details.
 
 ## 👥 Kontakt
 

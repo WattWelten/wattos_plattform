@@ -20,28 +20,29 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  areas     Area[]
-  users     User[]
-  knowledgeSpaces KnowledgeSpace[]
-  agents    Agent[]
-  llmUsage  LLMUsage[]
-  auditLogs AuditLog[]
+  areas            Area[]
+  users            User[]
+  knowledgeSpaces  KnowledgeSpace[]
+  agents           Agent[]
+  llmUsage         LLMUsage[]
+  auditLogs        AuditLog[]
   customerAnalyses CustomerAnalysis[]
-  profile   TenantProfile?
-  channelSessions ChannelSession[]
-  characters Character[]
-  roles     Role[]
-  sources   Source[]
-  crawls    Crawl[]
-  events    Event[]
-  configs   Config?
-  indices   Index[]
-  // kbArticles KBArticle[] // TODO: Add KBArticle model
-  // f13Config  F13Config? // TODO: Add F13Config model
-  // dashboards Dashboard[] // TODO: Add Dashboard model
-  // widgets    Widget[] // TODO: Add Widget model
-  // alertRules AlertRule[] // TODO: Add AlertRule model
-  // alerts     Alert[] // TODO: Add Alert model
+  profile          TenantProfile?
+  channelSessions  ChannelSession[]
+  characters       Character[]
+  roles            Role[]
+  sources          Source[]
+  crawls           Crawl[]
+  events           Event[]
+  configs          Config?
+  indices          Index[]
+  kbArticles       KBArticle[]
+  f13Config        F13Config?
+  dashboards       Dashboard[]
+  widgets          Widget[]
+  alertRules       AlertRule[]
+  alerts           Alert[]
+  artifacts        Artifact[]
 
   @@index([slug])
 }
@@ -52,8 +53,8 @@ model Area {
   name      String
   createdAt DateTime @default(now())
 
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  teams     Team[]
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teams  Team[]
 
   @@index([tenantId])
 }
@@ -64,7 +65,7 @@ model Team {
   name      String
   createdAt DateTime @default(now())
 
-  area      Area     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  area Area @relation(fields: [areaId], references: [id], onDelete: Cascade)
 
   @@index([areaId])
 }
@@ -74,22 +75,22 @@ model Team {
 // ============================================
 
 model User {
-  id          String   @id @default(uuid())
-  tenantId    String
-  email       String   @unique
+  id           String   @id @default(uuid())
+  tenantId     String
+  email        String   @unique
   passwordHash String?
-  keycloakId  String?  @unique
-  mfaEnabled  Boolean  @default(false)
-  mfaSecret   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  keycloakId   String?  @unique
+  mfaEnabled   Boolean  @default(false)
+  mfaSecret    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userRoles   UserRole[]
-  agentRuns   AgentRun[]
-  auditLogs   AuditLog[]
-  chats       Chat[]
-  feedback    Feedback[]
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles UserRole[]
+  agentRuns AgentRun[]
+  auditLogs AuditLog[]
+  chats     Chat[]
+  feedback  Feedback[]
 
   @@index([tenantId])
   @@index([email])
@@ -102,8 +103,8 @@ model Role {
   permissions Json     @default("[]")
   createdAt   DateTime @default(now())
 
-  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  userRoles   UserRole[]
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles UserRole[]
 
   @@index([tenantId])
 }
@@ -112,8 +113,8 @@ model UserRole {
   userId String
   roleId String
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
 }
@@ -140,43 +141,43 @@ model KnowledgeSpace {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  documents   Document[]
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents Document[]
 
   @@index([tenantId])
 }
 
 model Document {
-  id             String   @id @default(uuid())
+  id               String   @id @default(uuid())
   knowledgeSpaceId String
-  filePath       String
-  fileName       String
-  fileType       String?
-  fileSize       BigInt
-  metadata       Json     @default("{}")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  filePath         String
+  fileName         String
+  fileType         String?
+  fileSize         BigInt
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   knowledgeSpace KnowledgeSpace @relation(fields: [knowledgeSpaceId], references: [id], onDelete: Cascade)
-  chunks        Chunk[]
+  chunks         Chunk[]
 
   @@index([knowledgeSpaceId])
   @@index([filePath])
 }
 
 model Chunk {
-  id          String   @id @default(uuid())
-  documentId  String
-  content     String   @db.Text
-  chunkIndex  Int
-  metadata    Json     @default("{}")
-  embedding   Unsupported("vector(1536)")? // pgvector
-  createdAt   DateTime @default(now())
+  id         String                       @id @default(uuid())
+  documentId String
+  content    String                       @db.Text
+  chunkIndex Int
+  metadata   Json                         @default("{}")
+  embedding  Unsupported("vector(1536)")? // pgvector
+  createdAt  DateTime                     @default(now())
 
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  // Note: pgvector index created via migration
 
   @@index([documentId])
-  // Note: pgvector index created via migration
 }
 
 // ============================================
@@ -184,26 +185,26 @@ model Chunk {
 // ============================================
 
 model Agent {
-  id           String   @id @default(uuid())
-  tenantId     String
-  characterId String?  // MVP: Verknüpfung zu Character
-  personaId   String?  // MVP: Verknüpfung zu Persona
-  name         String
-  role         String   // MVP: Rolle des Agents
-  roleType     String
-  tools        String[] // MVP: Tool-IDs
-  ragConfig    Json?    // MVP: RAG-Konfiguration
-  personaConfig Json    @default("{}")
-  toolsConfig  Json     @default("[]")
-  policiesConfig Json   @default("{}")
-  kpiConfig    Json     @default("{}")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(uuid())
+  tenantId       String
+  characterId    String? // MVP: Verknüpfung zu Character
+  personaId      String? // MVP: Verknüpfung zu Persona
+  name           String
+  role           String // MVP: Rolle des Agents
+  roleType       String
+  tools          String[] // MVP: Tool-IDs
+  ragConfig      Json? // MVP: RAG-Konfiguration
+  personaConfig  Json     @default("{}")
+  toolsConfig    Json     @default("[]")
+  policiesConfig Json     @default("{}")
+  kpiConfig      Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  character    Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  persona      Persona? @relation(fields: [personaId], references: [id], onDelete: SetNull)
-  agentRuns    AgentRun[]
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  character        Character?        @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  persona          Persona?          @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  agentRuns        AgentRun[]
   agentGenerations AgentGeneration[]
 
   @@index([tenantId])
@@ -213,19 +214,19 @@ model Agent {
 }
 
 model AgentRun {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   agentId     String
   userId      String?
-  input       String   @db.Text
-  output      String?  @db.Text
-  status      String   // pending | running | completed | failed
-  metrics     Json     @default("{}")
-  createdAt   DateTime @default(now())
+  input       String    @db.Text
+  output      String?   @db.Text
+  status      String // pending | running | completed | failed
+  metrics     Json      @default("{}")
+  createdAt   DateTime  @default(now())
   completedAt DateTime?
 
-  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  toolCalls   ToolCall[]
+  agent     Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toolCalls ToolCall[]
 
   @@index([agentId])
   @@index([userId])
@@ -241,7 +242,7 @@ model ToolCall {
   error      String?  @db.Text
   createdAt  DateTime @default(now())
 
-  agentRun   AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
 
   @@index([agentRunId])
 }
@@ -251,27 +252,27 @@ model ToolCall {
 // ============================================
 
 model Character {
-  id              String   @id @default(uuid())
-  tenantId        String   // Tenant-Zuordnung für MVP
-  role            String   // Nicht mehr unique, da pro Tenant
-  name            String?  // Extrahierter Name aus Prompt
-  personality     Json?    // LLM-generierte Persönlichkeit
-  agent           String   @default("chatbot")
-  voiceId         String?
-  voiceModel      String?
-  systemPrompt    String?  @db.Text
-  prompt          String   @db.Text // Original-Prompt für Charakter-Definition
-  customParameters Json    @default("{}")
-  knowledgeBase   Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(uuid())
+  tenantId         String // Tenant-Zuordnung für MVP
+  role             String // Nicht mehr unique, da pro Tenant
+  name             String? // Extrahierter Name aus Prompt
+  personality      Json? // LLM-generierte Persönlichkeit
+  agent            String   @default("chatbot")
+  voiceId          String?
+  voiceModel       String?
+  systemPrompt     String?  @db.Text
+  prompt           String   @db.Text // Original-Prompt für Charakter-Definition
+  customParameters Json     @default("{}")
+  knowledgeBase    Json     @default("{}")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  conversations   Conversation[]
-  artifacts       Artifact[]
-  personas        Persona[]
-  agents          Agent[]
-  // widgets         Widget[] // TODO: Add Widget model
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+  artifacts     Artifact[]
+  personas      Persona[]
+  agents        Agent[]
+  widgets       Widget[]
 
   @@unique([tenantId, role]) // Unique pro Tenant
   @@index([tenantId])
@@ -280,21 +281,21 @@ model Character {
 
 model Artifact {
   id          String   @id @default(uuid())
-  tenantId    String   // Für Multi-Tenant Support
+  tenantId    String // Für Multi-Tenant Support
   characterId String?
   sourceId    String?
   name        String
   description String?  @db.Text
   url         String   @db.Text
-  hash        String?  // Content-Hash für Delta-Detection
+  hash        String? // Content-Hash für Delta-Detection
   storageType String   @default("local") // local | s3 | url
   metadata    Json     @default("{}")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  source      Source?   @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  character Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  source    Source?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([characterId])
@@ -316,27 +317,27 @@ model Chat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
 
   @@index([userId])
   @@index([tenantId])
 }
 
 model Conversation {
-  id        String   @id @default(uuid())
-  threadId  String   @unique @default(uuid())
-  sessionId String?  // Session-ID für Tracking
+  id          String   @id @default(uuid())
+  threadId    String   @unique @default(uuid())
+  sessionId   String? // Session-ID für Tracking
   characterId String?
-  userId    String?
-  tenantId  String?
-  userAgent String?  @db.Text
-  startedAt DateTime @default(now())
-  metadata  Json     @default("{}")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId      String?
+  tenantId    String?
+  userAgent   String?  @db.Text
+  startedAt   DateTime @default(now())
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  character Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  character Character?            @relation(fields: [characterId], references: [id], onDelete: SetNull)
   messages  ConversationMessage[]
 
   @@index([characterId])
@@ -348,17 +349,17 @@ model Conversation {
 }
 
 model ConversationMessage {
-  id            String   @id @default(uuid())
+  id             String   @id @default(uuid())
   conversationId String
-  role          String   // user | assistant | system
-  content       String   @db.Text
-  citations     Json?
-  latencyMs     Int?     // Latenz in Millisekunden
-  sourcesJsonb  Json?    // Quellen als JSON Array
-  metadata      Json     @default("{}")
-  createdAt     DateTime @default(now())
+  role           String // user | assistant | system
+  content        String   @db.Text
+  citations      Json?
+  latencyMs      Int? // Latenz in Millisekunden
+  sourcesJsonb   Json? // Quellen als JSON Array
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now())
 
-  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@index([createdAt])
@@ -367,13 +368,13 @@ model ConversationMessage {
 model Message {
   id        String   @id @default(uuid())
   chatId    String
-  role      String   // user | assistant | system
+  role      String // user | assistant | system
   content   String   @db.Text
-  citations Json?    // Array of Citation objects
+  citations Json? // Array of Citation objects
   metadata  Json     @default("{}")
   createdAt DateTime @default(now())
 
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId])
   @@index([createdAt])
@@ -384,17 +385,17 @@ model Message {
 // ============================================
 
 model LLMUsage {
-  id              String   @id @default(uuid())
-  tenantId        String
-  provider        String
-  model           String
-  promptTokens    Int
+  id               String   @id @default(uuid())
+  tenantId         String
+  provider         String
+  model            String
+  promptTokens     Int
   completionTokens Int
-  totalTokens     Int
-  costUsd         Decimal  @db.Decimal(10, 6)
-  createdAt       DateTime @default(now())
+  totalTokens      Int
+  costUsd          Decimal  @db.Decimal(10, 6)
+  createdAt        DateTime @default(now())
 
-  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([createdAt])
@@ -406,22 +407,22 @@ model LLMUsage {
 // ============================================
 
 model AuditLog {
-  id          String   @id @default(uuid())
-  tenantId    String
-  userId      String?
-  service     String?  // Service-Name für Observability
-  action      String
+  id           String   @id @default(uuid())
+  tenantId     String
+  userId       String?
+  service      String? // Service-Name für Observability
+  action       String
   resourceType String?
   resourceId   String?
   details      Json     @default("{}")
-  metadata    Json     @default("{}") // Zusätzliche Metadaten für Logs
+  metadata     Json     @default("{}") // Zusätzliche Metadaten für Logs
   ipAddress    String?
   userAgent    String?  @db.Text
-  timestamp   DateTime @default(now()) // Alias für createdAt für Observability
+  timestamp    DateTime @default(now()) // Alias für createdAt für Observability
   createdAt    DateTime @default(now())
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([userId, createdAt(sort: Desc)])
@@ -436,13 +437,13 @@ model AuditLog {
 model Feedback {
   id        String   @id @default(uuid())
   userId    String
-  type      String   // rating | comment | improvement
+  type      String // rating | comment | improvement
   content   String?  @db.Text
-  rating    Int?     // 1-5 stars
+  rating    Int? // 1-5 stars
   metadata  Json     @default("{}")
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
@@ -453,19 +454,19 @@ model Feedback {
 // ============================================
 
 model CustomerAnalysis {
-  id              String   @id @default(uuid())
-  tenantId        String
-  customerType    String   // "kommune" | "unternehmen" | "organisation"
-  analysisType    String   // "initial" | "periodic" | "on-demand"
-  status          String   // "pending" | "running" | "completed" | "failed"
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  completedAt     DateTime?
+  id           String    @id @default(uuid())
+  tenantId     String
+  customerType String // "kommune" | "unternehmen" | "organisation"
+  analysisType String // "initial" | "periodic" | "on-demand"
+  status       String // "pending" | "running" | "completed" | "failed"
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  completedAt  DateTime?
 
-  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  targetGroups    TargetGroup[]
-  personas        Persona[]
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  targetGroups     TargetGroup[]
+  personas         Persona[]
   agentGenerations AgentGeneration[]
 
   @@index([tenantId])
@@ -474,22 +475,22 @@ model CustomerAnalysis {
 }
 
 model TargetGroup {
-  id                String   @id @default(uuid())
-  analysisId        String
-  name              String
-  description       String?  @db.Text
-  demographics      Json     @default("{}") // Alter, Geschlecht, Standort, etc.
-  behaviorPatterns  Json     @default("{}") // Interaktionen, Präferenzen
-  language          String   // "de" | "en" | "tr" | etc.
-  contentPreferences Json    @default("{}") // Bevorzugte Content-Typen
-  size              Int?     // Geschätzte Größe der Zielgruppe
-  confidence        Float    @default(0.0) // 0.0 - 1.0
-  createdAt         DateTime @default(now())
+  id                 String   @id @default(uuid())
+  analysisId         String
+  name               String
+  description        String?  @db.Text
+  demographics       Json     @default("{}") // Alter, Geschlecht, Standort, etc.
+  behaviorPatterns   Json     @default("{}") // Interaktionen, Präferenzen
+  language           String // "de" | "en" | "tr" | etc.
+  contentPreferences Json     @default("{}") // Bevorzugte Content-Typen
+  size               Int? // Geschätzte Größe der Zielgruppe
+  confidence         Float    @default(0.0) // 0.0 - 1.0
+  createdAt          DateTime @default(now())
 
-  analysis          CustomerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  personas          Persona[]
+  analysis           CustomerAnalysis    @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  personas           Persona[]
   contentEnrichments ContentEnrichment[]
-  agentGenerations  AgentGeneration[]
+  agentGenerations   AgentGeneration[]
 
   @@index([analysisId])
   @@index([language])
@@ -497,27 +498,27 @@ model TargetGroup {
 }
 
 model Persona {
-  id                String   @id @default(uuid())
-  characterId       String?  // MVP: Verknüpfung zu Character
-  analysisId        String?
-  targetGroupId     String?
-  name              String
-  description       String?  @db.Text
-  traits            Json     @default("{}") // Persona-Eigenschaften (MVP)
-  characteristics   Json     @default("{}") // Persönlichkeitsmerkmale, Bedürfnisse
-  painPoints        Json     @default("[]") // Herausforderungen
-  goals             Json     @default("[]") // Ziele
-  communicationStyle Json    @default("{}") // Bevorzugter Kommunikationsstil
-  language          String   // "de" | "en" | "tr" | etc.
-  metadata          Json     @default("{}")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  characterId        String? // MVP: Verknüpfung zu Character
+  analysisId         String?
+  targetGroupId      String?
+  name               String
+  description        String?  @db.Text
+  traits             Json     @default("{}") // Persona-Eigenschaften (MVP)
+  characteristics    Json     @default("{}") // Persönlichkeitsmerkmale, Bedürfnisse
+  painPoints         Json     @default("[]") // Herausforderungen
+  goals              Json     @default("[]") // Ziele
+  communicationStyle Json     @default("{}") // Bevorzugter Kommunikationsstil
+  language           String // "de" | "en" | "tr" | etc.
+  metadata           Json     @default("{}")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  character         Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  analysis          CustomerAnalysis? @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  targetGroup       TargetGroup? @relation(fields: [targetGroupId], references: [id], onDelete: SetNull)
-  agentGenerations  AgentGeneration[]
-  agents            Agent[]
+  character        Character?        @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  analysis         CustomerAnalysis? @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  targetGroup      TargetGroup?      @relation(fields: [targetGroupId], references: [id], onDelete: SetNull)
+  agentGenerations AgentGeneration[]
+  agents           Agent[]
 
   @@index([characterId])
   @@index([analysisId])
@@ -526,17 +527,17 @@ model Persona {
 }
 
 model ContentEnrichment {
-  id                String   @id @default(uuid())
-  targetGroupId     String
-  sourceType        String   // "crawler" | "document" | "conversation" | "external"
-  sourceId          String   // ID des Quell-Dokuments/Conversations/etc.
-  content           String   @db.Text
-  relevanceScore    Float    @default(0.0) // 0.0 - 1.0
-  language          String
-  metadata          Json     @default("{}")
-  createdAt         DateTime @default(now())
+  id             String   @id @default(uuid())
+  targetGroupId  String
+  sourceType     String // "crawler" | "document" | "conversation" | "external"
+  sourceId       String // ID des Quell-Dokuments/Conversations/etc.
+  content        String   @db.Text
+  relevanceScore Float    @default(0.0) // 0.0 - 1.0
+  language       String
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now())
 
-  targetGroup       TargetGroup @relation(fields: [targetGroupId], references: [id], onDelete: Cascade)
+  targetGroup TargetGroup @relation(fields: [targetGroupId], references: [id], onDelete: Cascade)
 
   @@index([targetGroupId])
   @@index([sourceType, sourceId])
@@ -544,21 +545,21 @@ model ContentEnrichment {
 }
 
 model AgentGeneration {
-  id                String   @id @default(uuid())
-  analysisId        String
-  personaId         String?
-  targetGroupId     String?
-  agentId           String?  // ID des generierten Agents
-  generationConfig  Json     @default("{}") // Konfiguration für Agent-Generierung
-  status            String   // "pending" | "generating" | "completed" | "failed"
-  error             String?  @db.Text
-  createdAt         DateTime @default(now())
-  completedAt       DateTime?
+  id               String    @id @default(uuid())
+  analysisId       String
+  personaId        String?
+  targetGroupId    String?
+  agentId          String? // ID des generierten Agents
+  generationConfig Json      @default("{}") // Konfiguration für Agent-Generierung
+  status           String // "pending" | "generating" | "completed" | "failed"
+  error            String?   @db.Text
+  createdAt        DateTime  @default(now())
+  completedAt      DateTime?
 
-  analysis          CustomerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  persona           Persona? @relation(fields: [personaId], references: [id], onDelete: SetNull)
-  targetGroup       TargetGroup? @relation(fields: [targetGroupId], references: [id], onDelete: SetNull)
-  agent             Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  analysis    CustomerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  persona     Persona?         @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  targetGroup TargetGroup?     @relation(fields: [targetGroupId], references: [id], onDelete: SetNull)
+  agent       Agent?           @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
   @@index([analysisId])
   @@index([personaId])
@@ -572,17 +573,17 @@ model AgentGeneration {
 // ============================================
 
 model TenantProfile {
-  id          String   @id @default(uuid())
-  tenantId    String   @unique
-  market      String   // "enterprise" | "gov" | "media" | "health"
-  mode        String   // "standard" | "regulated" | "gov-f13"
-  providers   Json     @default("{}") // { llm: "wattweiser" | "f13", ... }
-  compliance  Json     @default("{}") // { gdpr: boolean, aiAct: boolean, ... }
-  features    Json     @default("{}") // { guidedFlows: boolean, sourceRequired: boolean, ... }
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  tenantId   String   @unique
+  market     String // "enterprise" | "gov" | "media" | "health"
+  mode       String // "standard" | "regulated" | "gov-f13"
+  providers  Json     @default("{}") // { llm: "wattweiser" | "f13", ... }
+  compliance Json     @default("{}") // { gdpr: boolean, aiAct: boolean, ... }
+  features   Json     @default("{}") // { guidedFlows: boolean, sourceRequired: boolean, ... }
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([market])
   @@index([mode])
@@ -593,36 +594,36 @@ model TenantProfile {
 // ============================================
 
 model ChannelSession {
-  id          String   @id @default(uuid())
-  tenantId    String
-  channel     String   // "web-chat" | "phone" | "whatsapp" | "telegram"
-  channelId   String   // Channel-spezifische ID (z.B. WhatsApp Number, Phone Number)
-  userId      String?
-  metadata    Json     @default("{}")
-  status      String   @default("active") // "active" | "closed" | "paused"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  closedAt    DateTime?
+  id        String    @id @default(uuid())
+  tenantId  String
+  channel   String // "web-chat" | "phone" | "whatsapp" | "telegram"
+  channelId String // Channel-spezifische ID (z.B. WhatsApp Number, Phone Number)
+  userId    String?
+  metadata  Json      @default("{}")
+  status    String    @default("active") // "active" | "closed" | "paused"
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  messages    ChannelMessage[]
+  tenant   Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages ChannelMessage[]
 
   @@index([tenantId, channel])
   @@index([channelId])
 }
 
 model ChannelMessage {
-  id          String   @id @default(uuid())
-  sessionId   String
-  direction   String   // "inbound" | "outbound"
-  type        String   // "text" | "audio" | "media"
-  content     String?  @db.Text
-  audioUrl    String?
-  mediaUrl    String?
-  metadata    Json     @default("{}")
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  sessionId String
+  direction String // "inbound" | "outbound"
+  type      String // "text" | "audio" | "media"
+  content   String?  @db.Text
+  audioUrl  String?
+  mediaUrl  String?
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
 
-  session     ChannelSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session ChannelSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt(sort: Desc)])
 }
@@ -635,13 +636,13 @@ model Source {
   id        String   @id @default(uuid())
   tenantId  String
   url       String   @db.Text
-  type      String   // "domain" | "pattern" | "file"
+  type      String // "domain" | "pattern" | "file"
   enabled   Boolean  @default(true)
   metadata  Json     @default("{}")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   artifacts Artifact[]
   crawls    Crawl[]
 
@@ -651,68 +652,226 @@ model Source {
 }
 
 model Crawl {
-  id          String   @id @default(uuid())
-  tenantId    String
-  sourceId    String?
-  startedAt   DateTime @default(now())
-  finishedAt  DateTime?
-  pages       Int      @default(0)
-  delta       Int      @default(0) // Anzahl neuer/geänderter Seiten
-  status      String   // "pending" | "running" | "completed" | "failed"
-  log         String?  @db.Text
-  metadata    Json     @default("{}")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String    @id @default(uuid())
+  tenantId   String
+  sourceId   String?
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  pages      Int       @default(0)
+  delta      Int       @default(0) // Anzahl neuer/geänderter Seiten
+  status     String // "pending" | "running" | "completed" | "failed"
+  log        String?   @db.Text
+  metadata   Json      @default("{}")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  source      Source?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source Source? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([sourceId])
   @@index([status])
   @@index([startedAt])
+  @@index([tenantId, status]) // Composite index für häufige Queries
+  @@index([createdAt(sort: Desc)]) // Für Sortierung nach neuesten Crawls
 }
 
 model Event {
-  id            String   @id @default(uuid())
-  tenantId      String
+  id             String   @id @default(uuid())
+  tenantId       String
   conversationId String?
-  sessionId     String?
-  type          String   // "viseme" | "tts" | "error" | "kpi"
-  payloadJsonb  Json     // Event-spezifische Daten
-  ts            DateTime @default(now())
-  metadata      Json     @default("{}")
-  createdAt     DateTime @default(now())
+  sessionId      String?
+  type           String // "viseme" | "tts" | "error" | "kpi"
+  payloadJsonb   Json // Event-spezifische Daten
+  ts             DateTime @default(now())
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now())
 
-  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([conversationId])
   @@index([sessionId])
   @@index([type])
   @@index([ts])
+  @@index([tenantId, type, ts(sort: Desc)]) // Composite index für Event-Queries
+  @@index([conversationId, ts(sort: Desc)]) // Für Conversation-Event-Historie
 }
 
 model Config {
   tenantId  String   @id
-  jsonb     Json     // No-Code Config als JSON
+  jsonb     Json // No-Code Config als JSON
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
 model Index {
+  id         String   @id @default(uuid())
+  tenantId   String
+  name       String
+  statsJsonb Json     @default("{}") // Statistiken (Anzahl Dokumente, Größe, etc.)
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([name])
+}
+
+// ============================================
+// KNOWLEDGE BASE ARTICLES
+// ============================================
+
+model KBArticle {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  content     String    @db.Text
+  category    String?
+  tags        String[]
+  status      String    @default("draft") // draft | published | archived
+  publishedAt DateTime?
+  metadata    Json      @default("{}")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([category])
+  @@index([tenantId, status])
+}
+
+// ============================================
+// F13 CONFIGURATION
+// ============================================
+
+model F13Config {
+  id            String   @id @default(uuid())
+  tenantId      String   @unique
+  baseUrl       String
+  apiKey        String?
+  timeout       Int      @default(30000)
+  retryAttempts Int      @default(3)
+  retryDelay    Int      @default(1000)
+  enabled       Boolean  @default(true)
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([enabled])
+}
+
+// ============================================
+// DASHBOARDS
+// ============================================
+
+model Dashboard {
   id          String   @id @default(uuid())
   tenantId    String
   name        String
-  statsJsonb  Json     @default("{}") // Statistiken (Anzahl Dokumente, Größe, etc.)
+  description String?
+  layout      Json     @default("{}") // Dashboard Layout Configuration
+  isDefault   Boolean  @default(false)
   metadata    Json     @default("{}")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  widgets Widget[]
 
   @@index([tenantId])
-  @@index([name])
+  @@index([isDefault])
+  @@index([tenantId, isDefault])
+}
+
+// ============================================
+// WIDGETS
+// ============================================
+
+model Widget {
+  id          String   @id @default(uuid())
+  tenantId    String
+  dashboardId String?
+  characterId String?
+  type        String // overview | metrics | chart | table | custom
+  name        String
+  config      Json     @default("{}") // Widget Configuration
+  position    Json     @default("{}") // Position in Dashboard (x, y, w, h)
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dashboard Dashboard? @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  character Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([dashboardId])
+  @@index([characterId])
+  @@index([type])
+}
+
+// ============================================
+// ALERT RULES
+// ============================================
+
+model AlertRule {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  condition   Json // Alert Condition Configuration
+  severity    String   @default("medium") // low | medium | high | critical
+  enabled     Boolean  @default(true)
+  actions     Json     @default("[]") // Actions to take when alert triggers
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  alerts Alert[]
+
+  @@index([tenantId])
+  @@index([enabled])
+  @@index([severity])
+  @@index([tenantId, enabled])
+}
+
+// ============================================
+// ALERTS
+// ============================================
+
+model Alert {
+  id             String    @id @default(uuid())
+  tenantId       String
+  ruleId         String
+  title          String
+  message        String    @db.Text
+  severity       String // low | medium | high | critical
+  status         String    @default("open") // open | acknowledged | resolved | closed
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  closedAt       DateTime?
+  metadata       Json      @default("{}")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rule   AlertRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ruleId])
+  @@index([status])
+  @@index([severity])
+  @@index([tenantId, status])
+  @@index([createdAt(sort: Desc)])
 }

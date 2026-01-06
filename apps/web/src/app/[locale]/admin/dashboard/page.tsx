@@ -13,9 +13,7 @@ import { authenticatedFetch } from '@/lib/auth';
 
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState('7d');
-  const [autoRefresh] = useState(true);
-  // TODO: Implement auto-refresh toggle UI
-  // const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Real-time Updates mit React Query
   const { data: dashboardData, isLoading, refetch } = useQuery({
@@ -109,6 +107,15 @@ export default function AdminDashboardPage() {
           <p className="text-gray-600 mt-1">Übersicht über Ihre Plattform-Nutzung</p>
         </div>
         <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Auto-Refresh</span>
+          </label>
           <Button
             variant="outline"
             size="sm"

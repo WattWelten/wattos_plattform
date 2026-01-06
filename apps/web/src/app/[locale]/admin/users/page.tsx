@@ -8,15 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authenticatedFetch } from '@/lib/auth';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { UserEditDialog } from '@/components/user/user-edit-dialog';
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
-  // selectedUser wird für zukünftige Edit-Funktionalität verwendet
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  // Verhindere "unused variable" Warnung - wird für zukünftige Edit-Funktionalität benötigt
-  if (process.env.NODE_ENV === 'development' && selectedUser) {
-    // Debug: selectedUser wird verwendet
-  }
+  const [selectedUser, setSelectedUser] = useState<{
+    id: string;
+    email: string;
+    name?: string;
+    roles?: string[];
+  } | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -53,6 +55,45 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
   });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async (data: { id: string; email: string; name?: string; roles: string[] }) => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await authenticatedFetch(`${apiUrl}/admin/users/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          name: data.name,
+          roles: data.roles,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update user');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+
+  const handleEditUser = (user: any) => {
+    setSelectedUser({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      roles: user.roles || [],
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveUser = async (data: { email: string; name?: string; roles: string[] }) => {
+    if (!selectedUser) return;
+    await updateUserMutation.mutateAsync({
+      id: selectedUser.id,
+      ...data,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -107,11 +148,8 @@ export default function AdminUsersPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        setSelectedUser(user.id);
-                        // TODO: Open edit dialog for user
-                      }}
-                      aria-label={`Edit user ${user.name}`}
+                      onClick={() => handleEditUser(user)}
+                      aria-label={`Edit user ${user.name || user.email}`}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -130,6 +168,18 @@ export default function AdminUsersPage() {
           </tbody>
         </Table>
       </div>
+
+      {/* Edit Dialog */}
+      <UserEditDialog
+        user={selectedUser}
+        availableRoles={['admin', 'user', 'viewer', 'editor']}
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onSave={handleSaveUser}
+      />
     </div>
   );
 }

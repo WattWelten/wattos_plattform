@@ -27,7 +27,18 @@ export class MvpService {
     });
 
     const sessionsPerDay = conversations.length; // Simplified
-    const fcr = 0.75; // Placeholder - should calculate from feedback
+    
+    // Calculate FCR from feedback
+    const feedbacks = await this.prismaService.client.feedback.findMany({
+      where: {
+        userId: {
+          in: conversations.map((c: any) => c.userId).filter(Boolean),
+        },
+      },
+    });
+    const positiveFeedbacks = feedbacks.filter((f: any) => f.rating && f.rating >= 4).length;
+    const fcr = feedbacks.length > 0 ? positiveFeedbacks / feedbacks.length : 0.75;
+    
     const latencies = conversations
       .flatMap((c: any) => c.messages)
       .map((m: any) => m.latencyMs)
@@ -99,12 +110,61 @@ export class MvpService {
       this.logger.warn(`Failed to get RAG metrics: ${error.message}`);
     }
 
+    // Get LLM Cost Tracking metrics
+    let costMetrics = {
+      totalCost: 0,
+      totalTokens: 0,
+      promptTokens: 0,
+      completionTokens: 0,
+      usageCount: 0,
+      byProvider: {} as Record<string, { cost: number; tokens: number; count: number }>,
+      byModel: {} as Record<string, { cost: number; tokens: number; count: number }>,
+    };
+
+    try {
+      const llmUsage = await this.prismaService.client.lLMUsage.findMany({
+        where: { tenantId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      costMetrics.totalCost = llmUsage.reduce((sum: number, u: any) => sum + Number(u.costUsd), 0);
+      costMetrics.totalTokens = llmUsage.reduce((sum: number, u: any) => sum + u.totalTokens, 0);
+      costMetrics.promptTokens = llmUsage.reduce((sum: number, u: any) => sum + u.promptTokens, 0);
+      costMetrics.completionTokens = llmUsage.reduce((sum: number, u: any) => sum + u.completionTokens, 0);
+      costMetrics.usageCount = llmUsage.length;
+
+      // Group by provider
+      llmUsage.forEach((u: any) => {
+        const provider = u.provider;
+        if (!costMetrics.byProvider[provider]) {
+          costMetrics.byProvider[provider] = { cost: 0, tokens: 0, count: 0 };
+        }
+        costMetrics.byProvider[provider].cost += Number(u.costUsd);
+        costMetrics.byProvider[provider].tokens += u.totalTokens;
+        costMetrics.byProvider[provider].count += 1;
+      });
+
+      // Group by model
+      llmUsage.forEach((u: any) => {
+        const model = u.model;
+        if (!costMetrics.byModel[model]) {
+          costMetrics.byModel[model] = { cost: 0, tokens: 0, count: 0 };
+        }
+        costMetrics.byModel[model].cost += Number(u.costUsd);
+        costMetrics.byModel[model].tokens += u.totalTokens;
+        costMetrics.byModel[model].count += 1;
+      });
+    } catch (error: any) {
+      this.logger.warn(`Failed to get cost metrics: ${error.message}`);
+    }
+
     return {
       sessionsPerDay,
       fcr,
       p95Latency,
       contentFreshness,
       ragMetrics,
+      costMetrics,
     };
   }
 
@@ -123,13 +183,46 @@ export class MvpService {
       skip: offset,
     });
 
-    return conversations.map((c: any) => ({
-      id: c.id,
-      sessionId: c.sessionId || '',
-      startedAt: c.startedAt.toISOString(),
-      messageCount: c.messages.length,
-      score: undefined, // TODO: Calculate from feedback
-    }));
+    // Get feedback for conversations
+    const conversationIds = conversations.map((c: any) => c.id);
+    const feedbacks = await this.prismaService.client.feedback.findMany({
+      where: {
+        userId: {
+          in: conversations.map((c: any) => c.userId).filter(Boolean),
+        },
+        metadata: {
+          path: ['conversationId'],
+          in: conversationIds,
+        },
+      },
+    });
+
+    // Calculate scores from feedback
+    const scoresByConversation = new Map<string, number>();
+    feedbacks.forEach((f: any) => {
+      const conversationId = (f.metadata as any)?.conversationId;
+      if (conversationId && f.rating) {
+        const currentScore = scoresByConversation.get(conversationId) || 0;
+        scoresByConversation.set(conversationId, currentScore + f.rating);
+      }
+    });
+
+    return conversations.map((c: any) => {
+      const score = scoresByConversation.get(c.id);
+      // Calculate average score if multiple feedbacks exist
+      const feedbackCount = feedbacks.filter(
+        (f: any) => (f.metadata as any)?.conversationId === c.id,
+      ).length;
+      const avgScore = score && feedbackCount > 0 ? score / feedbackCount : undefined;
+
+      return {
+        id: c.id,
+        sessionId: c.sessionId || '',
+        startedAt: c.startedAt.toISOString(),
+        messageCount: c.messages.length,
+        score: avgScore,
+      };
+    });
   }
 
   async getSources(tenantId: string) {

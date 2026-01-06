@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { GraphState, GraphStateService } from './graph-state.service';
 import { AgentState, ToolCall } from '@wattweiser/agents';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
+import { PrismaService } from '@wattweiser/db';
 
 /**
  * Graph Service
@@ -22,6 +23,7 @@ export class GraphService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   /**
@@ -129,8 +131,31 @@ export class GraphService {
         (aiMessage as any).tool_calls = response.data.choices[0].message.tool_calls;
       }
 
+      // Token Usage extrahieren aus Response
+      const usage = response.data.usage || {};
+      const tokenUsage = {
+        prompt: usage.prompt_tokens || 0,
+        completion: usage.completion_tokens || 0,
+        total: usage.total_tokens || 0,
+      };
+
+      // Agent State mit Token Usage aktualisieren
+      const updatedAgentState = {
+        ...state.agentState,
+        metrics: {
+          ...state.agentState.metrics,
+          tokenUsage: {
+            prompt: (state.agentState.metrics?.tokenUsage?.prompt || 0) + tokenUsage.prompt,
+            completion: (state.agentState.metrics?.tokenUsage?.completion || 0) + tokenUsage.completion,
+            total: (state.agentState.metrics?.tokenUsage?.total || 0) + tokenUsage.total,
+          },
+        },
+      };
+
       return {
         messages: [aiMessage],
+        agentState: updatedAgentState,
+        tokenUsage, // Für Cost Tracking
       };
     } catch (error: any) {
       this.logger.error(`LLM node failed: ${error.message}`);
@@ -179,8 +204,7 @@ export class GraphService {
    */
   private async saveToolCall(agentRunId: string, toolCall: any, result: any) {
     try {
-      const prisma = new (await import('@wattweiser/db')).PrismaClient();
-      await prisma.toolCall.create({
+      await this.prismaService.client.toolCall.create({
         data: {
           agentRunId,
           toolName: toolCall.function?.name || toolCall.name,

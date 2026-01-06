@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SummaryModule } from './summary/summary.module';
 import { ServiceDiscoveryModule } from '@wattweiser/shared';
+import { PrismaModule } from '@wattweiser/db';
 import configuration from './config/configuration';
 
 @Module({
@@ -17,6 +18,7 @@ import configuration from './config/configuration';
         limit: 100,
       },
     ]),
+    PrismaModule,
     ServiceDiscoveryModule,
     SummaryModule,
   ],

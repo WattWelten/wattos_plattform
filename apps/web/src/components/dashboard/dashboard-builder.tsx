@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-// TODO: Implement DashboardWidget, WidgetLibrary, and DashboardLayout components
-// import { DashboardWidget } from './dashboard-widget';
-// import { WidgetLibrary } from './widget-library';
-// import { DashboardLayout } from './dashboard-layout';
+import { DashboardWidget } from './dashboard-widget';
+import { WidgetLibrary } from './widget-library';
+import { DashboardLayout } from './dashboard-layout';
 
 interface DashboardBuilderProps {
   tenantId: string;
@@ -139,57 +138,37 @@ export function DashboardBuilder({
         </button>
       </div>
 
-      <div className="dashboard-builder-content">
-        {/* TODO: Implement WidgetLibrary and DashboardLayout components */}
-        <div className="p-4 border rounded">
-          <p className="text-gray-500">Widget Library (TODO: Implement)</p>
-          <button onClick={() => handleAddWidget('overview')} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
-            Add Overview Widget
-          </button>
+      <div className="dashboard-builder-content grid grid-cols-12 gap-4">
+        {/* Widget Library */}
+        <div className="col-span-3">
+          <WidgetLibrary onAddWidget={handleAddWidget} />
         </div>
 
-        <div className="p-4 border rounded mt-4">
-          <p className="text-gray-500">Dashboard Layout (TODO: Implement)</p>
-          <p className="text-sm text-gray-400 mt-2">Widgets: {widgets.length}</p>
-          {widgets.length > 0 && (
-            <div className="mt-2">
-              {widgets.map((widget) => (
-                <div
-                  key={widget.id}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded mt-1 cursor-pointer"
-                  onClick={() => setSelectedWidget(widget.id)}
-                >
-                  <span className="text-sm">{widget.type}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveWidget(widget.id);
-                    }}
-                    className="text-red-500 text-xs"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* TODO: Use handleUpdateWidget when editing widget config */}
-          {selectedWidget && (
-            <div className="mt-2 text-xs text-gray-400">
-              Selected: {selectedWidget} (Edit functionality TODO)
-              <button
-                onClick={() => {
-                  const widget = widgets.find((w) => w.id === selectedWidget);
-                  if (widget) {
-                    handleUpdateWidget(widget.id, { ...widget.config });
-                  }
-                }}
-                className="ml-2 text-blue-500"
-              >
-                (Test Update)
-              </button>
-            </div>
-          )}
+        {/* Dashboard Layout */}
+        <div className="col-span-9">
+          <DashboardLayout
+            widgets={widgets}
+            selectedWidget={selectedWidget}
+            onSelectWidget={setSelectedWidget}
+            onRemoveWidget={handleRemoveWidget}
+            onUpdateWidget={handleUpdateWidget}
+            onMoveWidget={(id, newPosition) => {
+              const widget = widgets.find((w) => w.id === id);
+              if (widget) {
+                handleUpdateWidget(id, {
+                  position: { ...widget.position, ...newPosition },
+                });
+              }
+            }}
+            onResizeWidget={(id, newSize) => {
+              const widget = widgets.find((w) => w.id === id);
+              if (widget) {
+                handleUpdateWidget(id, {
+                  position: { ...widget.position, ...newSize },
+                });
+              }
+            }}
+          />
         </div>
       </div>
     </div>

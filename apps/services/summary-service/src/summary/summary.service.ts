@@ -4,6 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSummaryDto } from './dto/create-summary.dto';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
+import { PrismaService } from '@wattweiser/db';
 
 /**
  * Summary Service
@@ -17,6 +18,7 @@ export class SummaryService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   /**
@@ -76,9 +78,28 @@ Wichtige Anforderungen:
    * Chat-Zusammenfassung erstellen
    */
   async summarizeChat(chatId: string, maxLength?: number) {
-    // TODO: Chat aus DB laden
-    // Für jetzt: Placeholder
-    const chatContent = 'Chat content placeholder';
+    // Chat aus DB laden
+    const chat = await this.prismaService.client.chat.findUnique({
+      where: { id: chatId },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    if (!chat) {
+      throw new Error(`Chat not found: ${chatId}`);
+    }
+
+    // Chat-Inhalt aus Messages zusammenstellen
+    const chatContent = chat.messages
+      .map((msg) => `${msg.role}: ${msg.content}`)
+      .join('\n\n');
+
+    if (!chatContent || chatContent.trim().length === 0) {
+      throw new Error(`Chat ${chatId} has no messages`);
+    }
 
     return this.createSummary({
       content: chatContent,
@@ -90,9 +111,28 @@ Wichtige Anforderungen:
    * Dokument-Zusammenfassung erstellen
    */
   async summarizeDocument(documentId: string, maxLength?: number) {
-    // TODO: Dokument aus DB laden
-    // Für jetzt: Placeholder
-    const documentContent = 'Document content placeholder';
+    // Dokument aus DB laden
+    const document = await this.prismaService.client.document.findUnique({
+      where: { id: documentId },
+      include: {
+        chunks: {
+          orderBy: { chunkIndex: 'asc' },
+        },
+      },
+    });
+
+    if (!document) {
+      throw new Error(`Document not found: ${documentId}`);
+    }
+
+    // Dokument-Inhalt aus Chunks zusammenstellen
+    const documentContent = document.chunks
+      .map((chunk) => chunk.content)
+      .join('\n\n');
+
+    if (!documentContent || documentContent.trim().length === 0) {
+      throw new Error(`Document ${documentId} has no content`);
+    }
 
     return this.createSummary({
       content: documentContent,

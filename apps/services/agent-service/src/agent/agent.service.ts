@@ -2,6 +2,13 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@wattweiser/db';
 import { BaseAgent, AgentConfig, AgentState } from '@wattweiser/agents';
+import {
+  ITSupportAgent,
+  SalesAgent,
+  MarketingAgent,
+  LegalAgent,
+  MeetingAgent,
+} from '@wattweiser/agents/roles';
 import { GraphService } from '../graph/graph.service';
 import { GraphStateService } from '../graph/graph-state.service';
 import { GraphState } from '../graph/graph-state.service';
@@ -40,10 +47,33 @@ export class AgentService {
       let agent = this.agents.get(agentId);
       if (!agent) {
         const agentConfig = await this.createAgentConfig(agentData);
-        // TODO: Konkrete Agent-Instanz erstellen (z.B. ITSupportAgent)
-        // agent = new ITSupportAgent(agentConfig);
-        // await agent.initialize();
-        // this.agents.set(agentId, agent);
+        
+        // Konkrete Agent-Instanz basierend auf roleType erstellen
+        switch (agentData.roleType) {
+          case 'it-support':
+            agent = new ITSupportAgent(agentConfig);
+            break;
+          case 'sales':
+            agent = new SalesAgent(agentConfig);
+            break;
+          case 'marketing':
+            agent = new MarketingAgent(agentConfig);
+            break;
+          case 'legal':
+            agent = new LegalAgent(agentConfig);
+            break;
+          case 'meeting':
+            agent = new MeetingAgent(agentConfig);
+            break;
+          default:
+            // Fallback: Verwende einen generischen Agent
+            // Für unbekannte Typen verwenden wir einen Standard-Agent
+            // Da BaseAgent abstrakt ist, erstellen wir einen einfachen Wrapper
+            throw new Error(`Unknown agent roleType: ${agentData.roleType}`);
+        }
+        
+        await agent.initialize();
+        this.agents.set(agentId, agent);
       }
 
       // Agent-Run ausführen
@@ -213,6 +243,28 @@ export class AgentService {
       // Tool Calls zählen
       const toolCallsCount = Object.keys(result.toolResults).length;
 
+      // Token Usage aus Agent State extrahieren
+      const tokenUsage = result.agentState?.metrics?.tokenUsage || {
+        prompt: 0,
+        completion: 0,
+        total: 0,
+      };
+
+      // Cost Tracking: LLM Usage für diesen Agent-Run abrufen
+      const llmUsage = await this.prismaService.client.lLMUsage.findMany({
+        where: {
+          tenantId: agentData.tenantId,
+          createdAt: {
+            gte: agentRun.createdAt,
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10, // Letzte 10 LLM-Aufrufe für diesen Run
+      });
+
+      // Cost aus LLM Usage berechnen
+      const costUsd = llmUsage.reduce((sum: number, u: any) => sum + Number(u.costUsd), 0);
+
       // Agent-Run aktualisieren
       await this.prismaService.client.agentRun.update({
         where: { id: agentRun.id },
@@ -223,12 +275,10 @@ export class AgentService {
           metrics: {
             duration: Date.now() - agentRun.createdAt.getTime(),
             toolCallsCount,
-            tokenUsage: {
-              prompt: 0, // TODO: Aus LLM-Response extrahieren
-              completion: 0,
-              total: 0,
-            },
-            costUsd: 0, // TODO: Aus Cost-Tracking extrahieren
+            tokenUsage,
+            costUsd,
+            retryCount: result.agentState?.metrics?.retryCount || 0,
+            kpiMetrics: result.agentState?.metrics?.kpiMetrics || {},
           } as any,
         },
       });
