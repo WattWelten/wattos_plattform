@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AppleCard } from '@wattweiser/ui';
-import { getConversationMessages, type ConversationMessage } from '@/lib/api';
+import { type ConversationMessage } from '@/lib/api';
 import { Loading } from './loading';
 import { MessageCircle, User, Bot, Clock } from 'lucide-react';
 
@@ -25,18 +25,22 @@ export function ConversationReplay({
     setIsLoading(true);
     setError(null);
 
-    // TODO: Implement getConversationMessages API call
-    // For now, simulate with empty array
-    setTimeout(() => {
-      setIsLoading(false);
-      // setMessages(mockMessages);
-    }, 500);
+    // getConversationMessages API call implementiert
+    getConversationMessages(conversationId, tenantId)
+      .then((data) => {
+        setMessages(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || 'Failed to load conversation messages');
+        setIsLoading(false);
+      });
   }, [conversationId, tenantId]);
 
   if (isLoading) {
     return (
       <AppleCard padding="lg">
-        <Loading message="Lädt Gespräch..." />
+        <Loading text="Lädt Gespräch..." />
       </AppleCard>
     );
   }

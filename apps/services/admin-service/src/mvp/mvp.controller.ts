@@ -122,4 +122,12 @@ export class MvpController {
       })),
     );
   }
+
+  @Get('conversations/:conversationId/messages')
+  async getConversationMessages(
+    @Param('conversationId') conversationId: string,
+    @Tenant() tenantId: string,
+  ) {
+    return this.mvpService.getConversationMessages(conversationId, tenantId);
+  }
 }

@@ -74,3 +74,17 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 **F13 Integration (Phase 4.5)**
 - ✅ F13 Health-Check Endpoint implementiert
 
+### Phase 5: Customer Portal & API Endpoints (2025-01-27)
+
+#### ✨ Neue Features
+
+**Customer Portal API (Phase 5.1)**
+- ✅ Conversation Messages API Endpoint implementiert
+- ✅ getConversationMessages API Call im Customer Portal
+- ✅ Conversation Replay Component mit echten Daten
+
+#### 🔧 Verbesserungen
+
+- Admin Service: getConversationMessages Methode hinzugefügt
+- Customer Portal: Conversation Replay verwendet jetzt echte API-Daten
+

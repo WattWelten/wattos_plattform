@@ -444,5 +444,48 @@ export class MvpService {
       };
     });
   }
+
+  /**
+   * Conversation Messages abrufen
+   */
+  async getConversationMessages(conversationId: string, tenantId: string): Promise<Array<{
+    id: string;
+    role: string;
+    content: string;
+    timestamp: string;
+    latencyMs?: number;
+    citations?: any;
+  }>> {
+    // Prüfe ob Conversation existiert und zu Tenant gehört
+    const conversation = await this.prismaService.client.conversation.findFirst({
+      where: {
+        id: conversationId,
+        tenantId,
+      },
+    });
+
+    if (!conversation) {
+      throw new Error(`Conversation not found: ${conversationId}`);
+    }
+
+    // Lade Messages
+    const messages = await this.prismaService.client.conversationMessage.findMany({
+      where: {
+        conversationId: conversation.id,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    return messages.map((m: any) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      timestamp: m.createdAt.toISOString(),
+      latencyMs: m.latencyMs || undefined,
+      citations: m.citations || undefined,
+    }));
+  }
 }
 

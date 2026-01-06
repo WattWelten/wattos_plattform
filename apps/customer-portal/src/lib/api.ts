@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { authenticatedFetch, getAuthToken } from './auth';
+import { authenticatedFetch } from './auth';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -76,12 +75,12 @@ export interface ConversationMessage {
 }
 
 export async function getConversationMessages(
-  _conversationId: string,
-  _tenantId: string,
+  conversationId: string,
+  tenantId: string,
 ): Promise<ConversationMessage[]> {
-  // TODO: Implement API endpoint for conversation messages
-  // For now, return empty array
-  return [];
+  return apiRequest<ConversationMessage[]>(
+    `/admin/conversations/${conversationId}/messages?tenantId=${tenantId}`,
+  );
 }
 
 export interface Source {
@@ -150,7 +149,7 @@ export interface TenantConfig {
     two_stage: boolean;
     top_k: number;
     filters: {
-      domain?: string[];
+      domain: string[];
     };
   };
   skills: string[];
