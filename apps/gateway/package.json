@@ -12,13 +12,13 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.9",
+    "@nestjs/common": "^11.1.11",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.9",
+    "@nestjs/core": "^11.1.11",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.1.9",
-    "@nestjs/swagger": "^11.2.3",
+    "@nestjs/platform-express": "^11.1.11",
+    "@nestjs/swagger": "^11.2.4",
     "@nestjs/throttler": "^6.5.0",
     "@wattweiser/db": "workspace:*",
     "@wattweiser/shared": "workspace:*",
