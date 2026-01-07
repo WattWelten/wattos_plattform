@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DashboardWidget } from './dashboard-widget';
 import { WidgetLibrary } from './widget-library';
 import { DashboardLayout } from './dashboard-layout';
 

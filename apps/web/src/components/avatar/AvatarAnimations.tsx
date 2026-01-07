@@ -26,6 +26,14 @@ export function useAvatarAnimations({
   const { scene, animations } = useGLTF(modelUrl);
   const { actions, mixer } = useAnimations(animations, scene);
   const [currentAnimation, setCurrentAnimation] = useState<string | null>(null);
+  const onCompleteRef = useRef<(() => void) | null>(null);
+  const animationCompleteTriggeredRef = useRef<boolean>(false);
+
+  // Speichere onAnimationComplete in Ref für useFrame
+  useEffect(() => {
+    onCompleteRef.current = onAnimationComplete || null;
+    animationCompleteTriggeredRef.current = false;
+  }, [onAnimationComplete]);
 
   // Animation basierend auf State auswählen
   useEffect(() => {
@@ -50,32 +58,60 @@ export function useAvatarAnimations({
     }
 
     if (targetAnimation && targetAnimation !== currentAnimation) {
+      // Reset completion flag für neue Animation
+      animationCompleteTriggeredRef.current = false;
+
       // Stoppe aktuelle Animation
       if (currentAnimation && actions[currentAnimation]) {
         actions[currentAnimation].fadeOut(0.3);
       }
 
       // Starte neue Animation
-      if (actions[targetAnimation]) {
-        actions[targetAnimation].reset().fadeIn(0.3).play();
+      const action = actions[targetAnimation];
+      if (action) {
+        action.reset().fadeIn(0.3).play();
         setCurrentAnimation(targetAnimation);
 
-        // Animation Complete Callback
-        if (onAnimationComplete) {
-          const handleComplete = () => {
-            onAnimationComplete();
-            actions[targetAnimation!].removeEventListener('finished', handleComplete);
+        // Verwende Mixer-Event für Animation Complete (wenn verfügbar)
+        if (onAnimationComplete && mixer) {
+          const handleFinished = (event: THREE.Event & { action: THREE.AnimationAction }) => {
+            // Prüfe ob es die richtige Animation ist
+            if (event.action === action && !animationCompleteTriggeredRef.current) {
+              animationCompleteTriggeredRef.current = true;
+              onAnimationComplete();
+            }
           };
-          actions[targetAnimation].addEventListener('finished', handleComplete);
+
+          mixer.addEventListener('finished', handleFinished);
+
+          // Cleanup-Funktion
+          return () => {
+            if (mixer) {
+              mixer.removeEventListener('finished', handleFinished);
+            }
+          };
         }
       }
     }
-  }, [animationType, isTalking, actions, currentAnimation, animations, onAnimationComplete]);
 
-  // Animation Loop
-  useFrame((state, delta) => {
+    // Expliziter Return für alle Code-Pfade
+    return undefined;
+  }, [animationType, isTalking, actions, currentAnimation, animations, onAnimationComplete, mixer]);
+
+  // Animation Loop mit Fallback-Überwachung für Animation Complete
+  useFrame((_state, delta) => {
     if (mixer) {
       mixer.update(delta);
+    }
+
+    // Fallback: Manuelle Überwachung wenn Mixer-Events nicht funktionieren
+    if (currentAnimation && actions[currentAnimation] && onCompleteRef.current && !animationCompleteTriggeredRef.current) {
+      const action = actions[currentAnimation];
+      // Prüfe ob Animation beendet ist (nur für non-looping Animationen)
+      if (!action.loop && action.time >= action.getClip().duration && action.isRunning()) {
+        animationCompleteTriggeredRef.current = true;
+        onCompleteRef.current();
+      }
     }
   });
 
@@ -102,7 +138,7 @@ export function AvatarAnimations({
     modelUrl,
     animationType,
     isTalking,
-    onAnimationComplete,
+    ...(onAnimationComplete !== undefined && { onAnimationComplete }),
   });
 
   return <primitive object={scene} />;

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 
 interface VisemeData {
   timestamp: number;
@@ -13,7 +12,7 @@ interface VisemeData {
 interface LipSyncProps {
   audioUrl?: string;
   visemes?: VisemeData[];
-  morphTargets?: THREE.MorphTargetDictionary;
+  morphTargets?: Record<string, number>;
   isPlaying?: boolean;
   onVisemeUpdate?: (viseme: string, intensity: number) => void;
 }
@@ -32,7 +31,6 @@ export function useLipSync({
 }: LipSyncProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentVisemeRef = useRef<VisemeData | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
 
   // Audio Setup
   useEffect(() => {
@@ -57,9 +55,13 @@ export function useLipSync({
 
     // Finde aktuellen Viseme basierend auf Timestamp
     const currentViseme = visemes.find(
-      (v, index) =>
-        currentTime >= v.timestamp &&
-        (index === visemes.length - 1 || currentTime < visemes[index + 1]?.timestamp),
+      (v, index) => {
+        const nextViseme = visemes[index + 1];
+        return (
+          currentTime >= v.timestamp &&
+          (index === visemes.length - 1 || (nextViseme !== undefined && currentTime < nextViseme.timestamp))
+        );
+      },
     );
 
     if (currentViseme && currentViseme !== currentVisemeRef.current) {
@@ -104,11 +106,11 @@ export function LipSync({
   onVisemeUpdate,
 }: LipSyncProps) {
   useLipSync({
-    audioUrl,
+    ...(audioUrl !== undefined && { audioUrl }),
     visemes,
-    morphTargets,
+    ...(morphTargets !== undefined && { morphTargets }),
     isPlaying,
-    onVisemeUpdate,
+    ...(onVisemeUpdate !== undefined && { onVisemeUpdate }),
   });
 
   return null; // Diese Component rendert nichts, sie verwaltet nur State

@@ -84,13 +84,13 @@ export interface AvatarV2Props {
 
 export interface AvatarSceneProps {
   sceneConfig: AvatarV2SceneConfig;
-  visemes?: number[] | undefined;
-  audioUrl?: string | undefined;
-  onAnimationComplete?: (() => void) | undefined;
-  onError?: ((error: Error) => void) | undefined;
-  enableControls?: boolean | undefined;
-  enableEnvironment?: boolean | undefined;
-  className?: string | undefined;
+  visemes?: number[];
+  audioUrl?: string;
+  onAnimationComplete?: () => void;
+  onError?: (error: Error) => void;
+  enableControls?: boolean;
+  enableEnvironment?: boolean;
+  className?: string;
 }
 
 export interface AvatarV2ContainerProps {

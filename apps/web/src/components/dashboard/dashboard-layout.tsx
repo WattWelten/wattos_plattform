@@ -33,10 +33,8 @@ export function DashboardLayout({
   onRemoveWidget,
   onUpdateWidget,
   onMoveWidget,
-  onResizeWidget,
 }: DashboardLayoutProps) {
   const [draggedWidget, setDraggedWidget] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
   // Berechne Grid-Größe basierend auf Widget-Positionen
   const maxX = Math.max(...widgets.map((w) => w.position.x + w.position.w), 12);
@@ -44,11 +42,6 @@ export function DashboardLayout({
 
   const handleDragStart = (e: React.DragEvent, widgetId: string) => {
     setDraggedWidget(widgetId);
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -67,7 +60,6 @@ export function DashboardLayout({
 
     onMoveWidget(draggedWidget, { x: gridX, y: gridY });
     setDraggedWidget(null);
-    setDragOffset(null);
   };
 
   return (
@@ -100,9 +92,9 @@ export function DashboardLayout({
               config={widget.config}
               position={widget.position}
               selected={selectedWidget === widget.id}
-              onSelect={onSelectWidget}
-              onRemove={onRemoveWidget}
-              onUpdate={onUpdateWidget}
+              {...(onSelectWidget !== undefined && { onSelect: onSelectWidget })}
+              {...(onRemoveWidget !== undefined && { onRemove: onRemoveWidget })}
+              {...(onUpdateWidget !== undefined && { onUpdate: onUpdateWidget })}
             />
           </div>
         ))}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, BarChart3, MessageSquare, Users, TrendingUp, FileText } from 'lucide-react';
+import { Plus, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react';
 
 interface WidgetType {
   id: string;
@@ -16,7 +16,7 @@ const WIDGET_TYPES: WidgetType[] = [
     id: 'overview',
     name: 'Overview',
     description: 'Übersicht über wichtige Metriken',
-    icon: <BarChart3 className="w-5 h-5" />,
+    icon: <TrendingUp className="w-5 h-5" />,
     category: 'metrics',
   },
   {
@@ -44,7 +44,7 @@ const WIDGET_TYPES: WidgetType[] = [
     id: 'analytics',
     name: 'Analytics',
     description: 'Analysen und Trends',
-    icon: <BarChart3 className="w-5 h-5" />,
+    icon: <TrendingUp className="w-5 h-5" />,
     category: 'analytics',
   },
   {
