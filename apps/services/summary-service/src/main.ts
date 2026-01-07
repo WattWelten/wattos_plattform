@@ -23,7 +23,7 @@ async function bootstrap() {
 
   app.useGlobalGuards(new ThrottlerGuard());
 
-  const port = process.env.PORT || 3009;
+  const port = process.env.PORT || 3011;
   await app.listen(port);
 
   console.log(`📝 Summary Service running on http://localhost:${port}`);

@@ -10,12 +10,12 @@ import { ServiceDiscoveryService } from '@wattweiser/shared';
  */
 const SERVICE_MAPPING: Record<string, [string, number]> = {
   chat: ['chat-service', 3006],
-  rag: ['rag-service', 3007],
-  agent: ['agent-service', 3008],
-  tool: ['tool-service', 3005],
-  summary: ['summary-service', 3006],
-  feedback: ['feedback-service', 3007],
-  admin: ['admin-service', 3008],
+  rag: ['rag-service', 3005],
+  agent: ['agent-service', 3003],
+  tool: ['tool-service', 3004],
+  summary: ['summary-service', 3011],
+  feedback: ['feedback-service', 3010],
+  admin: ['admin-service', 3007],
   avatar: ['avatar-service', 3009],
   metaverse: ['metaverse-service', 3010],
   ingestion: ['ingestion-service', 8001],

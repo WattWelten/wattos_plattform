@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from '@wattweiser/shared';
 import helmet from 'helmet';
 
 async function bootstrap() {
