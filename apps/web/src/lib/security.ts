@@ -41,7 +41,7 @@ export function validateAndSanitizeInput<T>(
   input: unknown,
 ): { success: true; data: T } | { success: false; error: string } {
   try {
-    const result = schema.parse(input);
+    const result = schema.parse(input) as T;
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof z.ZodError) {
