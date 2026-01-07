@@ -4,6 +4,23 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Build-Fixes & Dev Stack Behebung (2025-01-27)
+
+#### 🐛 Build-Fehler behoben
+
+- ✅ **AvatarV2.tsx**: Entfernt problematischen Import `'../types/react-three-fiber-global'`
+  - Typendeklarationen werden automatisch über `tsconfig.json` eingebunden
+  - Behebt "Module not found" Fehler in Next.js/Turbopack Build
+  - Build erfolgreich: ✓ Compiled successfully in 7.1s
+  - Alle 20 statischen Seiten generiert
+
+#### ✅ Verifikation
+
+- ✅ TypeScript-Check erfolgreich (`tsc --noEmit`)
+- ✅ Build-Test erfolgreich (`pnpm build --filter=@wattweiser/web`)
+- ✅ Keine Linter-Fehler
+- ✅ Keine weiteren problematischen Imports gefunden
+
 ### Code Cleanup & Refactoring (2025-01-27)
 
 #### 🧹 Code Cleanup
