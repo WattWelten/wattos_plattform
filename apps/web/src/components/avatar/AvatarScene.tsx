@@ -1,11 +1,19 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import { AvatarV2 } from './AvatarV2';
 import { AvatarSceneProps } from './types';
 import { getCappedDPR } from '@/lib/performance';
+
+/**
+ * Check if device is mobile
+ */
+function isMobile(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 768;
+}
 
 /**
  * Avatar Scene Component
@@ -21,11 +29,13 @@ export function AvatarScene({
   enableControls = true,
   enableEnvironment = true,
 }: AvatarSceneProps) {
+  const mobile = useMemo(() => isMobile(), []);
+
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative" role="img" aria-label="3D Avatar">
       <Canvas
         gl={{
-          antialias: true,
+          antialias: !mobile, // SSAO deaktiviert auf Mobile
           alpha: true,
           powerPreference: 'high-performance',
         }}
