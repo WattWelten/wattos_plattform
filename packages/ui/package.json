@@ -11,7 +11,9 @@
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "coverage": "vitest run --coverage"
   },
   "exports": {
     ".": {
@@ -49,7 +51,8 @@
     "jsdom": "^23.0.1",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "@vitest/coverage-v8": "^4.0.16"
   },
   "peerDependencies": {
     "react": "^19.2.3",
