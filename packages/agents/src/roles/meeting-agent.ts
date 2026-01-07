@@ -1,4 +1,5 @@
-import { BaseAgent, AgentConfig, AgentState } from '../core/base-agent';
+import { BaseAgent } from '../core/base-agent';
+import { AgentConfig, AgentState } from '../interfaces';
 
 /**
  * Meeting Agent

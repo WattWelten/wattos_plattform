@@ -5,10 +5,10 @@ import { EvaluationContext, EvaluationResult, AgentState } from '../interfaces';
  * Pre/Post-Execution, Error-Handling, KPI-Tracking
  */
 export class EvaluationHooks {
-  private kpiConfig: Record<string, any>;
-  private kpiMetrics: Map<string, Record<string, any>> = new Map();
+  private kpiConfig: Record<string, unknown>;
+  private kpiMetrics: Map<string, Record<string, unknown>> = new Map();
 
-  constructor(kpiConfig: Record<string, any>) {
+  constructor(kpiConfig: Record<string, unknown>) {
     this.kpiConfig = kpiConfig;
   }
 
@@ -121,7 +121,7 @@ export class EvaluationHooks {
     const state = context.state;
 
     // KPI-Metriken sammeln
-    const kpiMetrics: Record<string, any> = {
+    const kpiMetrics: Record<string, unknown> = {
       duration: state.metrics.duration,
       tokenUsage: state.metrics.tokenUsage,
       costUsd: state.metrics.costUsd,
@@ -152,7 +152,7 @@ export class EvaluationHooks {
   /**
    * KPI berechnen
    */
-  private calculateKPI(kpiKey: string, state: AgentState): any {
+  private calculateKPI(kpiKey: string, state: AgentState): number | null {
     const kpiConfig = this.kpiConfig[kpiKey];
 
     if (!kpiConfig) {
@@ -160,11 +160,12 @@ export class EvaluationHooks {
     }
 
     switch (kpiKey) {
-      case 'fcr_rate':
+      case 'fcr_rate': {
         // First Contact Resolution Rate
         // Annahme: Wenn kein Tool-Call für Eskalation, dann FCR
         const escalated = state.toolCalls.some((tc) => tc.toolName === 'escalate');
         return escalated ? 0 : 1;
+      }
 
       case 'lead_time':
         // Lead Time in Minuten
@@ -223,7 +224,7 @@ export class EvaluationHooks {
   /**
    * KPI-Metriken abrufen
    */
-  getKPIMetrics(agentId: string): Record<string, any> {
+  getKPIMetrics(agentId: string): Record<string, unknown> {
     return this.kpiMetrics.get(agentId) || {};
   }
 

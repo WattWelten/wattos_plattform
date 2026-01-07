@@ -93,7 +93,7 @@ export class PersonaEngine {
   /**
    * Persona anpassen (für Context-Aware Anpassungen)
    */
-  async adaptPersona(_context: Record<string, any>): Promise<void> {
+  async adaptPersona(_context: Record<string, unknown>): Promise<void> {
     // Persona kann basierend auf Context angepasst werden
     // z.B. bei bestimmten Themen einen anderen Ton verwenden
     delete this.systemPromptCache; // Cache invalidieren

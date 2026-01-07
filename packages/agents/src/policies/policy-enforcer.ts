@@ -78,7 +78,7 @@ export class PolicyEnforcer {
    */
   async validateToolCall(
     toolName: string,
-    input: Record<string, any>,
+    input: Record<string, unknown>,
   ): Promise<PolicyValidationResult> {
     // Guardrails für Tool-Calls prüfen
     for (const guardrail of this.config.guardrails) {
@@ -123,7 +123,7 @@ export class PolicyEnforcer {
         // Andere Conditions (z.B. Keyword-Detection)
         conditionMet = input.toLowerCase().includes(guardrail.condition.toLowerCase());
       }
-    } catch (error) {
+    } catch (_error) {
       // Bei Fehler: Guardrail nicht erfüllt (sicherer Fall)
       conditionMet = false;
     }
@@ -155,8 +155,8 @@ export class PolicyEnforcer {
 
       case 'log':
         // Nur loggen
-        // Note: console.log is acceptable here as this is not a NestJS service
-        console.log(`Guardrail log: ${guardrail.name} - ${guardrail.message}`);
+        // Note: console.warn is acceptable here as this is not a NestJS service
+        console.warn(`Guardrail log: ${guardrail.name} - ${guardrail.message}`);
         return { allowed: true };
 
       default:
@@ -169,7 +169,7 @@ export class PolicyEnforcer {
    */
   private findApprovalWorkflow(
     toolName: string,
-    input: Record<string, any>,
+    input: Record<string, unknown>,
   ): ApprovalWorkflow | null {
     for (const workflow of this.config.approvalWorkflows) {
       // Einfache Trigger-Evaluierung
@@ -182,7 +182,8 @@ export class PolicyEnforcer {
 
       // Cost-basierte Triggers (z.B. "cost > 10")
       if (workflow.trigger.includes('cost')) {
-        const cost = input.cost || 0;
+        const costValue = input.cost;
+        const cost = typeof costValue === 'number' ? costValue : typeof costValue === 'string' ? parseFloat(costValue) : 0;
         const threshold = parseFloat(workflow.trigger.match(/\d+/)?.[0] || '0');
         if (cost > threshold) {
           return workflow;

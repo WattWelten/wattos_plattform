@@ -5,9 +5,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm --filter @wattweiser/shared build && tsc",
     "dev": "tsc --watch",
-    "type-check": "tsc --noEmit",
+    "type-check": "pnpm --filter @wattweiser/shared build && tsc --noEmit",
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "test": "vitest run",

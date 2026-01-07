@@ -1,4 +1,5 @@
-import { BaseAgent, AgentConfig, AgentState } from '../core/base-agent';
+import { BaseAgent } from '../core/base-agent';
+import { AgentConfig, AgentState } from '../interfaces';
 
 /**
  * IT Support Agent
@@ -24,11 +25,6 @@ export class ITSupportAgent extends BaseAgent {
     // IT-Support-spezifische Logik
     // Für jetzt: Standard-Implementierung über LLM
     // Kann später erweitert werden mit spezifischen IT-Support-Flows
-    const systemPrompt = `Du bist ein IT-Support-Assistent. 
-Hilf bei IT-Fragen, Problemen und Support-Anfragen.
-Sei professionell, hilfsbereit und technisch präzise.
-Gib strukturierte, Schritt-für-Schritt-Anleitungen.`;
-
     // Die eigentliche Ausführung erfolgt über BaseAgent.run()
     // Diese Methode wird von BaseAgent aufgerufen
     // Für jetzt: Standard-LLM-Aufruf

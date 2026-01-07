@@ -15,7 +15,7 @@ export interface AgentState {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'waiting_approval';
   error?: string;
   metrics: AgentMetrics;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 /**
@@ -34,7 +34,7 @@ export interface AgentMessage {
 export interface ToolCall {
   id: string;
   toolName: string;
-  input: Record<string, any>;
+  input: Record<string, unknown>;
   requiresApproval?: boolean;
 }
 
@@ -44,8 +44,8 @@ export interface ToolCall {
 export interface ToolCallResult {
   id: string;
   toolName: string;
-  input: Record<string, any>;
-  output?: Record<string, any>;
+  input: Record<string, unknown>;
+  output?: Record<string, unknown>;
   error?: string;
   approved?: boolean;
   timestamp: Date;
@@ -56,7 +56,7 @@ export interface ToolCallResult {
  */
 export interface MemoryContext {
   conversationHistory: AgentMessage[];
-  longTermFacts: Record<string, any>;
+  longTermFacts: Record<string, unknown>;
   compressedHistory?: string;
   tokenCount: number;
   maxTokens: number;
@@ -77,7 +77,7 @@ export interface AgentMetrics {
   costUsd: number;
   toolCallsCount: number;
   retryCount: number;
-  kpiMetrics: Record<string, any>;
+  kpiMetrics: Record<string, unknown>;
 }
 
 /**
@@ -129,7 +129,7 @@ export interface ApprovalWorkflow {
 export interface ComplianceCheck {
   id: string;
   type: 'pii_detection' | 'data_classification' | 'access_control';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 /**
@@ -148,7 +148,7 @@ export interface EvaluationContext {
 export interface EvaluationResult {
   success: boolean;
   message?: string;
-  metrics?: Record<string, any>;
+  metrics?: Record<string, unknown>;
   shouldRetry?: boolean;
   shouldEscalate?: boolean;
 }
@@ -160,7 +160,7 @@ export interface AgentConfig {
   agent: AgentType;
   persona: PersonaConfig;
   policies: PolicyConfig;
-  kpi: Record<string, any>;
+  kpi: Record<string, unknown>;
   llmConfig: {
     provider: LLMProvider;
     model: string;

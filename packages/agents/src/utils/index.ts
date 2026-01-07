@@ -26,11 +26,11 @@ export function delay(ms: number): Promise<void> {
 /**
  * Exponential Backoff
  */
-export async function exponentialBackoff(
-  fn: () => Promise<any>,
+export async function exponentialBackoff<T>(
+  fn: () => Promise<T>,
   maxRetries: number = 3,
   baseDelay: number = 1000,
-): Promise<any> {
+): Promise<T> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
