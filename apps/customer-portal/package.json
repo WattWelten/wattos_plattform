@@ -2,6 +2,7 @@
   "name": "@wattweiser/customer-portal",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=6144' NODE_ENV=production npx next build",
@@ -47,6 +48,7 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.23",
     "cross-env": "^7.0.3",
+    "@eslint/eslintrc": "^3.3.3",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.0",
     "postcss": "^8.5.6",

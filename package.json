@@ -30,7 +30,7 @@
     "audit:local": "node scripts/audit-local.js",
     "cursor:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-cursor-global.ps1",
     "clean": "turbo run clean",
-    "clean:all": "powershell -ExecutionPolicy Bypass -File cleanup-complete.ps1 -SkipCursorCheck",
+    "clean:all": "turbo run clean && pnpm clean:cache",
     "clean:cache": "pnpm store prune",
     "clean:build": "turbo run clean && Get-ChildItem -Path . -Directory -Recurse -Filter \"dist\" -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notlike \"*\\node_modules\\*\" -and $_.FullName -notlike \"*\\.git\\*\" } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue",
     "db:migrate": "pnpm --filter @wattweiser/db migrate:deploy",

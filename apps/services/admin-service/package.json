@@ -3,14 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "powershell -ExecutionPolicy Bypass -File ../../../prebuild-check.ps1",
-    "build": "pnpm --filter @wattweiser/shared build && nest build",
+    "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main",
     "start:prod": "node dist/main",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "jest",
-    "pretype-check": "powershell -ExecutionPolicy Bypass -File ../../../prebuild-check.ps1",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

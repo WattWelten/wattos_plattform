@@ -1,18 +1,14 @@
 ﻿{
-    "extends":  "../config/tsconfig.base.json",
-    "compilerOptions":  {
-                            "rootDir": "./src",
-                            "experimentalDecorators":  true,
-                            "emitDecoratorMetadata":  true,
-                            "strict":  true
-                        },
-    "include":  [
-                    "src/**/*"
-                ],
-    "exclude":  [
-                    "node_modules",
-                    "dist",
-                    "**/*.test.ts",
-                    "**/*.spec.ts"
-                ]
+  "extends": "../config/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "composite": true,
+    "declaration": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

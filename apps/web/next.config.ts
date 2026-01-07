@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
   // Standalone output für Docker deployment
@@ -31,15 +32,14 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // TypeScript & ESLint
+  // TypeScript
   typescript: {
     // Type checking wird in CI/CD gemacht
     ignoreBuildErrors: false,
   },
-  eslint: {
-    // Linting wird in CI/CD gemacht
-    ignoreDuringBuilds: false,
-  },
+
+  // Turbopack config (leer, da webpack verwendet wird)
+  turbopack: {},
 
   // Webpack optimizations
   webpack: (config, { isServer }) => {
@@ -54,8 +54,7 @@ const nextConfig: NextConfig = {
     }
 
     // Pfadauflösung für @/ Alias - verbesserte Konfiguration für pnpm
-    const path = require('path');
-    const srcPath = path.resolve(__dirname, './src');
+    const srcPath = path.resolve(process.cwd(), './src');
 
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -64,9 +63,9 @@ const nextConfig: NextConfig = {
 
     // Verbesserte Modulauflösung für pnpm
     config.resolve.modules = [
-      path.resolve(__dirname, './src'),
-      path.resolve(__dirname, './node_modules'),
-      path.resolve(__dirname, '../../node_modules'),
+      path.resolve(process.cwd(), './src'),
+      path.resolve(process.cwd(), './node_modules'),
+      path.resolve(process.cwd(), '../../node_modules'),
       'node_modules',
     ];
 

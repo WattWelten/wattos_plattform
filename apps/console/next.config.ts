@@ -29,15 +29,14 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // TypeScript & ESLint
+  // TypeScript
   typescript: {
     // Type checking wird in CI/CD gemacht
     ignoreBuildErrors: false,
   },
-  eslint: {
-    // Linting wird in CI/CD gemacht
-    ignoreDuringBuilds: false,
-  },
+
+  // Turbopack config (leer, da webpack verwendet wird)
+  turbopack: {},
 
   // Webpack optimizations
   webpack: (config, { isServer }) => {

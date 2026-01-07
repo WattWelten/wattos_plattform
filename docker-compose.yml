@@ -1,22 +1,22 @@
+﻿version: '3.8'
 
 services:
   postgres:
     image: pgvector/pgvector:pg16
     container_name: wattos-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: wattos
+      POSTGRES_USER: wattos
+      POSTGRES_PASSWORD: wattos_dev_password
+      POSTGRES_DB: wattos_plattform
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U wattos -d wattos_plattform"]
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
     networks:
       - wattos-network
 
@@ -32,16 +32,12 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    restart: unless-stopped
     networks:
       - wattos-network
-    command: redis-server --appendonly yes
 
 volumes:
   postgres_data:
-    driver: local
   redis_data:
-    driver: local
 
 networks:
   wattos-network:

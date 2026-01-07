@@ -6,6 +6,14 @@
     "typeRoots": ["../../../node_modules/@types", "node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "dist/**/*"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "dist/**/*"],
+  "references": [
+    {
+      "path": "../../shared"
+    },
+    {
+      "path": "../../db"
+    }
+  ]
 }
 

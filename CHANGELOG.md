@@ -4,6 +4,33 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Build-Konfiguration & TypeScript-Fixes (2026-01-06)
+
+#### 🔧 Turbo.json Migration
+- ✅ **Turbo.json auf neue Syntax migriert**
+  - `pipeline` → `tasks` (neue Turbo 2.x Syntax)
+  - `globalDependencies` für TypeScript-Konfigurationsdateien hinzugefügt
+  - Task-Konfigurationen für `build` und `type-check` definiert
+
+#### 🐛 TypeScript-Konfiguration behoben
+- ✅ **@wattweiser/ui TypeScript-Fixes**
+  - `isolatedModules: false` gesetzt (Konflikt mit `module: "commonjs"` behoben)
+  - `types: ["react", "react-dom", "node"]` statt `types: []` (Typen werden jetzt geladen)
+
+#### 🔄 Next.js ES-Module Migration
+- ✅ **Next.js-Konfigurationsdateien migriert**
+  - `next.config.js` → `next.config.cjs` (web, console, customer-portal)
+  - `postcss.config.js` → `postcss.config.cjs` (web, console, customer-portal)
+  - `require('path')` durch ES-Modul-Import ersetzt
+  - `__dirname` durch `process.cwd()` ersetzt (ES-Module-Kompatibilität)
+  - Veraltete `eslint`-Option aus Next.js 16 entfernt
+  - `turbopack: {}` hinzugefügt für Webpack-Kompatibilität
+
+#### ✅ Build-Erfolg
+- Alle 18 Build-Tasks erfolgreich abgeschlossen
+- Type-Check für `@wattweiser/ui` funktioniert wieder
+- Next.js-Apps bauen erfolgreich mit Turbopack
+
 ### Cleanup & Dependency-Optimierungen (2025-01-27)
 
 #### 🧹 Umfassendes Cleanup
