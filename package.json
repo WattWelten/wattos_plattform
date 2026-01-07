@@ -69,7 +69,7 @@
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "esbuild": "^0.27.2",
-    "express": "^4.22.1",
+    "express": "^5.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "node-fetch": "^3.3.2",
@@ -95,7 +95,7 @@
   },
   "dependencies": {
     "@next/env": "^16.1.1",
-    "baseline-browser-mapping": "^2.9.11",
+    "baseline-browser-mapping": "^2.9.12",
     "browserslist": "^4.28.1",
     "caniuse-lite": "^1.0.30001762"
   }
