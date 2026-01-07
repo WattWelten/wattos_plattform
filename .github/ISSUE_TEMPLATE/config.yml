@@ -1,0 +1,20 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Community Support
+    url: https://github.com/WattWelten/wattos_plattform/discussions
+    about: Fragen und Diskussionen zur Community
+  - name: 📚 Documentation
+    url: https://github.com/WattWelten/wattos_plattform/tree/main/docs
+    about: Dokumentation und Guides
+  - name: 🔒 Security Issue
+    url: https://github.com/WattWelten/wattos_plattform/security
+    about: Sicherheitslücken bitte hier melden
+
+
+
+
+
+
+
+
+

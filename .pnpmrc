@@ -1,0 +1,21 @@
+# pnpm Konfiguration für WattOS Plattform
+# Hoisting für bessere Kompatibilität mit Next.js
+shamefully-hoist=true
+
+# Peer Dependencies automatisch installieren
+auto-install-peers=true
+
+# Strict peer dependencies deaktivieren (verhindert Build-Fehler durch Versionen-Konflikte)
+strict-peer-dependencies=false
+
+# Public hoist pattern für bessere Modulauflösung
+public-hoist-pattern[]=*eslint*
+public-hoist-pattern[]=*prettier*
+public-hoist-pattern[]=*typescript*
+
+# Node Linker für bessere Performance
+node-linker=hoisted
+
+
+
+

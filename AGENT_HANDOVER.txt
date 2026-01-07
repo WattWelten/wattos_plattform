@@ -1,0 +1,605 @@
+﻿# Ãœbergabe-Prompt fÃ¼r neuen Agent
+
+**Datum:** 2025-01-27 | **Status:** Phase 6 (Testing) | **Repo:** WattOS_Plattform
+
+## Projekt-Ãœbersicht
+
+WattOS KI - Modulare, DSGVO-konforme KI-Plattform fÃ¼r KMU, Schulen und Ã¶ffentliche Verwaltungen.
+
+**Stack:** Next.js 14+, NestJS, FastAPI, PostgreSQL 16+ (pgvector), Redis 7+, pnpm Workspaces + Turbo
+
+## Aktueller Stand
+
+### Phase 1-5: ABGESCHLOSSEN
+- Database Schema erweitert (KBArticle, F13Config, Dashboard, Widget, AlertRule, Alert, AgentSwarm, etc.)
+- Dashboard Service: CRUD fÃ¼r Dashboards und Widgets
+- Admin Service: MVP-Metriken mit Feedback-Score, LLM Cost Tracking
+- Agent Service: Konkrete Agent-Instanzen (ITSupportAgent, SalesAgent, MarketingAgent, LegalAgent, MeetingAgent)
+- Summary Service: Chat- und Document-Summarization
+- Frontend: Dashboard Builder, Widget Library, Avatar System, Admin UI, User Management, Command Palette
+- Core: Workflow Condition-Logik, Tool Kategorie-System, OpenSearch Client, DMS API Calls, F13 Health-Check
+- Customer Portal: API Endpoints, Conversation Replay
+
+### Phase 6: IN ARBEIT
+- âœ… **BEHOBEN:** vitest.config.ts wurde erstellt in packages/shared
+  - Datei: `packages/shared/vitest.config.ts`
+  - Inhalt: Basis-Konfiguration mit globals: true und environment: 'node'
+  - **NÃ¤chster Schritt:** Tests erneut ausfÃ¼hren: `cd packages/shared && pnpm test`
+
+### Phase 7: AUSSTEHEND
+- Finale Code-Dokumentation
+- API-Dokumentation aktualisieren
+- README aktualisieren
+
+## Bekannte Probleme & LÃ¶sungen
+
+1. âœ… **Vitest Setup:** `packages/shared/vitest.config.ts` wurde erstellt
+   - LÃ¶sung: Konfiguration ohne setupFiles erstellt
+   - Status: Bereit fÃ¼r Tests
+
+2. **Database:** `prisma migrate dev` benÃ¶tigt laufende DB
+   - LÃ¶sung: Migrationen manuell mit `--create-only` erstellen
+   - Hinweis: FÃ¼r lokale Entwicklung PostgreSQL + pgvector Extension benÃ¶tigt
+
+3. **WSL/Docker:** FÃ¼r Builds/Tests auÃŸerhalb von Cursor nutzen
+   - Commands: `pnpm build:wsl`, `pnpm test:wsl`
+   - Grund: Cursor-Ãœberlastung vermeiden
+
+## NÃ¤chste Schritte (PrioritÃ¤t)
+
+### Sofort (Phase 6 abschlieÃŸen)
+1. **Tests ausfÃ¼hren:**
+   ```bash
+   cd packages/shared
+   pnpm test
+   ```
+   - Alle Test-Fehler beheben
+   - Coverage prÃ¼fen
+
+2. **Type-Check:**
+   ```bash
+   pnpm type-check
+   ```
+
+3. **Lint:**
+   ```bash
+   pnpm lint
+   ```
+
+4. **Build:**
+   ```bash
+   pnpm build
+   ```
+
+### Danach (Phase 7)
+5. **Dokumentation aktualisieren:**
+   - README.md prÃ¼fen und aktualisieren
+   - API-Dokumentation (OpenAPI/Swagger) aktualisieren
+   - Code-Kommentare fÃ¼r neue Features
+
+6. **Commit & Push:**
+   ```bash
+   git add .
+   git commit -m "feat: Phase 6-7 Testing & Documentation abgeschlossen"
+   git push
+   ```
+
+### Weiter (Phase 8+)
+- **Phase 8:** Multi-Agent Orchestrator, Agent Builder, Marketplace, Learning
+- **Phase 9:** Workflow Engine, Scheduler, Event-Driven Automation
+- **Phase 10:** Vision, Audio, Document Agents
+- **Phase 11:** Memory System, Personality
+- **Phase 12:** Observability, Debugging
+- **Phase 13:** Security, Governance
+
+## Wichtige Commands
+
+```bash
+# Dependencies
+pnpm install
+
+# Entwicklung
+pnpm dev
+
+# Build & Tests
+pnpm build
+pnpm test
+pnpm test:unit
+pnpm test:integration
+pnpm test:e2e
+
+# Code-QualitÃ¤t
+pnpm type-check
+pnpm lint
+pnpm lint:fix
+
+# Database
+pnpm db:migrate
+pnpm db:generate
+
+# Docker
+pnpm docker:build
+pnpm docker:up
+pnpm docker:down
+
+# WSL (fÃ¼r Windows)
+pnpm build:wsl
+pnpm test:wsl
+```
+
+## Entwicklungs-Richtlinien
+
+- **TypeScript:** Strikte Typisierung, keine `any` ohne BegrÃ¼ndung
+- **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
+- **Testing:** Unit-Tests fÃ¼r Services, E2E fÃ¼r kritische Flows
+- **ModularitÃ¤t:** Jeder Service eigenstÃ¤ndig deploybar
+- **DSGVO:** Alle Daten bleiben in EU
+- **WCAG AA:** Barrierefreie UI-Komponenten
+- **Performance:** Code-Splitting, Caching, Database-Indizes
+
+## Wichtige Hinweise
+
+1. **Cursor-Ãœberlastung vermeiden:**
+   - WSL/Docker auÃŸerhalb von Cursor nutzen
+   - GroÃŸe Builds/Tests in separaten Terminals
+   - Nicht zu viele gleichzeitige Tool-Calls
+
+2. **Commits nach jeder Phase:**
+   - Kleine, atomare Commits
+   - Conventional Commits Format
+   - Nach jeder Phase committen und pushen
+
+3. **Testing:**
+   - Vor jedem Commit Tests ausfÃ¼hren
+   - Type-Check muss grÃ¼n sein
+   - Lint muss grÃ¼n sein
+   - Build muss erfolgreich sein
+
+4. **Fehlerbehandlung:**
+   - Bei Unklarheiten fragen
+   - Fehler dokumentieren
+   - LÃ¶sungen in diesem Dokument aktualisieren
+
+## Schnellstart fÃ¼r neuen Agent
+
+1. **Repository klonen und Setup:**
+   ```bash
+   git clone https://github.com/WattWelten/wattos_plattform.git
+   cd wattos_plattform
+   pnpm install
+   cp .env.example .env
+   # .env anpassen
+   ```
+
+2. **Aktuellen Stand prÃ¼fen:**
+   ```bash
+   git status
+   git log --oneline -10
+   ```
+
+3. **Tests ausfÃ¼hren:**
+   ```bash
+   pnpm test
+   ```
+
+4. **Mit Phase 6 fortfahren:**
+   - `packages/shared/vitest.config.ts` prÃ¼fen (âœ… bereits erstellt)
+   - Tests reparieren: `cd packages/shared && pnpm test`
+   - Phase 6 abschlieÃŸen
+   - Phase 7 starten
+
+## Wichtige Dateien
+
+- `packages/shared/vitest.config.ts` - Vitest Konfiguration (âœ… erstellt)
+- `packages/db/schema.prisma` - Database Schema
+- `package.json` - Root package.json mit Workspace-Scripts
+- `turbo.json` - Turbo Build-Konfiguration
+
+---
+
+## 🏢 Autarke Services als eigenständige Produkte
+
+Die WattOS Plattform besteht aus modularen Services, von denen viele **autark als eigenständige Produkte** funktionieren können. Die folgende Visualisierung zeigt die Autarkie-Level und Dependencies:
+
+### 📊 Service-Autarkie Übersicht
+
+```mermaid
+graph TB
+    subgraph "🟢 Vollständig Autark (100%)"
+        RAG[RAG Service<br/>WattSearch/WattRAG]
+        SUMMARY[Summary Service<br/>WattSummarize]
+        DASHBOARD[Dashboard Service<br/>WattDash/WattAnalytics]
+        FEEDBACK[Feedback Service<br/>WattFeedback]
+        OBS[Observability Service<br/>WattMonitor]
+        LLM[LLM Gateway<br/>WattLLM Gateway]
+        F13[F13 Service<br/>WattF13 Compliance]
+        CRAWLER[Crawler Service<br/>WattCrawler]
+    end
+    
+    subgraph "🟡 Teilweise Autark (60-80%)"
+        CHAT[Chat Service<br/>WattChat<br/>70% autark]
+        ADMIN[Admin Service<br/>WattAdmin<br/>80% autark]
+        AVATAR[Avatar Service<br/>WattAvatar<br/>60% autark]
+        VOICE[Voice Service<br/>WattVoice<br/>60% autark]
+    end
+    
+    subgraph "🔴 Abhängig (10-30%)"
+        AGENT[Agent Service<br/>30% autark]
+        TOOL[Tool Service<br/>20% autark]
+        CHAR[Character Service<br/>20% autark]
+        CI[Customer Intelligence<br/>10% autark]
+    end
+    
+    style RAG fill:#90EE90
+    style SUMMARY fill:#90EE90
+    style DASHBOARD fill:#90EE90
+    style FEEDBACK fill:#90EE90
+    style OBS fill:#90EE90
+    style LLM fill:#90EE90
+    style F13 fill:#90EE90
+    style CRAWLER fill:#90EE90
+    
+    style CHAT fill:#FFD700
+    style ADMIN fill:#FFD700
+    style AVATAR fill:#FFD700
+    style VOICE fill:#FFD700
+    
+    style AGENT fill:#FF6B6B
+    style TOOL fill:#FF6B6B
+    style CHAR fill:#FF6B6B
+    style CI fill:#FF6B6B
+```
+
+### 🔗 Dependencies-Diagramm
+
+Die autarken Services benötigen nur Infrastructure-Komponenten (PostgreSQL, Redis, externe APIs):
+
+```mermaid
+graph LR
+    subgraph "Infrastructure"
+        PG[(PostgreSQL<br/>+ pgvector)]
+        REDIS[(Redis)]
+        LLM_API[LLM APIs<br/>OpenAI/Anthropic]
+        F13_API[F13 API]
+    end
+    
+    subgraph "🟢 Autarke Services"
+        RAG[RAG Service]
+        SUMMARY[Summary Service]
+        DASHBOARD[Dashboard Service]
+        FEEDBACK[Feedback Service]
+        OBS[Observability Service]
+        LLM_GW[LLM Gateway]
+        F13_SVC[F13 Service]
+        CRAWLER[Crawler Service]
+    end
+    
+    RAG --> PG
+    RAG -.-> REDIS
+    SUMMARY --> LLM_GW
+    DASHBOARD --> PG
+    FEEDBACK --> PG
+    OBS --> PG
+    OBS -.-> REDIS
+    LLM_GW --> PG
+    LLM_GW --> REDIS
+    LLM_GW --> LLM_API
+    F13_SVC --> PG
+    F13_SVC --> F13_API
+    CRAWLER --> PG
+    CRAWLER --> REDIS
+    
+    style RAG fill:#90EE90
+    style SUMMARY fill:#90EE90
+    style DASHBOARD fill:#90EE90
+    style FEEDBACK fill:#90EE90
+    style OBS fill:#90EE90
+    style LLM_GW fill:#90EE90
+    style F13_SVC fill:#90EE90
+    style CRAWLER fill:#90EE90
+```
+
+### 🔄 Service-Abhängigkeiten
+
+Dieses Diagramm zeigt, welche Services voneinander abhängen und welche vollständig unabhängig sind:
+
+```mermaid
+graph TD
+    subgraph "🟢 Autarke Services"
+        RAG[RAG Service]
+        SUMMARY[Summary Service]
+        DASHBOARD[Dashboard Service]
+        FEEDBACK[Feedback Service]
+        OBS[Observability Service]
+        LLM_GW[LLM Gateway]
+        F13_SVC[F13 Service]
+        CRAWLER[Crawler Service]
+    end
+    
+    subgraph "🟡 Teilweise Autark"
+        CHAT[Chat Service]
+        ADMIN[Admin Service]
+        AVATAR[Avatar Service]
+        VOICE[Voice Service]
+    end
+    
+    subgraph "🔴 Abhängige Services"
+        AGENT[Agent Service]
+        TOOL[Tool Service]
+        CHAR[Character Service]
+        CI[Customer Intelligence]
+    end
+    
+    CHAT -.->|optional| AGENT
+    AGENT --> RAG
+    AGENT --> TOOL
+    AGENT --> LLM_GW
+    CHAR --> AGENT
+    CHAR --> AVATAR
+    CI --> RAG
+    CI --> SUMMARY
+    CI --> DASHBOARD
+    
+    style RAG fill:#90EE90
+    style SUMMARY fill:#90EE90
+    style DASHBOARD fill:#90EE90
+    style FEEDBACK fill:#90EE90
+    style OBS fill:#90EE90
+    style LLM_GW fill:#90EE90
+    style F13_SVC fill:#90EE90
+    style CRAWLER fill:#90EE90
+    
+    style CHAT fill:#FFD700
+    style ADMIN fill:#FFD700
+    style AVATAR fill:#FFD700
+    style VOICE fill:#FFD700
+    
+    style AGENT fill:#FF6B6B
+    style TOOL fill:#FF6B6B
+    style CHAR fill:#FF6B6B
+    style CI fill:#FF6B6B
+```
+
+### 📦 Produkt-Pakete
+
+Die folgenden Service-Kombinationen können als Produkt-Pakete verkauft werden:
+
+```mermaid
+graph TB
+    subgraph "📦 Paket 1: WattSearch Suite"
+        P1_RAG[RAG Service]
+        P1_SUMMARY[Summary Service]
+        P1_CRAWLER[Crawler Service]
+        P1_RAG --> P1_SUMMARY
+        P1_CRAWLER --> P1_RAG
+    end
+    
+    subgraph "📦 Paket 2: WattAnalytics Platform"
+        P2_DASH[Dashboard Service]
+        P2_OBS[Observability Service]
+        P2_FB[Feedback Service]
+        P2_OBS --> P2_DASH
+        P2_FB --> P2_DASH
+    end
+    
+    subgraph "📦 Paket 3: WattAI Gateway"
+        P3_LLM[LLM Gateway]
+        P3_SUMMARY[Summary Service]
+        P3_SUMMARY --> P3_LLM
+    end
+    
+    style P1_RAG fill:#90EE90
+    style P1_SUMMARY fill:#90EE90
+    style P1_CRAWLER fill:#90EE90
+    style P2_DASH fill:#90EE90
+    style P2_OBS fill:#90EE90
+    style P2_FB fill:#90EE90
+    style P3_LLM fill:#90EE90
+    style P3_SUMMARY fill:#90EE90
+```
+
+### 🚀 Service-Deployment-Strategie
+
+Entscheidungsbaum für die Deployment-Strategie basierend auf dem Autarkie-Level:
+
+```mermaid
+flowchart TD
+    START[Service Deployment] --> CHECK{Service<br/>Autarkie?}
+    
+    CHECK -->|100% Autark| STANDALONE[Standalone Deployment<br/>Eigenes Produkt]
+    CHECK -->|60-80% Autark| ADAPT[Anpassungen erforderlich<br/>Optional Dependencies]
+    CHECK -->|10-30% Autark| PLATFORM[Plattform-Integration<br/>Nur als Teil der Plattform]
+    
+    STANDALONE --> PACKAGE{Produkt-Paket?}
+    PACKAGE -->|Ja| SUITE[WattSearch Suite<br/>WattAnalytics<br/>WattAI Gateway]
+    PACKAGE -->|Nein| SINGLE[Einzelprodukt<br/>z.B. WattRAG]
+    
+    ADAPT --> MINIMAL[Minimale Anpassungen<br/>z.B. Frontend optional]
+    
+    PLATFORM --> INTEGRATED[Integriert bleiben<br/>Kein Standalone]
+    
+    style STANDALONE fill:#90EE90
+    style ADAPT fill:#FFD700
+    style PLATFORM fill:#FF6B6B
+    style SUITE fill:#87CEEB
+    style SINGLE fill:#87CEEB
+```
+
+---
+
+### ✅ Vollständig autark (Standalone-Produkte)
+
+Diese Services können **sofort als eigenständige Produkte** verkauft/deployiert werden:
+
+**🟢 RAG SERVICE**
+- Vector Search & Retrieval
+- Embedding Management
+- Knowledge Base Search
+- Dependencies: PostgreSQL (pgvector), Redis (optional)
+- Use Case: Enterprise Search, Document Retrieval
+- Produktname: "WattSearch" / "WattRAG"
+
+**🟢 SUMMARY SERVICE**
+- Chat Summarization
+- Document Summarization
+- Multi-Format Support
+- Dependencies: LLM Gateway (OpenAI/Anthropic)
+- Use Case: Content Summarization, Meeting Notes
+- Produktname: "WattSummarize"
+
+**🟢 DASHBOARD SERVICE**
+- Dashboard CRUD
+- Widget Management
+- Analytics & Reporting
+- Dependencies: PostgreSQL
+- Use Case: Business Intelligence, Analytics Platform
+- Produktname: "WattDash" / "WattAnalytics"
+
+**🟢 FEEDBACK SERVICE**
+- User Feedback Collection
+- Rating & Review System
+- Feedback Analytics
+- Dependencies: PostgreSQL
+- Use Case: Customer Feedback Platform
+- Produktname: "WattFeedback"
+
+**🟢 OBSERVABILITY SERVICE**
+- Logging & Monitoring
+- Metrics Collection
+- Health Checks
+- Dependencies: PostgreSQL, Redis (optional)
+- Use Case: Application Monitoring, APM
+- Produktname: "WattMonitor" / "WattObservability"
+
+**🟢 LLM GATEWAY**
+- Multi-Provider LLM Access
+- Cost Tracking
+- Rate Limiting & Quotas
+- Dependencies: PostgreSQL, Redis
+- Use Case: LLM API Gateway, Cost Management
+- Produktname: "WattLLM Gateway"
+
+**🟢 F13 SERVICE**
+- Government Compliance
+- F13 Integration
+- Compliance Reporting
+- Dependencies: PostgreSQL, F13 API
+- Use Case: Public Sector Compliance
+- Produktname: "WattF13 Compliance"
+
+**🟢 CRAWLER SERVICE**
+- Web Crawling
+- Content Extraction
+- Scheduled Crawling
+- Dependencies: PostgreSQL, Redis
+- Use Case: Web Scraping, Content Aggregation
+- Produktname: "WattCrawler"
+
+### 🟡 Teilweise autark (mit minimalen Anpassungen)
+
+**🟡 CHAT SERVICE**
+- WebSocket/SSE Chat
+- Conversation Management
+- Benötigt: Agent Service (für KI-Chat)
+- Anpassung: Optional ohne Agent Service (nur Chat)
+- Use Case: Customer Support Chat, Team Chat
+- Produktname: "WattChat"
+
+**🟡 ADMIN SERVICE**
+- User Management
+- RBAC (Role-Based Access Control)
+- MVP Metrics
+- Benötigt: Andere Services für vollständige Metriken
+- Anpassung: Standalone User Management möglich
+- Use Case: Admin Console, User Management
+- Produktname: "WattAdmin"
+
+**🟡 AVATAR SERVICE (FastAPI)**
+- 3D Avatar Rendering
+- Avaturn T2 Integration
+- Morphing & Animation
+- Benötigt: Frontend für Visualisierung
+- Anpassung: API-only Service möglich
+- Use Case: Virtual Avatars, Metaverse
+- Produktname: "WattAvatar"
+
+**🟡 VOICE SERVICE**
+- TTS/STT (Text-to-Speech / Speech-to-Text)
+- WebRTC Integration
+- Voice Processing
+- Benötigt: Frontend für UI
+- Anpassung: API-only Service möglich
+- Use Case: Voice Interfaces, Call Centers
+- Produktname: "WattVoice"
+
+### 🔴 Abhängig (benötigen andere Services)
+
+**🔴 AGENT SERVICE**
+- LangGraph Agents
+- Benötigt: RAG Service, Tool Service, LLM Gateway
+- Stark integriert in WattOS Plattform
+- Use Case: Nur als Teil der Plattform
+
+**🔴 TOOL SERVICE**
+- Agent Tools
+- Benötigt: Agent Service
+- Stark integriert
+- Use Case: Nur als Teil der Plattform
+
+**🔴 CHARACTER SERVICE**
+- Character Management
+- Benötigt: Agent Service, Avatar Service
+- Stark integriert
+- Use Case: Nur als Teil der Plattform
+
+**🔴 CUSTOMER INTELLIGENCE SERVICE**
+- Customer Analysis
+- Benötigt: Multiple Services
+- Stark integriert
+- Use Case: Nur als Teil der Plattform
+
+### 📊 Autarkie-Matrix
+
+```
+Service                    │ Autarkie │ Dependencies          │ Produkt-Potenzial
+──────────────────────────┼──────────┼───────────────────────┼──────────────────
+RAG Service               │   🟢 100%│ PostgreSQL (pgvector) │ ⭐⭐⭐⭐⭐
+Summary Service           │   🟢 100%│ LLM Gateway          │ ⭐⭐⭐⭐⭐
+Dashboard Service         │   🟢 100%│ PostgreSQL            │ ⭐⭐⭐⭐⭐
+Feedback Service          │   🟢 100%│ PostgreSQL            │ ⭐⭐⭐⭐
+Observability Service     │   🟢 100%│ PostgreSQL, Redis    │ ⭐⭐⭐⭐
+LLM Gateway               │   🟢 100%│ PostgreSQL, Redis    │ ⭐⭐⭐⭐⭐
+F13 Service               │   🟢 100%│ PostgreSQL, F13 API  │ ⭐⭐⭐⭐
+Crawler Service           │   🟢 100%│ PostgreSQL, Redis    │ ⭐⭐⭐⭐
+Chat Service              │   🟡  70%│ Agent Service (opt) │ ⭐⭐⭐
+Admin Service             │   🟡  80%│ PostgreSQL            │ ⭐⭐⭐
+Avatar Service            │   🟡  60%│ Frontend (opt)        │ ⭐⭐⭐
+Voice Service             │   🟡  60%│ Frontend (opt)        │ ⭐⭐⭐
+Agent Service             │   🔴  30%│ RAG, Tool, LLM        │ ⭐
+Tool Service              │   🔴  20%│ Agent Service         │ ⭐
+Character Service         │   🔴  20%│ Agent, Avatar         │ ⭐
+Customer Intelligence     │   🔴  10%│ Multiple Services     │ ⭐
+```
+
+### 💡 Produkt-Pakete (Service-Kombinationen)
+
+**📦 PAKET 1: "WattSearch Suite"**
+- RAG Service
+- Summary Service
+- Crawler Service
+- Use Case: Enterprise Search & Knowledge Management
+
+**📦 PAKET 2: "WattAnalytics Platform"**
+- Dashboard Service
+- Observability Service
+- Feedback Service
+- Use Case: Business Intelligence & Monitoring
+
+**📦 PAKET 3: "WattAI Gateway"**
+- LLM Gateway
+- Summary Service
+- Use Case: LLM API Management & Content Processing
+
+---
+
+**Viel Erfolg! 🚀**
