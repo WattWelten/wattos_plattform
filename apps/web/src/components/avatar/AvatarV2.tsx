@@ -1,6 +1,5 @@
 'use client';
 
-import '../types/react-three-fiber-global';
 import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
