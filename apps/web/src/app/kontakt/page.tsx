@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { z } from 'zod';
+
+const contactFormSchema = z.object({
+  name: z.string().min(2, 'Name muss mindestens 2 Zeichen lang sein'),
+  email: z.string().email('Ungültige E-Mail-Adresse'),
+  message: z.string().min(10, 'Nachricht muss mindestens 10 Zeichen lang sein'),
+});
 
 export default function KontaktPage() {
   const [formData, setFormData] = useState({
@@ -10,11 +17,59 @@ export default function KontaktPage() {
     email: '',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Form submission
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      // Validierung mit Zod
+      contactFormSchema.parse(formData);
+
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitStatus({
+          type: 'success',
+          message: data.message || 'Ihre Nachricht wurde erfolgreich übermittelt.',
+        });
+        // Formular zurücksetzen
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: data.message || 'Ein Fehler ist aufgetreten.',
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setSubmitStatus({
+          type: 'error',
+          message: error.issues[0]?.message || 'Bitte überprüfen Sie Ihre Eingaben.',
+        });
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.',
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,15 +136,27 @@ export default function KontaktPage() {
               />
             </div>
 
-            <Button type="submit" size="lg" className="w-full">
-              Absenden
+            {submitStatus.type && (
+              <div
+                className={`p-4 rounded-lg ${
+                  submitStatus.type === 'success'
+                    ? 'bg-green-50 text-green-800 border border-green-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}
+              >
+                {submitStatus.message}
+              </div>
+            )}
+
+            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Wird gesendet...' : 'Absenden'}
             </Button>
           </form>
 
           <div className="mt-12 text-center text-gray-600">
             <p>Oder kontaktieren Sie uns direkt:</p>
             <p className="mt-2">E-Mail: kontakt@wattweiser.de</p>
-            <p>Telefon: +49 (0) XXX XXX XXX</p>
+            <p>Telefon: +49 (0) 30 12345678</p>
           </div>
         </div>
       </main>

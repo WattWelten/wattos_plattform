@@ -10,6 +10,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command-palette';
 import { useChatStore } from '@/hooks/use-chat-store';
+import { useRouter } from 'next/navigation';
 import { MessageSquare, Settings, FileText, Bot } from 'lucide-react';
 
 export interface CommandPaletteProps {
@@ -18,6 +19,7 @@ export interface CommandPaletteProps {
 
 export function CommandPalette({ onClose }: CommandPaletteProps) {
   const { setCurrentChatId, clearMessages } = useChatStore();
+  const router = useRouter();
 
   const handleNewChat = () => {
     setCurrentChatId(null);
@@ -42,7 +44,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
           icon: Settings,
           shortcut: '⌘,',
           action: () => {
-            // TODO: Settings öffnen
+            router.push('/admin');
             onClose();
           },
         },
@@ -56,7 +58,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
           label: 'Wissensräume verwalten',
           icon: FileText,
           action: () => {
-            // TODO: Wissensräume öffnen
+            router.push('/admin/knowledge-spaces');
             onClose();
           },
         },
@@ -70,7 +72,7 @@ export function CommandPalette({ onClose }: CommandPaletteProps) {
           label: 'Agenten verwalten',
           icon: Bot,
           action: () => {
-            // TODO: Agenten öffnen
+            router.push('/admin');
             onClose();
           },
         },
