@@ -9,7 +9,7 @@ const intlMiddleware = createMiddleware(routing);
 const protectedRoutes = ['/chat', '/admin', '/onboarding'];
 const adminRoutes = ['/admin'];
 
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const locale = pathname.split('/')[1] || routing.defaultLocale;
   const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/';
@@ -48,5 +48,4 @@ export const config = {
     '/((?!api|_next|_vercel|.*\\..*).*)',
   ],
 };
-
 
