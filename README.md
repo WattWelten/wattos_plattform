@@ -63,9 +63,35 @@ cp .env.example .env
 # Datenbank-Migrationen ausführen
 pnpm db:migrate
 
+# Type-Check ausführen (optional, aber empfohlen)
+pnpm type-check
+
+# Build testen (optional)
+pnpm build
+
 # Entwicklungsserver starten (alle Services mit Turbo)
 pnpm dev
+
+# Oder nur MVP-Services starten (schneller)
+pnpm dev:mvp
 ```
+
+### 🏗️ Build & Type-Check
+
+Das Projekt verwendet Turbo 2.x mit der neuen `tasks` Syntax:
+
+```bash
+# Type-Check für alle Packages
+pnpm type-check
+
+# Build für alle Packages
+pnpm build
+
+# Build für MVP-Services nur
+pnpm build:mvp
+```
+
+**Hinweis:** Die Konfigurationsdateien (`next.config`, `postcss.config`) verwenden die `.cjs` Endung für ES-Module-Kompatibilität.
 
 ## 🏗️ Projektstruktur
 

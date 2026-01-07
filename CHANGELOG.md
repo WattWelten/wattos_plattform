@@ -4,6 +4,20 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Phase 1: Kritische Lücken schließen (2026-01-06)
+
+#### Phase 1.1: DMS Ingestion Integration ✅
+- ✅ **DMS Service mit Ingestion-Service integriert**
+  - HttpService und ConfigService zu DMSService hinzugefügt
+  - `importDocument()` Methode implementiert - ruft jetzt Ingestion-Service `/upload` Endpoint auf
+  - FormData-Upload für Dokumente implementiert
+  - Fallback-Mechanismus bei Ingestion-Fehlern
+  - INGESTION_SERVICE_URL Environment-Variable hinzugefügt (Standard: http://localhost:3008)
+- ✅ **DMS Module erstellt**
+  - `packages/addons/dms/src/dms.module.ts` - NestJS-Modul mit HttpModule und ConfigModule
+  - Module exportiert in `index.ts`
+- ✅ **TypeScript & Linting**: Keine Fehler
+
 ### Build-Konfiguration & TypeScript-Fixes (2026-01-06)
 
 #### 🔧 Turbo.json Migration

@@ -61,6 +61,7 @@ const envSchema = z.object({
   CRAWLER_SERVICE_URL: z.string().url().optional(),
   VOICE_SERVICE_URL: z.string().url().optional(),
   AVATAR_SERVICE_URL: z.string().url().optional(),
+  INGESTION_SERVICE_URL: z.string().url().default('http://localhost:3008'),
 
   // Voice Service
   ELEVENLABS_API_KEY: z.string().regex(/^sk_/, 'Must be a valid ElevenLabs API key').optional(),

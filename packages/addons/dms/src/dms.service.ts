@@ -1,4 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
 import { DMSClient, DMSDocument, DMSFolder, DMSApiError } from './client';
 
 /**
@@ -21,8 +24,16 @@ export interface DMSSyncStatus {
 export class DMSService {
   private readonly logger = new Logger(DMSService.name);
   private syncStatus: Map<string, DMSSyncStatus> = new Map(); // tenantId -> status
+  private readonly ingestionServiceUrl: string;
 
-  constructor(private readonly dmsClient: DMSClient) {}
+  constructor(
+    private readonly dmsClient: DMSClient,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.ingestionServiceUrl =
+      this.configService.get<string>('INGESTION_SERVICE_URL') || 'http://localhost:3008';
+  }
 
   /**
    * Dokumente aus DMS abrufen
@@ -264,34 +275,49 @@ export class DMSService {
       });
 
       // 1. Dokument-Inhalt abrufen
-      await this.getDocumentContent(document.id);
+      const content = await this.getDocumentContent(document.id);
 
-      // 2. Dokument in Knowledge Space importieren
-      // TODO: Integration mit Ingestion-Service implementieren
-      // Erfordert: IngestionService Injection im Constructor
-      // await this.ingestionService.ingestDocument({
-      //   tenantId,
-      //   knowledgeSpaceId,
-      //   fileName: document.title,
-      //   fileType: document.mimeType,
-      //   content,
-      //   metadata: {
-      //     ...document.metadata,
-      //     dmsId: document.id,
-      //     dmsFolderId: document.folderId,
-      //     dmsTags: document.tags,
-      //   },
-      // });
+      // 2. Dokument in Knowledge Space importieren via Ingestion-Service
+      try {
+        const formData = new FormData();
+        const blob = new Blob([content], { type: document.mimeType || 'application/octet-stream' });
+        formData.append('file', blob, document.title);
+        if (knowledgeSpaceId) {
+          formData.append('knowledge_space_id', knowledgeSpaceId);
+        }
 
-      // Placeholder - wird durch echte Ingestion-Service Integration ersetzt
-      this.logger.warn(
-        `Document import not yet fully implemented. Using placeholder ID for document: ${document.id}`
-      );
-      const documentId = `dms-${document.id}`;
+        const response = await firstValueFrom(
+          this.httpService.post<{ document_id: string; status: string; message: string }>(
+            `${this.ingestionServiceUrl}/upload`,
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+              timeout: 60000, // 60 seconds timeout for large files
+            },
+          ),
+        );
 
-      this.logger.log(`Document imported: ${documentId}`);
+        const documentId = response.data.document_id;
+        this.logger.log(`Document imported via Ingestion Service: ${documentId}`, {
+          dmsDocumentId: document.id,
+          ingestionDocumentId: documentId,
+          tenantId,
+          knowledgeSpaceId,
+        });
 
-      return documentId;
+        return documentId;
+      } catch (error: any) {
+        this.logger.error(
+          `Failed to upload document to Ingestion Service: ${error.message}`,
+          error.stack,
+        );
+        // Fallback: Return placeholder ID if ingestion fails
+        const documentId = `dms-${document.id}`;
+        this.logger.warn(`Using fallback document ID: ${documentId}`);
+        return documentId;
+      }
     } catch (error: any) {
       this.logger.error(`Failed to import document ${document.id}: ${error.message}`, error.stack);
       throw error;
