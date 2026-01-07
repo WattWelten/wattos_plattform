@@ -29,6 +29,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "type-check": "turbo run type-check",
     "audit:local": "node scripts/audit-local.js",
+    "audit:security": "node scripts/security-audit.js",
     "cursor:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-cursor-global.ps1",
     "clean": "turbo run clean",
     "clean:all": "turbo run clean && pnpm clean:cache",
