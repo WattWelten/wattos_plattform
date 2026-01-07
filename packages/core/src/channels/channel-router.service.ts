@@ -332,8 +332,6 @@ export class ChannelRouterService {
     // Erstelle neue Session auf neuem Channel
     // HINWEIS: createSession erstellt immer eine neue UUID, aber wir benötigen die alte ID
     // Daher erstellen wir die Session manuell mit der alten ID
-    const toChannelInstance = this.getChannel(toChannel);
-    
     // Erstelle Session mit alter ID direkt (ohne createSession, da es immer neue UUID erstellt)
     const sessionWithOldId: ChannelSession = {
       id: oldSessionId,

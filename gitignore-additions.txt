@@ -1,0 +1,27 @@
+﻿# Zusaetzliche Eintraege fuer .gitignore
+# Diese Zeilen sollten zur bestehenden .gitignore hinzugefuegt werden
+
+# TypeScript Build-Info (FEHLT aktuell)
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Analyse-Verzeichnisse (FEHLT aktuell)
+*-analysis-*/
+log-analysis-*/
+railway-analysis-*/
+
+# Log-Dateien (teilweise fehlt)
+*.log
+*-logs-*.txt
+install.log
+github-workflow-logs-*.txt
+
+# Test-Reports
+playwright-report/
+test-results/
+
+# Temporaere Dateien
+*.tmp
+*.temp
+*.bak
+*.backup

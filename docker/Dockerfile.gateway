@@ -1,0 +1,59 @@
+﻿# Multi-Stage Build fÃ¼r Gateway Service
+FROM node:20-alpine AS base
+
+# Installiere pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Dependencies Stage
+FROM base AS deps
+WORKDIR /app
+
+# Kopiere package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/config/package.json ./packages/config/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/db/package.json ./packages/db/
+COPY apps/gateway/package.json ./apps/gateway/
+
+# Installiere Dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build Stage
+FROM base AS builder
+WORKDIR /app
+
+# Kopiere alles
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Baue Packages
+RUN pnpm --filter @wattweiser/config build
+RUN pnpm --filter @wattweiser/shared build
+RUN pnpm --filter @wattweiser/db build
+
+# Baue Gateway
+RUN pnpm --filter @wattweiser/gateway build
+
+# Production Stage
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Kopiere nur Production Dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/apps/gateway/dist ./apps/gateway/dist
+COPY --from=builder /app/packages/config/dist ./packages/config/dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --from=builder /app/packages/db/schema.prisma ./packages/db/schema.prisma
+COPY --from=builder /app/packages/db/migrations ./packages/db/migrations
+
+# Prisma Client generieren
+RUN cd packages/db && pnpm prisma generate
+
+WORKDIR /app/apps/gateway
+
+EXPOSE 3001
+
+CMD ["node", "dist/main.js"]

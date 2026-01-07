@@ -2,20 +2,35 @@
 -- Erweitert Conversation und ConversationMessage
 -- Erweitert Artifact um tenantId und hash
 
--- Alter Conversation table
-ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "sessionId" TEXT;
-ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "userAgent" TEXT;
-ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+-- Alter Conversation table (only if it exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Conversation') THEN
+        ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "sessionId" TEXT;
+        ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "userAgent" TEXT;
+        ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+END $$;
 
--- Alter ConversationMessage table
-ALTER TABLE "ConversationMessage" ADD COLUMN IF NOT EXISTS "latencyMs" INTEGER;
-ALTER TABLE "ConversationMessage" ADD COLUMN IF NOT EXISTS "sourcesJsonb" JSONB;
+-- Alter ConversationMessage table (only if it exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'ConversationMessage') THEN
+        ALTER TABLE "ConversationMessage" ADD COLUMN IF NOT EXISTS "latencyMs" INTEGER;
+        ALTER TABLE "ConversationMessage" ADD COLUMN IF NOT EXISTS "sourcesJsonb" JSONB;
+    END IF;
+END $$;
 
--- Alter Artifact table
-ALTER TABLE "Artifact" ADD COLUMN IF NOT EXISTS "tenantId" TEXT;
-ALTER TABLE "Artifact" ADD COLUMN IF NOT EXISTS "hash" TEXT;
-ALTER TABLE "Artifact" ALTER COLUMN "characterId" DROP NOT NULL;
-ALTER TABLE "Artifact" ALTER COLUMN "url" TYPE TEXT;
+-- Alter Artifact table (only if it exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Artifact') THEN
+        ALTER TABLE "Artifact" ADD COLUMN IF NOT EXISTS "tenantId" TEXT;
+        ALTER TABLE "Artifact" ADD COLUMN IF NOT EXISTS "hash" TEXT;
+        ALTER TABLE "Artifact" ALTER COLUMN "characterId" DROP NOT NULL;
+        ALTER TABLE "Artifact" ALTER COLUMN "url" TYPE TEXT;
+    END IF;
+END $$;
 
 -- Create Source table
 CREATE TABLE IF NOT EXISTS "Source" (
@@ -87,10 +102,15 @@ CREATE TABLE IF NOT EXISTS "Index" (
     CONSTRAINT "Index_pkey" PRIMARY KEY ("id")
 );
 
--- Create indexes for Conversation
-CREATE INDEX IF NOT EXISTS "Conversation_tenantId_idx" ON "Conversation"("tenantId");
-CREATE INDEX IF NOT EXISTS "Conversation_sessionId_idx" ON "Conversation"("sessionId");
-CREATE INDEX IF NOT EXISTS "Conversation_startedAt_idx" ON "Conversation"("startedAt");
+-- Create indexes for Conversation (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Conversation') THEN
+        CREATE INDEX IF NOT EXISTS "Conversation_tenantId_idx" ON "Conversation"("tenantId");
+        CREATE INDEX IF NOT EXISTS "Conversation_sessionId_idx" ON "Conversation"("sessionId");
+        CREATE INDEX IF NOT EXISTS "Conversation_startedAt_idx" ON "Conversation"("startedAt");
+    END IF;
+END $$;
 
 -- Create indexes for Source
 CREATE INDEX IF NOT EXISTS "Source_tenantId_idx" ON "Source"("tenantId");
@@ -114,10 +134,15 @@ CREATE INDEX IF NOT EXISTS "Event_ts_idx" ON "Event"("ts");
 CREATE INDEX IF NOT EXISTS "Index_tenantId_idx" ON "Index"("tenantId");
 CREATE INDEX IF NOT EXISTS "Index_name_idx" ON "Index"("name");
 
--- Create indexes for Artifact
-CREATE INDEX IF NOT EXISTS "Artifact_tenantId_idx" ON "Artifact"("tenantId");
-CREATE INDEX IF NOT EXISTS "Artifact_hash_idx" ON "Artifact"("hash");
-CREATE INDEX IF NOT EXISTS "Artifact_url_idx" ON "Artifact"("url");
+-- Create indexes for Artifact (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Artifact') THEN
+        CREATE INDEX IF NOT EXISTS "Artifact_tenantId_idx" ON "Artifact"("tenantId");
+        CREATE INDEX IF NOT EXISTS "Artifact_hash_idx" ON "Artifact"("hash");
+        CREATE INDEX IF NOT EXISTS "Artifact_url_idx" ON "Artifact"("url");
+    END IF;
+END $$;
 
 -- Add foreign keys
 ALTER TABLE "Source" ADD CONSTRAINT "Source_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -126,8 +151,18 @@ ALTER TABLE "Crawl" ADD CONSTRAINT "Crawl_sourceId_fkey" FOREIGN KEY ("sourceId"
 ALTER TABLE "Event" ADD CONSTRAINT "Event_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "Config" ADD CONSTRAINT "Config_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "Index" ADD CONSTRAINT "Index_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- Add foreign keys for Artifact (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Artifact') THEN
+        IF NOT EXISTS (SELECT FROM information_schema.table_constraints WHERE constraint_name = 'Artifact_tenantId_fkey') THEN
+            ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT FROM information_schema.table_constraints WHERE constraint_name = 'Artifact_sourceId_fkey') THEN
+            ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+    END IF;
+END $$;
 
 
 

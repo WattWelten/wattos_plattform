@@ -1,0 +1,66 @@
+﻿# Multi-Stage Build fÃ¼r Customer Portal (Next.js)
+FROM node:20-alpine AS base
+
+# Installiere pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Dependencies Stage
+FROM base AS deps
+WORKDIR /app
+
+# Kopiere package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/config/package.json ./packages/config/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/metrics/package.json ./packages/metrics/
+COPY apps/customer-portal/package.json ./apps/customer-portal/
+
+# Installiere Dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build Stage
+FROM base AS builder
+WORKDIR /app
+
+# Kopiere alles
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Baue Packages
+RUN pnpm --filter @wattweiser/config build
+RUN pnpm --filter @wattweiser/shared build
+RUN pnpm --filter @wattweiser/ui build
+RUN pnpm --filter @wattweiser/metrics build
+
+# Setze Build-Argumente
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001/api
+ENV NEXT_PUBLIC_API_URL=
+
+# Baue Customer Portal
+RUN pnpm --filter @wattweiser/customer-portal build
+
+# Production Stage
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Erstelle non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Kopiere Next.js Build
+COPY --from=builder /app/apps/customer-portal/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3002
+
+ENV PORT=3002
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]

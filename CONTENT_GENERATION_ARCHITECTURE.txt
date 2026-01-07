@@ -1,0 +1,671 @@
+# Content Generation Service - Architektur & Integration
+
+## 📋 Übersicht
+
+Der **Content Generation Service** erweitert die WattOS-Plattform um die Fähigkeit, Avatar-Videos für **LMS, Intranet und Websites** zu generieren. Während der bestehende Avatar-Service nur für **Live-Dialoge** (Streaming) ausgelegt ist, ermöglicht dieser Service die **asynchrone Video-Generierung** für Content-Erstellung.
+
+---
+
+## 🏗️ Architektur-Übersicht
+
+### Service-Positionierung im Monorepo
+
+```mermaid
+graph TB
+    subgraph "Frontend Apps"
+        WEB[Web App<br/>Next.js]
+        PORTAL[Customer Portal<br/>Next.js]
+        CONSOLE[Console<br/>Next.js]
+    end
+    
+    subgraph "API Gateway"
+        GATEWAY[Gateway Service<br/>Port 3001]
+    end
+    
+    subgraph "Core Services"
+        AVATAR[Avatar Service<br/>Port 3009<br/>Live Streaming]
+        VOICE[Voice Service<br/>Port 3016<br/>TTS/STT]
+        AGENT[Agent Service<br/>Port 3008]
+        CHARACTER[Character Service<br/>Port 3010]
+    end
+    
+    subgraph "🆕 Content Generation Service"
+        CONTENT[Content Generation<br/>Port 3020<br/>Video Rendering]
+    end
+    
+    subgraph "Shared Packages"
+        CORE[@wattweiser/core<br/>AvatarV2Service]
+        SHARED[@wattweiser/shared<br/>ServiceDiscovery]
+        DB[@wattweiser/db<br/>Prisma Schema]
+    end
+    
+    subgraph "Infrastructure"
+        PG[(PostgreSQL<br/>+ pgvector)]
+        REDIS[(Redis)]
+        STORAGE[(Storage<br/>S3/Local)]
+    end
+    
+    WEB --> GATEWAY
+    PORTAL --> GATEWAY
+    CONSOLE --> GATEWAY
+    
+    GATEWAY --> AVATAR
+    GATEWAY --> CONTENT
+    GATEWAY --> VOICE
+    GATEWAY --> AGENT
+    
+    CONTENT --> AVATAR
+    CONTENT --> VOICE
+    CONTENT --> CORE
+    CONTENT --> SHARED
+    CONTENT --> DB
+    
+    AVATAR --> VOICE
+    AVATAR --> CORE
+    AVATAR --> SHARED
+    
+    CONTENT --> PG
+    CONTENT --> STORAGE
+    
+    AVATAR --> PG
+    VOICE --> PG
+    
+    style CONTENT fill:#90EE90,stroke:#333,stroke-width:4px
+    style AVATAR fill:#FFD700,stroke:#333,stroke-width:2px
+    style VOICE fill:#FFD700,stroke:#333,stroke-width:2px
+```
+
+---
+
+## 🔗 Service-Dependencies
+
+### Was nutzen wir von anderen Services?
+
+```mermaid
+graph LR
+    subgraph "Content Generation Service"
+        MAIN[Content Service<br/>Orchestrator]
+        RENDERER[Avatar Renderer<br/>Puppeteer + Three.js]
+        VISEME[Viseme Analyzer<br/>Audio → Phonemes]
+        ENCODER[Video Encoder<br/>FFmpeg]
+        STORAGE_SVC[Storage Service<br/>S3/Local]
+    end
+    
+    subgraph "Bestehende Services (Wiederverwendung)"
+        AVATAR_V2[AvatarV2Service<br/>@wattweiser/core]
+        TTS[TTS Service<br/>Voice Service]
+        AVATAR_CONFIG[Avatar Config<br/>Avatar Service]
+        AGENT_INFO[Agent Info<br/>Agent Service]
+    end
+    
+    subgraph "Neue Komponenten"
+        PUPPETEER[Puppeteer<br/>Headless Browser]
+        FFMPEG[FFmpeg<br/>Video Encoding]
+        THREEJS[Three.js<br/>3D Rendering]
+    end
+    
+    MAIN --> AVATAR_V2
+    MAIN --> TTS
+    MAIN --> AVATAR_CONFIG
+    MAIN --> AGENT_INFO
+    MAIN --> RENDERER
+    MAIN --> VISEME
+    MAIN --> ENCODER
+    MAIN --> STORAGE_SVC
+    
+    RENDERER --> PUPPETEER
+    RENDERER --> THREEJS
+    RENDERER --> AVATAR_V2
+    
+    VISEME --> TTS
+    
+    ENCODER --> FFMPEG
+    
+    style AVATAR_V2 fill:#87CEEB
+    style TTS fill:#87CEEB
+    style AVATAR_CONFIG fill:#87CEEB
+    style AGENT_INFO fill:#87CEEB
+    style PUPPETEER fill:#FFB6C1
+    style FFMPEG fill:#FFB6C1
+    style THREEJS fill:#FFB6C1
+```
+
+### Dependency-Matrix
+
+| Komponente | Service/Package | Art | Status |
+|------------|----------------|-----|--------|
+| **Avatar Scene Config** | `AvatarV2Service` (`@wattweiser/core`) | Package | ✅ Vorhanden |
+| **TTS (Text-to-Speech)** | `Voice Service` (Port 3016) | Service | ✅ Vorhanden |
+| **Agent Information** | `Agent Service` (Port 3008) | Service | ✅ Vorhanden |
+| **Avatar Model URLs** | `Avatar Service` (Port 3009) | Service | ✅ Vorhanden |
+| **Service Discovery** | `@wattweiser/shared` | Package | ✅ Vorhanden |
+| **Database Schema** | `@wattweiser/db` (Prisma) | Package | ⚠️ Erweitern |
+| **Headless Browser** | Puppeteer | Dependency | 🆕 Neu |
+| **Video Encoding** | FFmpeg | System Tool | 🆕 Neu |
+| **3D Rendering** | Three.js | Dependency | 🆕 Neu |
+| **Storage** | S3 oder Local FS | Infrastructure | 🆕 Neu |
+
+---
+
+## 🔄 Datenfluss: Video-Generierung
+
+### Vollständiger Workflow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant ContentService
+    participant AvatarV2Service
+    participant VoiceService
+    participant VisemeAnalyzer
+    participant AvatarRenderer
+    participant VideoEncoder
+    participant Storage
+
+    Client->>Gateway: POST /api/v1/content/generate
+    Note over Client,Gateway: {agentId, text, contentType}
+    
+    Gateway->>ContentService: generateVideo()
+    
+    ContentService->>AvatarV2Service: generateAvatar(agentId, text)
+    AvatarV2Service->>VoiceService: textToSpeech(text)
+    VoiceService-->>AvatarV2Service: audioBuffer
+    AvatarV2Service-->>ContentService: {audioData, sceneConfig, visemes}
+    
+    ContentService->>VisemeAnalyzer: analyzeAudio(audioBuffer)
+    Note over VisemeAnalyzer: Audio → FFT → Phonemes → Visemes
+    VisemeAnalyzer-->>ContentService: visemeEvents[]
+    
+    ContentService->>AvatarRenderer: renderVideo(sceneConfig, visemes)
+    Note over AvatarRenderer: Puppeteer + Three.js<br/>Frame-by-Frame Rendering
+    loop Für jeden Frame
+        AvatarRenderer->>AvatarRenderer: Update Visemes
+        AvatarRenderer->>AvatarRenderer: Render Frame
+        AvatarRenderer->>AvatarRenderer: Save PNG
+    end
+    AvatarRenderer-->>ContentService: framePaths[]
+    
+    ContentService->>VideoEncoder: encodeVideo(frames, audio)
+    Note over VideoEncoder: FFmpeg: Frames + Audio → MP4
+    VideoEncoder-->>ContentService: videoPath
+    
+    ContentService->>Storage: uploadVideo(videoPath)
+    Storage-->>ContentService: videoUrl
+    
+    ContentService->>ContentService: Save to Database
+    ContentService-->>Gateway: {contentId, videoUrl, status}
+    Gateway-->>Client: Response
+```
+
+---
+
+## 🎯 Integration-Punkte
+
+### Wo setzt der Service an?
+
+```mermaid
+graph TD
+    subgraph "1. Input Layer"
+        API[REST API<br/>POST /api/v1/content/generate]
+        PARAMS[Parameters:<br/>- agentId<br/>- text<br/>- contentType<br/>- options]
+    end
+    
+    subgraph "2. Service Layer - Wiederverwendung"
+        AVATAR_V2[AvatarV2Service<br/>@wattweiser/core]
+        TTS_SVC[Voice Service<br/>HTTP Call]
+        AGENT_SVC[Agent Service<br/>HTTP Call]
+    end
+    
+    subgraph "3. Processing Layer - Neu"
+        VISEME_PROC[Viseme Analyzer<br/>Audio Analysis]
+        RENDER_PROC[Avatar Renderer<br/>Headless Browser]
+        ENCODE_PROC[Video Encoder<br/>FFmpeg]
+    end
+    
+    subgraph "4. Storage Layer"
+        DB_STORAGE[(PostgreSQL<br/>Content Metadata)]
+        FILE_STORAGE[(File Storage<br/>Video Files)]
+    end
+    
+    subgraph "5. Output Layer"
+        RESPONSE[Response:<br/>- contentId<br/>- videoUrl<br/>- status]
+    end
+    
+    API --> PARAMS
+    PARAMS --> AVATAR_V2
+    PARAMS --> TTS_SVC
+    PARAMS --> AGENT_SVC
+    
+    AVATAR_V2 --> VISEME_PROC
+    TTS_SVC --> VISEME_PROC
+    
+    VISEME_PROC --> RENDER_PROC
+    AVATAR_V2 --> RENDER_PROC
+    
+    RENDER_PROC --> ENCODE_PROC
+    TTS_SVC --> ENCODE_PROC
+    
+    ENCODE_PROC --> DB_STORAGE
+    ENCODE_PROC --> FILE_STORAGE
+    
+    DB_STORAGE --> RESPONSE
+    FILE_STORAGE --> RESPONSE
+    
+    style AVATAR_V2 fill:#87CEEB
+    style TTS_SVC fill:#87CEEB
+    style AGENT_SVC fill:#87CEEB
+    style VISEME_PROC fill:#90EE90
+    style RENDER_PROC fill:#90EE90
+    style ENCODE_PROC fill:#90EE90
+```
+
+---
+
+## 📦 Service-Struktur
+
+### Interne Architektur
+
+```mermaid
+graph TB
+    subgraph "apps/services/content-generation-service"
+        MAIN[main.ts<br/>NestJS Bootstrap]
+        
+        subgraph "src/"
+            APP_MODULE[app.module.ts]
+            
+            subgraph "content/"
+                CONTENT_CTRL[content.controller.ts<br/>REST Endpoints]
+                CONTENT_SVC[content.service.ts<br/>Orchestrator]
+            end
+            
+            subgraph "viseme/"
+                VISEME_SVC[viseme-analyzer.service.ts<br/>Audio → Visemes]
+            end
+            
+            subgraph "renderer/"
+                RENDERER_SVC[avatar-renderer.service.ts<br/>Puppeteer + Three.js]
+            end
+            
+            subgraph "encoder/"
+                ENCODER_SVC[video-encoder.service.ts<br/>FFmpeg Integration]
+            end
+            
+            subgraph "storage/"
+                STORAGE_SVC[storage.service.ts<br/>S3/Local FS]
+            end
+            
+            subgraph "config/"
+                CONFIG[configuration.ts<br/>Env Variables]
+            end
+            
+            subgraph "health/"
+                HEALTH[health.controller.ts<br/>Health Checks]
+            end
+        end
+    end
+    
+    MAIN --> APP_MODULE
+    APP_MODULE --> CONTENT_CTRL
+    APP_MODULE --> HEALTH
+    
+    CONTENT_CTRL --> CONTENT_SVC
+    
+    CONTENT_SVC --> VISEME_SVC
+    CONTENT_SVC --> RENDERER_SVC
+    CONTENT_SVC --> ENCODER_SVC
+    CONTENT_SVC --> STORAGE_SVC
+    
+    RENDERER_SVC --> VISEME_SVC
+    
+    style CONTENT_SVC fill:#FFD700
+    style VISEME_SVC fill:#90EE90
+    style RENDERER_SVC fill:#90EE90
+    style ENCODER_SVC fill:#90EE90
+```
+
+---
+
+## 🗄️ Database Schema Erweiterung
+
+### Content Model
+
+```mermaid
+erDiagram
+    Content ||--o{ Agent : "belongs to"
+    Content ||--o{ Tenant : "belongs to"
+    
+    Content {
+        string id PK
+        string tenantId FK
+        string agentId FK
+        string contentType "lms|intranet|website"
+        string title
+        text text
+        string videoUrl
+        string thumbnailUrl
+        string status "processing|completed|failed"
+        json metadata
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    Agent {
+        string id PK
+        string name
+        string roleType
+    }
+    
+    Tenant {
+        string id PK
+        string name
+    }
+```
+
+### Prisma Schema Ergänzung
+
+```prisma
+model Content {
+  id           String   @id @default(uuid())
+  tenantId     String
+  agentId      String
+  contentType  String   // "lms" | "intranet" | "website"
+  title        String
+  text         String   @db.Text
+  videoUrl     String?
+  thumbnailUrl String?
+  status       String   @default("processing") // "processing" | "completed" | "failed"
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent  Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([agentId])
+  @@index([contentType])
+  @@index([status])
+}
+```
+
+---
+
+## ⚙️ Technische Details
+
+### Viseme-Analyse Pipeline
+
+```mermaid
+graph LR
+    AUDIO[Audio Buffer<br/>MP3/WAV] --> WAV[Convert to WAV]
+    WAV --> FFT[FFT Analysis<br/>Frequency Spectrum]
+    FFT --> PHONEME[Phoneme Detection<br/>Formant Analysis]
+    PHONEME --> MAP[Phoneme → Viseme<br/>Mapping Table]
+    MAP --> TIMESTAMP[Timestamp Events<br/>VisemeEvents[]]
+    
+    style AUDIO fill:#87CEEB
+    style TIMESTAMP fill:#90EE90
+```
+
+### Rendering Pipeline
+
+```mermaid
+graph LR
+    CONFIG[Scene Config<br/>AvatarV2SceneConfig] --> HTML[Generate HTML<br/>Three.js Scene]
+    HTML --> PUPPETEER[Puppeteer<br/>Headless Browser]
+    VISEMES[Viseme Events] --> PUPPETEER
+    
+    PUPPETEER --> FRAME1[Frame 1<br/>PNG]
+    PUPPETEER --> FRAME2[Frame 2<br/>PNG]
+    PUPPETEER --> FRAME3[Frame N<br/>PNG]
+    
+    FRAME1 --> FFMPEG[FFmpeg]
+    FRAME2 --> FFMPEG
+    FRAME3 --> FFMPEG
+    AUDIO2[Audio File] --> FFMPEG
+    
+    FFMPEG --> VIDEO[MP4 Video]
+    
+    style PUPPETEER fill:#FFB6C1
+    style FFMPEG fill:#FFB6C1
+    style VIDEO fill:#90EE90
+```
+
+---
+
+## 📊 MVP Aufwandsschätzung
+
+### Komponenten-Breakdown
+
+```mermaid
+gantt
+    title MVP Content Generation Service
+    dateFormat YYYY-MM-DD
+    section Phase 1: Setup
+    Service-Struktur erstellen        :2024-01-01, 2d
+    Database Schema erweitern         :2024-01-02, 1d
+    Dependencies installieren          :2024-01-03, 1d
+    
+    section Phase 2: Viseme-Analyzer
+    Audio-Analyse implementieren     :2024-01-04, 3d
+    Phoneme-Detection                 :2024-01-07, 3d
+    Viseme-Mapping                    :2024-01-10, 2d
+    
+    section Phase 3: Avatar-Renderer
+    Puppeteer Setup                   :2024-01-12, 2d
+    Three.js Scene Generator          :2024-01-14, 3d
+    Frame-by-Frame Rendering          :2024-01-17, 4d
+    
+    section Phase 4: Video-Encoder
+    FFmpeg Integration                :2024-01-21, 2d
+    Audio-Video-Muxing               :2024-01-23, 2d
+    
+    section Phase 5: Storage & API
+    Storage Service                   :2024-01-25, 2d
+    REST API Endpoints                :2024-01-27, 2d
+    Error Handling                    :2024-01-29, 2d
+    
+    section Phase 6: Testing
+    Unit Tests                        :2024-01-31, 3d
+    Integration Tests                 :2024-02-03, 3d
+    E2E Tests                         :2024-02-06, 2d
+```
+
+### Aufwandsschätzung (Personentage)
+
+| Phase | Komponente | Aufwand | Komplexität | Abhängigkeiten |
+|-------|------------|---------|-------------|----------------|
+| **1. Setup** | Service-Struktur | 2 PT | 🟢 Niedrig | - |
+| | Database Schema | 1 PT | 🟢 Niedrig | Prisma |
+| | Dependencies | 1 PT | 🟢 Niedrig | npm/pnpm |
+| **2. Viseme-Analyzer** | Audio-Analyse | 3 PT | 🟡 Mittel | Web Audio API / librosa |
+| | Phoneme-Detection | 3 PT | 🟡 Mittel | ML/Heuristik |
+| | Viseme-Mapping | 2 PT | 🟢 Niedrig | Mapping-Tabelle |
+| **3. Avatar-Renderer** | Puppeteer Setup | 2 PT | 🟢 Niedrig | Puppeteer |
+| | Three.js Generator | 3 PT | 🟡 Mittel | Three.js |
+| | Frame Rendering | 4 PT | 🔴 Hoch | Performance |
+| **4. Video-Encoder** | FFmpeg Integration | 2 PT | 🟢 Niedrig | FFmpeg |
+| | Audio-Video-Muxing | 2 PT | 🟢 Niedrig | FFmpeg |
+| **5. Storage & API** | Storage Service | 2 PT | 🟢 Niedrig | S3/Local FS |
+| | REST API | 2 PT | 🟢 Niedrig | NestJS |
+| | Error Handling | 2 PT | 🟡 Mittel | - |
+| **6. Testing** | Unit Tests | 3 PT | 🟡 Mittel | Vitest |
+| | Integration Tests | 3 PT | 🟡 Mittel | - |
+| | E2E Tests | 2 PT | 🟡 Mittel | Playwright |
+
+**Gesamtaufwand MVP: ~38 Personentage (~7-8 Wochen bei 1 Entwickler)**
+
+### Risiken & Herausforderungen
+
+```mermaid
+mindmap
+  root((Risiken))
+    Performance
+      Frame-Rendering langsam
+      Memory-Verbrauch hoch
+      Puppeteer Overhead
+    Audio-Analyse
+      Phoneme-Detection ungenau
+      Viseme-Timing schwierig
+      ML-Model benötigt
+    Video-Qualität
+      Lip-Sync nicht perfekt
+      Rendering-Artefakte
+      Encoding-Qualität
+    Infrastructure
+      FFmpeg Installation
+      Puppeteer Dependencies
+      Storage-Kosten
+```
+
+---
+
+## 🚀 MVP Scope
+
+### ✅ MVP Umfang (Minimal Viable Product)
+
+**Funktionalität:**
+- ✅ Text → Video-Generierung (einzelne Videos)
+- ✅ Basis Viseme-Analyse (vereinfacht, ohne ML)
+- ✅ Frame-by-Frame Rendering (30 FPS, 1080p)
+- ✅ MP4-Encoding mit Audio
+- ✅ REST API für Video-Generierung
+- ✅ Database-Storage für Content-Metadaten
+- ✅ File-Storage für Videos (lokal)
+
+**Nicht im MVP:**
+- ❌ Batch-Verarbeitung
+- ❌ ML-basierte Phoneme-Detection
+- ❌ Thumbnail-Generierung
+- ❌ Video-Bearbeitung (Trim, Effects)
+- ❌ Multi-Format-Support (nur MP4)
+- ❌ Cloud-Storage (nur lokal)
+- ❌ Progress-Tracking (WebSocket)
+- ❌ Video-Preview
+
+### 🎯 MVP Erfolgskriterien
+
+1. **Funktionalität:** Text kann zu Video konvertiert werden
+2. **Qualität:** Lip-Sync ist erkennbar (nicht perfekt)
+3. **Performance:** Video-Generierung < 2 Minuten für 30 Sekunden Video
+4. **Stabilität:** 90% Success-Rate bei Video-Generierung
+5. **API:** REST-Endpoint funktioniert und dokumentiert
+
+---
+
+## 📝 API-Spezifikation
+
+### Endpoints
+
+```typescript
+// POST /api/v1/content/generate
+{
+  agentId: string;
+  text: string;
+  contentType: 'lms' | 'intranet' | 'website';
+  options?: {
+    resolution?: '720p' | '1080p';
+    fps?: number;
+    voiceId?: string;
+  };
+}
+
+// Response
+{
+  contentId: string;
+  videoUrl: string;
+  status: 'processing' | 'completed' | 'failed';
+  estimatedDuration?: number; // seconds
+}
+
+// GET /api/v1/content/:id
+{
+  contentId: string;
+  tenantId: string;
+  agentId: string;
+  contentType: string;
+  title: string;
+  text: string;
+  videoUrl: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// GET /api/v1/content?tenantId=xxx&contentType=lms
+{
+  items: Content[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+```
+
+---
+
+## 🔧 Dependencies
+
+### Neue Dependencies
+
+```json
+{
+  "dependencies": {
+    "puppeteer": "^24.0.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "node-wav": "^0.0.2",
+    "web-audio-api": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.24"
+  }
+}
+```
+
+### System Requirements
+
+- **FFmpeg:** Muss auf Server installiert sein
+- **Chrome/Chromium:** Für Puppeteer (wird automatisch installiert)
+- **Node.js:** >= 20.9.0 (bereits vorhanden)
+- **Memory:** Mindestens 4GB RAM für Rendering
+
+---
+
+## 🎓 Zusammenfassung
+
+### Was wird genutzt?
+
+✅ **Wiederverwendung (keine Neuentwicklung):**
+- `AvatarV2Service` aus `@wattweiser/core` für Scene-Config
+- `Voice Service` für TTS (HTTP-Call)
+- `Agent Service` für Agent-Informationen
+- `ServiceDiscovery` aus `@wattweiser/shared`
+- Bestehende Database-Infrastruktur (PostgreSQL)
+
+🆕 **Neu zu entwickeln:**
+- Viseme-Analyzer (Audio → Visemes)
+- Avatar-Renderer (Puppeteer + Three.js)
+- Video-Encoder (FFmpeg Integration)
+- Storage-Service (S3/Local)
+- Content-Management (CRUD)
+
+### Integration-Punkte
+
+1. **Input:** REST API (`/api/v1/content/generate`)
+2. **Processing:** Nutzt bestehende Services (AvatarV2, Voice)
+3. **Output:** Video-Files + Database-Metadaten
+4. **Storage:** PostgreSQL (Metadaten) + File-Storage (Videos)
+
+### MVP-Aufwand
+
+- **Gesamt:** ~38 Personentage (~7-8 Wochen)
+- **Kritisch:** Avatar-Renderer (Performance)
+- **Risiko:** Viseme-Analyse (Qualität)
+
+---
+
+**Status:** 🟡 Konzeptphase  
+**Nächster Schritt:** Service-Struktur erstellen und erste Komponenten implementieren
+
+
+

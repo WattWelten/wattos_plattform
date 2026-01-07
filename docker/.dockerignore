@@ -1,0 +1,219 @@
+﻿# Dependencies (werden im Container installiert)
+node_modules
+**/node_modules
+npm-debug.log
+pnpm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+# pnpm-lock.yaml wird benötigt für reproduzierbare Builds
+
+# Build outputs (werden im Container neu gebaut)
+dist
+**/dist
+build
+**/build
+.next
+**/.next
+out
+**/out
+*.tsbuildinfo
+**/*.tsbuildinfo
+.turbo
+**/.turbo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.*.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Git
+.git
+.gitignore
+.github
+
+# Tests
+coverage
+.nyc_output
+*.test.ts
+*.test.tsx
+*.test.js
+*.test.jsx
+*.spec.ts
+*.spec.tsx
+*.spec.js
+*.spec.jsx
+**/__tests__/
+**/e2e/
+**/test-results/
+**/playwright-report/
+**/screenshots/
+
+# Documentation (nur README behalten für Image-Metadaten)
+docs
+**/docs
+*.md
+!README.md
+!CHANGELOG.md
+# Wichtig: Package.json READMEs können nützlich sein
+!**/package.json
+
+# Reports & Analysis
+reports
+*.report
+*.analysis
+*-summary.md
+*-status.md
+*-notes.md
+*-readiness.md
+
+# Scripts
+scripts
+**/scripts/
+
+# Infrastructure
+infra
+docker-compose.yml
+docker-compose.yaml
+compose.yml
+*.dockerfile
+Dockerfile*
+.dockerignore
+
+# OpenAPI/Schemas
+openapi
+schemas
+*.schema.json
+
+# Cache
+.cache
+.turbo
+.eslintcache
+.stylelintcache
+
+# Logs
+*.log
+logs
+**/logs/
+
+# Misc
+*.backup
+*.bak
+*.old
+*.orig
+.cursor
+.cursor-cache
+.cursor-index
+
+# TypeScript generierte Dateien (Source-Dateien behalten)
+**/*.d.ts
+!src/**/*.d.ts
+!apps/**/src/**/*.d.ts
+!packages/**/src/**/*.d.ts
+!packages/**/src/**/*.d.ts.map
+# Wichtig: TypeScript Config-Dateien behalten
+!tsconfig.json
+!**/tsconfig.json
+!tsconfig.*.json
+!**/tsconfig.*.json
+
+# JavaScript generierte Dateien (Source-Dateien und Configs behalten)
+**/*.js
+!src/**/*.js
+!apps/**/src/**/*.js
+!packages/**/src/**/*.js
+# Wichtig: Alle Config-Dateien behalten
+!**/*.config.js
+!**/next.config.js
+!**/tailwind.config.js
+!**/postcss.config.js
+!**/vitest.config.js
+!**/jest.config.js
+!**/playwright.config.js
+!**/turbo.json
+!turbo.json
+!pnpm-workspace.yaml
+!pnpm-workspace-optimized.yaml
+# Wichtig: Prisma Schema für Migrationen
+!packages/db/schema.prisma
+!**/schema.prisma
+# Wichtig: Root package.json für Workspace
+!package.json
+
+# Modelle & ML-Artefakte
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.pb
+*.tflite
+*.joblib
+models/
+checkpoints/
+weights/
+
+# Media-Dateien
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+
+# Große Daten-Dateien
+*.parquet
+*.xlsx
+*.xls
+*.xlsm
+*.ods
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+*.gz
+*.bz2
+
+# Datenbanken
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Wichtig: Prisma Migrationen behalten (für db:migrate)
+!packages/db/migrations/**
+!**/migrations/**
+
+# Wichtig: Prisma Client generierte Dateien (werden im Build generiert)
+packages/db/node_modules/.prisma
+**/node_modules/.prisma
+
