@@ -4,6 +4,61 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Cleanup & Dependency-Optimierungen (2025-01-27)
+
+#### 🧹 Umfassendes Cleanup
+
+- ✅ **Build-Artefakte bereinigt**
+  - Entfernt: `dist/`, `build/`, `.next/`, `.turbo/`, `.output/`, `.svelte-kit/`
+  - Entfernt: `*.tsbuildinfo`, `*.map` (Source Maps)
+  - Entfernt: Python Cache (`__pycache__/`, `*.pyc`)
+  
+- ✅ **Test-Artefakte bereinigt**
+  - Entfernt: `playwright-report/`, `test-results/`, `coverage/`
+  
+- ✅ **Caches bereinigt**
+  - Entfernt: `.cursor/`, `.cursor-cache/`, `.cursor-index/`
+  - pnpm Store bereinigt: 1974 Dateien, 191 Pakete entfernt
+  
+- ✅ **Log-Dateien bereinigt**
+  - Entfernt: `*.log` Dateien im gesamten Projekt
+
+#### 🔧 Dependency-Optimierungen
+
+- ✅ **Zyklische Dependencies behoben**
+  - Zyklische Dependency zwischen `@wattweiser/core` und `@wattweiser/dms` aufgelöst
+  - `@wattweiser/dms` aus `peerDependencies` von `core` entfernt
+  - `@wattweiser/dms` als `dependency` in `core` hinzugefügt
+  - `@wattweiser/core` aus `peerDependencies` von `dms` entfernt
+
+- ✅ **Dependency-Updates**
+  - `@vitest/ui`: `2.1.8` → `4.0.16` (kompatibel mit vitest 4.0.16)
+  - `@testing-library/react`: `14.1.2` → `16.3.1` (React 19 Support)
+  - `@testing-library/dom`: `^10.4.0` hinzugefügt (Peer Dependency)
+  - `uuid`: `^11.0.3` → `^13.0.0` (Konsistenz im gesamten Projekt)
+
+- ✅ **Deprecated Dependencies entfernt**
+  - `@types/redis`: Entfernt (redis v5 hat eigene TypeScript-Typen)
+  - `@types/uuid`: Entfernt (uuid v13 benötigt keine separaten Types)
+
+#### 🛠️ Neue Cleanup-Scripts
+
+- ✅ **package.json erweitert**
+  - `pnpm clean:all` - Umfassendes Cleanup (Build-Artefakte, Caches, Logs)
+  - `pnpm clean:cache` - pnpm Cache bereinigen
+  - `pnpm clean:build` - Build-Artefakte entfernen
+
+- ✅ **cleanup-complete.ps1 erstellt**
+  - Umfassendes PowerShell-Skript für Windows
+  - Bereinigt Build-Artefakte, Caches, Logs, Test-Artefakte, Python-Cache
+  - Statistik über gelöschte Dateien und freigegebenen Speicherplatz
+
+#### 📝 .gitignore optimiert
+
+- ✅ Duplikate entfernt
+- ✅ Strukturiert und organisiert
+- ✅ Alle Build-Artefakte, Caches und temporäre Dateien abgedeckt
+
 ### Build-Fixes & Dev Stack Behebung (2025-01-27)
 
 #### 🐛 Build-Fehler behoben

@@ -194,6 +194,33 @@ pnpm build
 cd apps/web && pnpm build
 ```
 
+## 🧹 Cleanup & Wartung
+
+Das Projekt bietet mehrere Cleanup-Scripts zur Bereinigung von Build-Artefakten, Caches und temporären Dateien:
+
+```bash
+# Umfassendes Cleanup (Build-Artefakte, Caches, Logs, Test-Artefakte)
+pnpm clean:all
+
+# pnpm Cache bereinigen (entfernt ungenutzte Pakete)
+pnpm clean:cache
+
+# Build-Artefakte entfernen (dist, .next, .turbo, etc.)
+pnpm clean:build
+
+# Standard Cleanup (nur Turbo Cleanup)
+pnpm clean
+```
+
+**Was wird bereinigt:**
+- Build-Artefakte: `dist/`, `build/`, `.next/`, `.turbo/`, `*.tsbuildinfo`, `*.map`
+- Test-Artefakte: `playwright-report/`, `test-results/`, `coverage/`
+- Caches: `.cursor/`, `.cursor-cache/`, pnpm Store
+- Log-Dateien: `*.log`
+- Python Cache: `__pycache__/`, `*.pyc`
+
+**Hinweis:** Die Cleanup-Scripts sind sicher und löschen nur Build-Artefakte und Caches. Source-Code wird nicht gelöscht.
+
 ## 🚢 Deployment
 
 Die Plattform kann mit Docker, Railway, Vercel oder anderen Cloud-Providern deployed werden.
