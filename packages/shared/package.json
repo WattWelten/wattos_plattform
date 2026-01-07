@@ -30,7 +30,7 @@
     "@types/node": "^25.0.3",
     "@types/redis": "^4.0.11",
     "typescript": "^5.9.3",
-    "undici-types": "^7.16.0",
+    "undici-types": "^7.18.2",
     "vitest": "^4.0.16"
   }
 }
