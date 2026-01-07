@@ -6,57 +6,57 @@ node_modules/
 # Testing
 coverage/
 *.lcov
+.nyc_output/
+htmlcov/
 
-# Production
+# Production / Build
 build/
 dist/
 .next/
 out/
+.turbo/
+.output/
+.svelte-kit/
+
+# TypeScript Build-Info
+*.tsbuildinfo
+**/*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Source Maps
+*.map
+**/*.map
 
 # Misc
 .DS_Store
 *.pem
+Thumbs.db
+
+# Environment
 .env
 .env*.local
 .env.production
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Debug
+# Debug / Logs
+logs/
+*.log
+*-logs-*.txt
+install.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-debug.log*
 
-# Local env files
-.env*.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Vercel
-.vercel
-
-# Turbo
-.turbo
-
-# IDEs
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
-Thumbs.db
-
-# Logs
-logs/
-*.log
-
 # Database
 *.db
 *.sqlite
 *.sqlite3
+*.db-shm
+*.db-wal
 
 # Python
 __pycache__/
@@ -67,14 +67,23 @@ __pycache__/
 venv/
 env/
 ENV/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.eggs/
+*.egg-info/
 
 # Railway
 .railway/
 .railway-secrets.env
 
+# Vercel
+.vercel
+
 # Analysis Reports & Logs
 log-analysis-*/
 railway-analysis-*/
+*-analysis-*/
 github-workflow-logs-*.txt
 *.pdf
 
@@ -83,42 +92,22 @@ github-workflow-logs-*.txt
 *.temp
 *.bak
 *.backup
-
-# Zusaetzliche Eintraege fuer .gitignore
-# Diese Zeilen sollten zur bestehenden .gitignore hinzugefuegt werden
-
-# TypeScript Build-Info (FEHLT aktuell)
-*.tsbuildinfo
-**/*.tsbuildinfo
-
-# Analyse-Verzeichnisse (FEHLT aktuell)
-*-analysis-*/
-log-analysis-*/
-railway-analysis-*/
-
-# Log-Dateien (teilweise fehlt)
-*.log
-*-logs-*.txt
-install.log
-github-workflow-logs-*.txt
+*.swp
+*.swo
+*~
+*.orig
+*.old
 
 # Test-Reports
+reports/
 playwright-report/
 test-results/
-
-# Temporaere Dateien
-*.tmp
-*.temp
-*.bak
-*.backup
+**/test-results/
+**/playwright-report/
 
 # Prisma generierte Dateien
 packages/db/node_modules/.prisma
 **/node_modules/.prisma
-
-# Build-Artefakte
-*.tsbuildinfo
-**/*.tsbuildinfo
 
 # Cursor-spezifisch
 .cursor/
@@ -127,9 +116,35 @@ packages/db/node_modules/.prisma
 
 # Docker
 .docker/
+docker/build/
+docker/build-context/
+docker/cache/
+docker/build-cache/
+docker/context/
+docker/dist/
+docker/output/
+docker/artifacts/
+.docker-cache/
+.docker-build/
+.docker-context/
+.docker-compose/
+docker-compose.build/
 
-# Environment-spezifisch
-.env.local
-.env.*.local
-.env.production.local
-.env.test.local
+# IDEs
+.idea/
+.vscode/
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+.vite/
+.rollup/
+.rpt2_cache/
+.rts2_cache/
+.esm-cache/
+
+# Lock files (optional - normalerweise committed)
+# pnpm-lock.yaml
+# package-lock.json
+# yarn.lock
