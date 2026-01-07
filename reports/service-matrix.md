@@ -1,321 +1,110 @@
-# WattOS Plattform - Service Matrix
+﻿# Service-Matrix - WattOS Plattform
 
-**Generiert am**: 2025-12-20T12:25:38.928Z
-**Anzahl Services**: 24
+**Erstellt:** 2026-01-04  
+**Zweck:** VollstÃ¤ndige Ãœbersicht aller Services, Apps, Packages und Workers
 
-## Übersicht
+## Apps
 
-Diese Matrix enthält alle Services, Packages und Workers der WattOS Plattform mit ihren Konfigurationen, Ports, Environment-Variablen und Abhängigkeiten.
+### Frontend-Apps
 
-## Services
+| Name | Pfad | Start-Script | Build-Script | Port | ENV-Variablen | Dependencies |
+|------|------|--------------|--------------|------|---------------|--------------|
+| @wattweiser/web | pps/web | pnpm dev | pnpm build | 3000 (default) | NODE_ENV, NEXT_PUBLIC_* | Next.js, React, Three.js |
+| @wattweiser/customer-portal | pps/customer-portal | pnpm dev | pnpm build | 3002 | NODE_ENV, NEXT_PUBLIC_* | Next.js, React, Playwright |
+| @wattweiser/console | pps/console | pnpm dev | pnpm build | 3003 | NODE_ENV, NEXT_PUBLIC_* | Next.js, React |
 
-| Name | Display Name | Typ | Port | Pfad | Build Script | Start Script | Health Check | Required | Priority |
-|------|--------------|-----|------|------|--------------|--------------|--------------|----------|----------|
-| api-gateway | API Gateway | gateway | 3001 | `apps/gateway` | `cd apps/gateway && npm install && npm run build...` | `cd apps/gateway && npm run start:prod...` | /health | ✅ | 1 |
-| llm-gateway | LLM Gateway | nestjs | 3009 | `apps/services/llm-gateway` | `cd apps/services/llm-gateway && pnpm install && pn...` | `cd apps/services/llm-gateway && pnpm run start:pro...` | /health | ✅ | 1 |
-| agent-service | Agent Service | nestjs | 3008 | `apps/services/agent-service` | `cd apps/services/agent-service && npm install && n...` | `cd apps/services/agent-service && npm run start:pr...` | /health | ✅ | 2 |
-| chat-service | Chat Service | nestjs | 3006 | `apps/services/chat-service` | `cd apps/services/chat-service && npm install && np...` | `cd apps/services/chat-service && npm run start:pro...` | /health | ✅ | 2 |
-| rag-service | RAG Service | nestjs | 3007 | `apps/services/rag-service` | `cd apps/services/rag-service && npm install && npm...` | `cd apps/services/rag-service && npm run start:prod...` | /health | ✅ | 2 |
-| tool-service | Tool Service | nestjs | 3005 | `apps/services/tool-service` | `cd apps/services/tool-service && npm install && np...` | `cd apps/services/tool-service && npm run start:pro...` | /health | ✅ | 2 |
-| crawler-service | Crawler Service | nestjs | 3015 | `apps/services/crawler-service` | `cd apps/services/crawler-service && npm install &&...` | `cd apps/services/crawler-service && npm run start:...` | /health | ❌ | 3 |
-| customer-intelligence-service | Customer Intelligence Service | nestjs | 3014 | `apps/services/customer-intelligence-service` | `cd apps/services/customer-intelligence-service && ...` | `cd apps/services/customer-intelligence-service && ...` | /health | ❌ | 3 |
-| voice-service | Voice Service | nestjs | 3016 | `apps/services/voice-service` | `cd apps/services/voice-service && npm install && n...` | `cd apps/services/voice-service && npm run start:pr...` | /health | ❌ | 3 |
-| admin-service | Admin Service | nestjs | 3020 | `apps/services/admin-service` | `cd apps/services/admin-service && npm install && n...` | `cd apps/services/admin-service && npm run start:pr...` | /health | ❌ | 4 |
-| avatar-service | Avatar Service | nestjs | 3017 | `apps/services/avatar-service` | `cd apps/services/avatar-service && npm install && ...` | `cd apps/services/avatar-service && npm run start:p...` | /health | ❌ | 4 |
-| character-service | Character Service | nestjs | 3013 | `apps/services/character-service` | `cd apps/services/character-service && npm install ...` | `cd apps/services/character-service && npm run star...` | /health | ❌ | 4 |
-| feedback-service | Feedback Service | nestjs | 3018 | `apps/services/feedback-service` | `cd apps/services/feedback-service && npm install &...` | `cd apps/services/feedback-service && npm run start...` | /health | ❌ | 4 |
-| gateway | gateway | gateway | 3001 | `apps\gateway` | `nest build...` | `node dist/main...` | /health | ❌ | 4 |
-| ingestion-service | Ingestion Service | python | 8001 | `apps/services/ingestion-service` | `cd apps/services/ingestion-service && pip install ...` | `cd apps/services/ingestion-service && python main....` | /health | ❌ | 4 |
-| phone-bot-service | Phone-Bot Service für WattOS V2 | nestjs | 3018 | `apps\services\phone-bot-service` | `nest build...` | `nest start...` | /health | ❌ | 4 |
-| summary-service | Summary Service | nestjs | 3019 | `apps/services/summary-service` | `cd apps/services/summary-service && npm install &&...` | `cd apps/services/summary-service && npm run start:...` | /health | ❌ | 4 |
-| web | web | nextjs | 3000 | `apps\web` | `next build...` | `next start...` | /health | ❌ | 4 |
-| web-chat-service | Web-Chatbot Service für WattOS V2 | nestjs | 3017 | `apps\services\web-chat-service` | `nest build...` | `nest start...` | /health | ❌ | 4 |
-| whatsapp-bot-service | WhatsApp-Bot Service für WattOS V2 | nestjs | 3019 | `apps\services\whatsapp-bot-service` | `nest build...` | `nest start...` | /health | ❌ | 4 |
-| widget-service | Widget Service - Embeddable Chat/Voice Bot Widget | nestjs | - | `apps\services\widget-service` | `nest build...` | `nest start...` | /health | ❌ | 4 |
-| agent-worker | Agent Worker | worker | - | `apps/workers/agent-worker` | `cd apps/workers/agent-worker && npm install && npm...` | `cd apps/workers/agent-worker && npm run start:prod...` | /health | ❌ | 5 |
-| document-worker | Document Worker | worker | - | `apps/workers/document-worker` | `cd apps/workers/document-worker && npm install && ...` | `cd apps/workers/document-worker && npm run start:p...` | /health | ❌ | 5 |
-| metaverse-service | Metaverse Service | nestjs | 3010 | `apps/services/metaverse-service` | `cd apps/services/metaverse-service && npm install ...` | `cd apps/services/metaverse-service && npm run star...` | /health | ❌ | 5 |
+### Backend-Services
+
+| Name | Pfad | Start-Script | Build-Script | Port | ENV-Variablen | Dependencies |
+|------|------|--------------|--------------|------|---------------|--------------|
+| @wattweiser/gateway | pps/gateway | pnpm dev | pnpm build | 3001 | PORT, JWT_SECRET, CORS_ORIGINS, DATABASE_URL, REDIS_URL | NestJS, JWT, Swagger |
+| @wattweiser/chat-service | pps/services/chat-service | pnpm dev | pnpm build | 3006 | PORT, DATABASE_URL, REDIS_URL, CORS_ORIGIN | NestJS, Socket.IO |
+| @wattweiser/rag-service | pps/services/rag-service | pnpm dev | pnpm build | 3005 | PORT, DATABASE_URL, REDIS_URL, CORS_ORIGIN, VECTOR_STORE_TYPE | NestJS, Vector Store |
+| @wattweiser/agent-service | pps/services/agent-service | pnpm dev | pnpm build | 3003 | PORT, DATABASE_URL, REDIS_URL, LLM_GATEWAY_URL, TOOL_SERVICE_URL | NestJS, LangGraph |
+| @wattweiser/character-service | pps/services/character-service | pnpm dev | pnpm build | 3013 | PORT, DATABASE_URL, REDIS_URL, CORS_ORIGINS | NestJS |
+| @wattweiser/crawler-service | pps/services/crawler-service | pnpm dev | pnpm build | 3015 | PORT, CRAWLER_SERVICE_PORT, DATABASE_URL, REDIS_URL, CORS_ORIGIN | NestJS, Puppeteer |
+| @wattweiser/llm-gateway | pps/services/llm-gateway | pnpm dev | pnpm build | 3015 | PORT, DATABASE_URL, REDIS_URL, OPENAI_API_KEY, ANTHROPIC_API_KEY | NestJS, LLM Providers |
+| @wattweiser/admin-service | pps/services/admin-service | pnpm dev | pnpm build | 3007 | PORT, DATABASE_URL, REDIS_URL, CORS_ORIGIN | NestJS |
+| @wattweiser/avatar-service | pps/services/avatar-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/voice-service | pps/services/voice-service | pnpm dev | pnpm build | - | PORT, ELEVENLABS_API_KEY, TTS_PROVIDER, STT_PROVIDER | NestJS |
+| @wattweiser/tool-service | pps/services/tool-service | pnpm dev | pnpm build | 3004 | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/feedback-service | pps/services/feedback-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/summary-service | pps/services/summary-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/customer-intelligence-service | pps/services/customer-intelligence-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/phone-bot-service | pps/services/phone-bot-service | pnpm dev | pnpm build | 3018 | PORT, TWILIO_* | NestJS, Twilio |
+| @wattweiser/whatsapp-bot-service | pps/services/whatsapp-bot-service | pnpm dev | pnpm build | - | PORT, WHATSAPP_* | NestJS |
+| @wattweiser/web-chat-service | pps/services/web-chat-service | pnpm dev | pnpm build | 3017 | PORT, DATABASE_URL, REDIS_URL | NestJS, WebSocket |
+| @wattweiser/agent-generator-service | pps/services/agent-generator-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/dashboard-service | pps/services/dashboard-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/f13-service | pps/services/f13-service | pnpm dev | pnpm build | - | PORT, F13_* | NestJS |
+| @wattweiser/knowledge-enhancement-service | pps/services/knowledge-enhancement-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/monitoring-dashboard-service | pps/services/monitoring-dashboard-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/observability-service | pps/services/observability-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/persona-generator-service | pps/services/persona-generator-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/widget-service | pps/services/widget-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/metaverse-service | pps/services/metaverse-service | pnpm dev | pnpm build | - | PORT, DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/ingestion-service | pps/services/ingestion-service | python main.py | - | - | PYTHON_*, DATABASE_URL | FastAPI, Python |
+
+### Workers
+
+| Name | Pfad | Start-Script | Build-Script | Port | ENV-Variablen | Dependencies |
+|------|------|--------------|--------------|------|---------------|--------------|
+| @wattweiser/agent-worker | pps/workers/agent-worker | pnpm start | pnpm build | - | DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/document-worker | pps/workers/document-worker | pnpm start | pnpm build | - | DATABASE_URL, REDIS_URL | NestJS |
+| @wattweiser/crawler-scheduler | pps/workers/crawler-scheduler | pnpm start | pnpm build | - | DATABASE_URL, REDIS_URL, CRAWLER_SERVICE_URL | NestJS, Cron |
+| @wattweiser/kb-sync-worker | pps/workers/kb-sync-worker | pnpm start | pnpm build | - | DATABASE_URL, REDIS_URL | NestJS |
 
 ## Packages
 
-| Name | Display Name | Pfad | Build Script |
-|------|--------------|------|--------------|
-
-## Environment Variables
-
-### API Gateway (api-gateway)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `JWT_SECRET` | ✅ | Secret für JWT-Token-Generierung | - |
-| `CORS_ORIGIN` | ❌ | CORS Origin (komma-separiert) | * |
-
-### LLM Gateway (llm-gateway)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `OPENAI_API_KEY` | ✅ | OpenAI API Key | - |
-| `ANTHROPIC_API_KEY` | ❌ | Anthropic API Key (optional) | - |
-
-### Agent Service (agent-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `LLM_GATEWAY_URL` | ✅ | URL des LLM Gateway Services | - |
-| `TOOL_SERVICE_URL` | ✅ | URL des Tool Services | - |
-
-### Chat Service (chat-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `LLM_GATEWAY_URL` | ✅ | URL des LLM Gateway Services | - |
-| `RAG_SERVICE_URL` | ✅ | URL des RAG Services | - |
-| `VOICE_SERVICE_URL` | ❌ | URL des Voice Services | - |
-
-### RAG Service (rag-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `LLM_GATEWAY_URL` | ✅ | URL des LLM Gateway Services (für Embeddings) | - |
-| `VECTOR_STORE_TYPE` | ❌ | Vector Store Typ | pgvector |
-
-### Tool Service (tool-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `SANDBOX_ENABLED` | ❌ | Sandbox für Tool-Ausführung aktivieren | false |
-
-### Crawler Service (crawler-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `CRAWLER_MAX_DEPTH` | ❌ | Maximale Crawl-Tiefe | 3 |
-
-### Customer Intelligence Service (customer-intelligence-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `LLM_GATEWAY_URL` | ✅ | URL des LLM Gateway Services | - |
-| `AGENT_SERVICE_URL` | ✅ | URL des Agent Services | - |
-
-### Voice Service (voice-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `ELEVENLABS_API_KEY` | ❌ | ElevenLabs API Key | - |
-| `ELEVENLABS_VOICE_ID` | ❌ | ElevenLabs Voice ID | - |
-| `OPENAI_API_KEY` | ❌ | OpenAI API Key (für STT/TTS) | - |
-
-### Admin Service (admin-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-
-### Avatar Service (avatar-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-
-### Character Service (character-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-
-### Feedback Service (feedback-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-
-### gateway (gateway)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform | railway |
-
-### Ingestion Service (ingestion-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `ADMIN_SERVICE_URL` | ✅ | URL des Admin Services (für DB-API) | - |
-
-### Phone-Bot Service für WattOS V2 (phone-bot-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform | railway |
-
-### Summary Service (summary-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `LLM_GATEWAY_URL` | ✅ | URL des LLM Gateway Services | - |
-
-### web (web)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform | railway |
-
-### Web-Chatbot Service für WattOS V2 (web-chat-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform | railway |
-
-### WhatsApp-Bot Service für WattOS V2 (whatsapp-bot-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform | railway |
-
-### Widget Service - Embeddable Chat/Voice Bot Widget (widget-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform | railway |
-
-### Agent Worker (agent-worker)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `AGENT_SERVICE_URL` | ✅ | URL des Agent Services | - |
-
-### Document Worker (document-worker)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-| `INGESTION_SERVICE_URL` | ✅ | URL des Ingestion Services | - |
-
-### Metaverse Service (metaverse-service)
-
-| Variable | Required | Description | Default |
-|----------|----------|-------------|----------|
-| `DEPLOYMENT_PLATFORM` | ❌ | Deployment Platform (railway, kubernetes, local) | railway |
-| `NODE_ENV` | ❌ | Node.js Environment | production |
-
-## Dependencies
-
-### API Gateway (api-gateway)
-
-**Infrastructure Dependencies**: redis
-
-### LLM Gateway (llm-gateway)
-
-**Infrastructure Dependencies**: postgresql
-
-### Agent Service (agent-service)
-
-**Service Dependencies**: llm-gateway, tool-service
-
-**Infrastructure Dependencies**: postgresql, redis
-
-### Chat Service (chat-service)
-
-**Service Dependencies**: llm-gateway, rag-service
-
-**Infrastructure Dependencies**: postgresql, redis
-
-### RAG Service (rag-service)
-
-**Service Dependencies**: llm-gateway
-
-**Infrastructure Dependencies**: postgresql
-
-### Customer Intelligence Service (customer-intelligence-service)
-
-**Service Dependencies**: llm-gateway, agent-service, rag-service, chat-service, admin-service, crawler-service
-
-**Infrastructure Dependencies**: postgresql
-
-### Voice Service (voice-service)
-
-**Service Dependencies**: llm-gateway, chat-service
-
-### Admin Service (admin-service)
-
-**Infrastructure Dependencies**: postgresql, redis
-
-### Avatar Service (avatar-service)
-
-**Service Dependencies**: voice-service
-
-### Character Service (character-service)
-
-**Infrastructure Dependencies**: postgresql
-
-### Feedback Service (feedback-service)
-
-**Infrastructure Dependencies**: postgresql
-
-### Ingestion Service (ingestion-service)
-
-**Service Dependencies**: admin-service
-
-**Infrastructure Dependencies**: postgresql, redis
-
-### Summary Service (summary-service)
-
-**Service Dependencies**: llm-gateway
-
-**Infrastructure Dependencies**: postgresql
-
-### Agent Worker (agent-worker)
-
-**Service Dependencies**: agent-service
-
-**Infrastructure Dependencies**: redis
-
-### Document Worker (document-worker)
-
-**Service Dependencies**: ingestion-service
-
-**Infrastructure Dependencies**: redis
-
-## Deployment Priority
-
-- **Priority 1**: Kritische Services (API Gateway, LLM Gateway)
-- **Priority 2**: Wichtige Services (Chat, RAG, Agent, Tool)
-- **Priority 3**: Optionale Services (Customer Intelligence, Crawler, Voice)
-- **Priority 4**: Zusätzliche Services (Admin, Character, Summary, Feedback, Avatar, Ingestion)
-- **Priority 5**: Workers und Metaverse
-- **Priority 0**: Packages (nur Build, kein Deployment)
+| Name | Pfad | Build-Script | Type-Check | Dependencies |
+|------|------|--------------|------------|---------------|
+| @wattweiser/shared | packages/shared | pnpm build | pnpm type-check | NestJS, Redis, Pino |
+| @wattweiser/core | packages/core | pnpm build | pnpm type-check | NestJS, Zod, RxJS |
+| @wattweiser/db | packages/db | pnpm build | pnpm type-check | Prisma, PostgreSQL |
+| @wattweiser/config | packages/config | pnpm build | pnpm type-check | Zod, Envalid |
+| @wattweiser/ui | packages/ui | pnpm build | pnpm type-check | React, Tailwind |
+| @wattweiser/agents | packages/agents | pnpm build | pnpm type-check | - |
+| @wattweiser/characters | packages/characters | pnpm build | pnpm type-check | - |
+| @wattweiser/vector-store | packages/vector-store | pnpm build | pnpm type-check | pgvector, OpenSearch |
+| @wattweiser/evaluations | packages/evaluations | pnpm build | pnpm type-check | - |
+| @wattweiser/document-processor | packages/document-processor | pnpm build | pnpm type-check | - |
+| @wattweiser/metrics | packages/metrics | pnpm build | pnpm type-check | - |
+| @wattweiser/addons/avatar | packages/addons/avatar | pnpm build | pnpm type-check | NestJS, GLTF-Transform |
+| @wattweiser/addons/dms | packages/addons/dms | pnpm build | pnpm type-check | NestJS |
+| @wattweiser/addons/f13 | packages/addons/f13 | pnpm build | pnpm type-check | NestJS |
+
+## Port-Zuordnung (Lokal)
+
+| Service | Port |
+|---------|------|
+| Gateway | 3001 |
+| Customer Portal | 3002 |
+| Console | 3003 |
+| Agent Service | 3003 (âš ï¸ Konflikt mit Console!) |
+| Tool Service | 3004 |
+| RAG Service | 3005 |
+| Chat Service | 3006 |
+| Admin Service | 3007 |
+| Character Service | 3013 |
+| LLM Gateway | 3015 |
+| Crawler Service | 3015 (âš ï¸ Konflikt mit LLM Gateway!) |
+| Web Chat Service | 3017 |
+| Phone Bot Service | 3018 |
+
+## Globale ENV-Variablen
+
+### Erforderlich
+- DATABASE_URL - PostgreSQL Connection String
+- REDIS_URL - Redis Connection String  
+- JWT_SECRET - JWT Secret (min. 32 Zeichen)
+
+### Optional (Service-spezifisch)
+- NODE_ENV - Environment (development, production, staging, test)
+- PORT - Service Port (wird von Railway automatisch gesetzt)
+- CORS_ORIGIN / CORS_ORIGINS - CORS Origins (komma-separiert)
+- OPENAI_API_KEY - OpenAI API Key
+- ANTHROPIC_API_KEY - Anthropic API Key
+- ELEVENLABS_API_KEY - ElevenLabs API Key
+- VECTOR_STORE_TYPE - pgvector oder opensearch
+- TTS_PROVIDER - openai, elevenlabs, azure
+- STT_PROVIDER - openai, whisper, azure

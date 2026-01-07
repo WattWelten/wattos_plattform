@@ -12,7 +12,7 @@ export interface ParsedDocument {
 
 /**
  * F13 Parser Provider
- * 
+ *
  * Adapter für F13 Document Parser API
  */
 @Injectable()
@@ -31,7 +31,7 @@ export class F13ParserProvider {
       chunkOverlap?: number;
       extractMetadata?: boolean;
       fallback?: () => Promise<ParsedDocument>;
-    },
+    }
   ): Promise<ParsedDocument> {
     try {
       this.logger.debug('F13 parser parse document', { documentUrl });
@@ -96,7 +96,7 @@ export class F13ParserProvider {
       chunkSize?: number;
       chunkOverlap?: number;
       extractMetadata?: boolean;
-    },
+    }
   ): Promise<ParsedDocument> {
     try {
       this.logger.debug('F13 parser parse document buffer', { filename, mimeType });

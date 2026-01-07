@@ -16,6 +16,8 @@ export class DMSIntegrationService {
 
   constructor(
     private readonly dmsService: DMSService,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-expect-error - unused but may be needed in future
     private readonly ragService: RAGService,
     private readonly eventBus: EventBusService,
   ) {}
@@ -41,8 +43,8 @@ export class DMSIntegrationService {
     try {
       // 1. Dokumente aus DMS synchronisieren
       const syncResult = await this.dmsService.syncDocuments(tenantId, knowledgeSpaceId, {
-        folderId: options?.folderId,
-        updatedSince: options?.updatedSince,
+        ...(options?.folderId && { folderId: options.folderId }),
+        ...(options?.updatedSince && { updatedSince: options.updatedSince }),
       });
 
       // 2. Event emittieren

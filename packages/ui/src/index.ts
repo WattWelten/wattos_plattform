@@ -11,8 +11,5 @@ export type { AppleCardProps } from './components/apple-card';
 // Utils
 export { cn } from './lib/utils';
 
-// Styles
-import './styles/apple-theme.css';
-
-
-
+// Styles - CSS wird direkt von Next.js importiert, nicht hier
+// import './styles/apple-theme.css';

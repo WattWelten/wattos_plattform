@@ -2,43 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventBusService } from '../../events/bus.service';
 import { EventDomain, KnowledgeEventSchema } from '../../events/types';
 import { v4 as uuid } from 'uuid';
+import type { RAGProvider, RAGContext, RAGResponse, RAGResult } from '@wattweiser/shared';
 
-/**
- * RAG Provider Interface
- */
-export interface RAGProvider {
-  search(query: string, context: RAGContext): Promise<RAGResponse>;
-  healthCheck(): Promise<boolean>;
-}
-
-/**
- * RAG Context
- */
-export interface RAGContext {
-  knowledgeSpaceId?: string;
-  tenantId: string;
-  filters?: Record<string, any>;
-  topK?: number;
-}
-
-/**
- * RAG Response
- */
-export interface RAGResponse {
-  results: RAGResult[];
-  query: string;
-  metadata?: Record<string, any>;
-}
-
-/**
- * RAG Result
- */
-export interface RAGResult {
-  content: string;
-  score: number;
-  source: string;
-  metadata?: Record<string, any>;
-}
+// Re-export interfaces for backward compatibility
+export type { RAGProvider, RAGContext, RAGResponse, RAGResult } from '@wattweiser/shared';
 
 /**
  * RAG Service
@@ -149,7 +116,7 @@ export class RAGService {
     // Baue Context aus Top-Results
     const contextText = response.results
       .slice(0, context.topK || 5)
-      .map((result, index) => `[${index + 1}] ${result.content} (Source: ${result.source})`)
+      .map((result: RAGResult, index: number) => `[${index + 1}] ${result.content} (Source: ${result.source})`)
       .join('\n\n');
 
     // Emit Context Event
@@ -181,6 +148,21 @@ export class RAGService {
       source: result.source,
       score: result.score,
     }));
+  }
+
+  /**
+   * Health Check
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      const provider = this.providers.get(this.defaultProvider);
+      if (!provider) {
+        return false;
+      }
+      return await provider.healthCheck();
+    } catch {
+      return false;
+    }
   }
 }
 

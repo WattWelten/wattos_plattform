@@ -6,8 +6,48 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { GraphState, GraphStateService } from './graph-state.service';
 import { AgentState, ToolCall } from '@wattweiser/agents';
-import { ServiceDiscoveryService } from '@wattweiser/shared';
+import {
+  ServiceDiscoveryService,
+  convertToOpenAIToolFormat,
+  validateRequestWithTools,
+} from '@wattweiser/shared';
 import { PrismaService } from '@wattweiser/db';
+
+/**
+ * OpenAI Tool Format (Function Calling)
+ */
+interface OpenAITool {
+  type: 'function';
+  function: {
+    name: string;
+    description: string;
+    parameters: {
+      type: string;
+      properties?: Record<string, any>;
+      required?: string[];
+    };
+  };
+}
+
+/**
+ * Tool Definition (aus Tool-Service)
+ */
+interface ToolDefinition {
+  id: string;
+  name: string;
+  description: string;
+  type?: string;
+  schema?: {
+    type: string;
+    properties?: Record<string, any>;
+    required?: string[];
+  };
+  adapter?: string;
+  requiresAuth?: boolean;
+  requiresApproval?: boolean;
+  timeout?: number;
+  retryCount?: number;
+}
 
 /**
  * Graph Service
@@ -93,6 +133,94 @@ export class GraphService {
   }
 
   /**
+   * Tools ins OpenAI-Format konvertieren
+   * Verwendet die gemeinsame Utility aus @wattweiser/shared
+   */
+  private convertToolsToOpenAIFormat(tools: any[]): OpenAITool[] {
+    try {
+      const converted = convertToOpenAIToolFormat(tools);
+      if (converted.length === 0 && tools.length > 0) {
+        this.logger.warn(
+          `Konvertierung von ${tools.length} Tools fehlgeschlagen - alle Tools wurden gefiltert`,
+        );
+      }
+      return converted;
+    } catch (error: any) {
+      this.logger.error(`Fehler beim Konvertieren der Tools: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Tools aus Tool-Service abrufen (falls nur IDs vorhanden)
+   */
+  private async fetchToolDefinitions(toolIds: string[]): Promise<ToolDefinition[]> {
+    if (!toolIds || toolIds.length === 0) {
+      return [];
+    }
+
+    if (!Array.isArray(toolIds)) {
+      this.logger.warn(
+        `Ungültige Tool-IDs-Eingabe: ${typeof toolIds}, erwartet Array. IDs: ${toolIds}`,
+      );
+      return [];
+    }
+
+    try {
+      const toolServiceUrl = this.serviceDiscovery.getServiceUrl('tool-service', 3005);
+      const tools: ToolDefinition[] = [];
+      const failedToolIds: string[] = [];
+
+      for (const toolId of toolIds) {
+        if (typeof toolId !== 'string' || !toolId.trim()) {
+          this.logger.warn(`Ungültige Tool-ID übersprungen: ${toolId}`);
+          failedToolIds.push(String(toolId));
+          continue;
+        }
+
+        try {
+          const response = await firstValueFrom(
+            this.httpService.get(`${toolServiceUrl}/registry/tools/${toolId}`),
+          );
+          if (response.data && !response.data.error) {
+            tools.push(response.data);
+            this.logger.debug(`Tool-Definition für ${toolId} erfolgreich abgerufen`);
+          } else {
+            this.logger.warn(`Tool ${toolId} hat ungültige Response-Struktur`);
+            failedToolIds.push(toolId);
+          }
+        } catch (error: any) {
+          this.logger.warn(
+            `Tool ${toolId} konnte nicht abgerufen werden: ${error.message}`,
+            error.response?.status ? `Status: ${error.response.status}` : undefined,
+          );
+          failedToolIds.push(toolId);
+        }
+      }
+
+      if (failedToolIds.length > 0) {
+        this.logger.warn(
+          `${failedToolIds.length} von ${toolIds.length} Tool-Definitionen konnten nicht abgerufen werden: ${failedToolIds.join(', ')}`,
+        );
+      }
+
+      if (tools.length === 0 && toolIds.length > 0) {
+        this.logger.error(
+          `Keine Tool-Definitionen konnten abgerufen werden für IDs: ${toolIds.join(', ')}`,
+        );
+      }
+
+      return tools;
+    } catch (error: any) {
+      this.logger.error(
+        `Fehler beim Abrufen von Tool-Definitionen: ${error.message}`,
+        error.stack,
+      );
+      return [];
+    }
+  }
+
+  /**
    * LLM Node
    */
   private async llmNode(state: GraphState): Promise<Partial<GraphState>> {
@@ -114,14 +242,64 @@ export class GraphService {
         });
       }
 
+      // Tools vorbereiten
+      let tools: OpenAITool[] = [];
+      
+      if (state.agentState.availableTools && state.agentState.availableTools.length > 0) {
+        // Prüfen ob Tools IDs oder Definitionen sind
+        const firstTool = state.agentState.availableTools[0];
+        
+        if (typeof firstTool === 'string') {
+          // Tools sind IDs - Definitionen abrufen
+          const toolDefinitions = await this.fetchToolDefinitions(state.agentState.availableTools as string[]);
+          tools = this.convertToolsToOpenAIFormat(toolDefinitions);
+        } else {
+          // Tools sind bereits Definitionen - konvertieren
+          tools = this.convertToolsToOpenAIFormat(state.agentState.availableTools);
+        }
+      }
+
+      // LLM-Gateway Request Body vorbereiten
+      const requestBody: {
+        model: string;
+        messages: Array<{ role: string; content: string }>;
+        stream: boolean;
+        tools?: OpenAITool[];
+      } = {
+        model: 'gpt-4',
+        messages: llmMessages,
+        stream: false,
+      };
+
+      // Nur Tools hinzufügen, wenn vorhanden und gültig
+      if (tools.length > 0) {
+        // Finale Validierung: Stelle sicher, dass der gesamte Request serialisierbar ist
+        const testRequest = { ...requestBody, tools };
+        if (validateRequestWithTools(testRequest)) {
+          requestBody.tools = tools;
+          this.logger.debug(`${tools.length} Tools erfolgreich zum Request hinzugefügt`);
+        } else {
+          this.logger.error(
+            `Fehler beim Validieren des Request-Bodies mit ${tools.length} Tools - Tools werden entfernt`,
+          );
+          try {
+            const toolsPreview = JSON.stringify(tools).substring(0, 500);
+            this.logger.debug(`Problematic tools structure (first 500 chars): ${toolsPreview}...`);
+          } catch (serializeError: any) {
+            this.logger.debug(
+              `Konnte Tools-Struktur nicht serialisieren: ${serializeError.message}`,
+            );
+            // Log Tool-Metadaten statt vollständiger Struktur
+            this.logger.debug(
+              `Tool-Metadaten: ${tools.length} Tools, Typen: ${tools.map((t) => typeof t).join(', ')}`,
+            );
+          }
+        }
+      }
+
       // LLM-Gateway aufrufen
       const response = await firstValueFrom(
-        this.httpService.post(`${llmGatewayUrl}/v1/chat/completions`, {
-          model: 'gpt-4',
-          messages: llmMessages,
-          tools: state.agentState.availableTools || [],
-          stream: false,
-        }),
+        this.httpService.post(`${llmGatewayUrl}/v1/chat/completions`, requestBody),
       );
 
       const aiMessage = new AIMessage(response.data.choices[0]?.message?.content || '');

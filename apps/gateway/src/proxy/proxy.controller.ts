@@ -1,5 +1,5 @@
 import { Controller, All, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiExcludeController } from '@nestjs/swagger';
+import { ApiTags, ApiExcludeController } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { ProxyService } from './proxy.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -136,5 +136,3 @@ export class ProxyController {
     middleware(req, res, () => {});
   }
 }
-
-

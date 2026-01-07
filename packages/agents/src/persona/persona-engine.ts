@@ -17,7 +17,7 @@ export class PersonaEngine {
    */
   async initialize(): Promise<void> {
     // Persona-spezifische Initialisierung (z.B. Template-Laden)
-    this.systemPromptCache = undefined; // Cache invalidieren
+    delete this.systemPromptCache; // Cache invalidieren
   }
 
   /**
@@ -93,10 +93,10 @@ export class PersonaEngine {
   /**
    * Persona anpassen (für Context-Aware Anpassungen)
    */
-  async adaptPersona(context: Record<string, any>): Promise<void> {
+  async adaptPersona(_context: Record<string, any>): Promise<void> {
     // Persona kann basierend auf Context angepasst werden
     // z.B. bei bestimmten Themen einen anderen Ton verwenden
-    this.systemPromptCache = undefined; // Cache invalidieren
+    delete this.systemPromptCache; // Cache invalidieren
   }
 
   /**
@@ -104,7 +104,7 @@ export class PersonaEngine {
    */
   updateConfig(config: Partial<PersonaConfig>): void {
     this.config = { ...this.config, ...config };
-    this.systemPromptCache = undefined; // Cache invalidieren
+    delete this.systemPromptCache; // Cache invalidieren
   }
 }
 

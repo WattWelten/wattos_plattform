@@ -46,6 +46,16 @@ export class CrawlerController {
       crawls: crawls.length,
     };
   }
+
+  @Post('reindex')
+  async reindex(@Req() req: Request, @Body() body: { url?: string }) {
+    const tenantId = (req as any).user?.tenantId || req.headers['x-tenant-id'];
+    if (!tenantId) {
+      throw new Error('Tenant ID is required');
+    }
+
+    return this.crawlerService.reindex(tenantId, body.url);
+  }
 }
 
 

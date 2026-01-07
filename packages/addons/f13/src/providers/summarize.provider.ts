@@ -13,7 +13,7 @@ export interface SummaryOptions {
 
 /**
  * F13 Summary Provider
- * 
+ *
  * Adapter für F13 Summary API
  */
 @Injectable()
@@ -25,9 +25,12 @@ export class F13SummaryProvider {
   /**
    * Text zusammenfassen mit Fallback-Logik
    */
-  async summarize(text: string, options?: SummaryOptions & {
-    fallback?: () => Promise<string>;
-  }): Promise<string> {
+  async summarize(
+    text: string,
+    options?: SummaryOptions & {
+      fallback?: () => Promise<string>;
+    }
+  ): Promise<string> {
     try {
       this.logger.debug('F13 summary', { textLength: text.length });
 
@@ -55,9 +58,7 @@ export class F13SummaryProvider {
         // Letzter Fallback: Einfache Text-Kürzung
         this.logger.warn('No fallback available, using simple text truncation');
         const maxLength = options?.maxLength || 200;
-        return text.length > maxLength
-          ? `${text.substring(0, maxLength)}...`
-          : text;
+        return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

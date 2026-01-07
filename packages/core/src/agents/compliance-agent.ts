@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { EventBusService } from '../events/bus.service';
 import { Agent } from '../orchestrator/runtime.service';
 import { Event, EventDomain, ComplianceEvent, ComplianceEventSchema } from '../events/types';
@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 /**
  * Compliance Agent
  * 
- * Verarbeitet Compliance-Events, prüft Policies, führt PII-Redaction durch
+ * Verarbeitet Compliance-Events, prÃ¼ft Policies, fÃ¼hrt PII-Redaction durch
  */
 @Injectable()
 export class ComplianceAgent implements Agent {
@@ -64,10 +64,10 @@ export class ComplianceAgent implements Agent {
    * Disclosure anzeigen
    */
   private async handleDisclosureShown(event: ComplianceEvent): Promise<Event | null> {
-    const { sessionId, tenantId, payload } = event;
+    const { sessionId, tenantId } = event;
     const profile = await this.profileService.getProfile(tenantId);
 
-    // Prüfe ob Disclosure erforderlich ist
+    // PrÃ¼fe ob Disclosure erforderlich ist
     if (profile.compliance.disclosure !== true) {
       this.logger.debug(`Disclosure not required for tenant: ${tenantId}`);
       return null;
@@ -111,16 +111,16 @@ export class ComplianceAgent implements Agent {
    * PII erkannt
    */
   private async handlePIIDetected(event: ComplianceEvent): Promise<Event | null> {
-    const { sessionId, tenantId, payload } = event;
+    const { sessionId, tenantId } = event;
     const profile = await this.profileService.getProfile(tenantId);
 
-    // Prüfe ob PII-Redaction aktiviert ist
+    // PrÃ¼fe ob PII-Redaction aktiviert ist
     if (profile.compliance.piiRedaction !== true) {
       this.logger.debug(`PII redaction not enabled for tenant: ${tenantId}`);
       return null;
     }
 
-    const content = payload.details?.content || '';
+    const content = (event.payload.details?.content as string) || '';
     this.logger.debug(`PII detection requested for content length: ${content.length}`);
 
     // PII erkennen und redigieren
@@ -137,7 +137,7 @@ export class ComplianceAgent implements Agent {
       tenantId,
       userId: event.userId,
       payload: {
-        piiType: payload.piiType || 'multiple',
+        piiType: event.payload.piiType || 'multiple',
         action: 'redacted',
         details: {
           originalLength: content.length,
@@ -149,7 +149,7 @@ export class ComplianceAgent implements Agent {
       metadata: {
         agent: this.name,
         version: this.version,
-        redactedContent: redactionResult.redactedContent, // Für weitere Verarbeitung
+        redactedContent: redactionResult.redactedContent, // FÃ¼r weitere Verarbeitung
       },
     };
 
@@ -180,7 +180,7 @@ export class ComplianceAgent implements Agent {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // Compliance-Agent ist immer verfügbar
+      // Compliance-Agent ist immer verfÃ¼gbar
       return true;
     } catch {
       return false;

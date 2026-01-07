@@ -45,10 +45,16 @@ export class CircuitBreakerService {
       throw new Error(`Circuit breaker is OPEN for ${circuitName}`);
     }
 
-    // Circuit ist halb-offen - nur einen Request durchlassen
-    if (state === CircuitState.HALF_OPEN && circuit.successCount > 0) {
-      this.logger.warn(`Circuit ${circuitName} is HALF_OPEN, rejecting request (already testing)`);
-      throw new Error(`Circuit breaker is HALF_OPEN for ${circuitName}`);
+    // Circuit ist halb-offen - nur einen Request gleichzeitig durchlassen
+    // successCount wird verwendet um zu tracken, ob bereits ein Request läuft oder erfolgreich war
+    if (state === CircuitState.HALF_OPEN) {
+      if (circuit.successCount > 0) {
+        // Bereits ein Request läuft oder war erfolgreich - weitere Requests ablehnen
+        this.logger.warn(`Circuit ${circuitName} is HALF_OPEN, rejecting request (already testing)`);
+        throw new Error(`Circuit breaker is HALF_OPEN for ${circuitName}`);
+      }
+      // Markiere dass ein Request läuft
+      circuit.successCount = 1;
     }
 
     try {
@@ -136,6 +142,11 @@ export class CircuitBreakerService {
       return CircuitState.HALF_OPEN;
     }
 
+    // Wenn Circuit HALF_OPEN ist, bleibt er HALF_OPEN bis ein erfolgreicher Request ihn schließt
+    if (circuit.state === CircuitState.HALF_OPEN) {
+      return CircuitState.HALF_OPEN;
+    }
+
     return circuit.state;
   }
 
@@ -164,13 +175,11 @@ export class CircuitBreakerService {
     options: CircuitBreakerOptions;
   }): void {
     if (circuit.state === CircuitState.HALF_OPEN) {
-      circuit.successCount++;
-      // Nach einigen Erfolgen Circuit schließen
-      if (circuit.successCount >= 2) {
-        circuit.state = CircuitState.CLOSED;
-        circuit.failures = 0;
-        this.logger.log(`Circuit ${circuitName} closed after successful recovery`);
-      }
+      // Nach einem erfolgreichen Request im HALF_OPEN Zustand: Circuit schließen
+      circuit.state = CircuitState.CLOSED;
+      circuit.failures = 0;
+      circuit.successCount = 0;
+      this.logger.log(`Circuit ${circuitName} closed after successful recovery`);
     } else {
       // Im CLOSED Zustand: Fehler-Zähler zurücksetzen
       circuit.failures = 0;

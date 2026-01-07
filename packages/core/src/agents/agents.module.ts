@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { EventsModule } from '../events/events.module';
 import { KnowledgeModule } from '../knowledge/knowledge.module';
@@ -9,9 +9,10 @@ import { ConversationAgent } from './conversation-agent';
 import { RetrievalAgent } from './retrieval-agent';
 import { ComplianceAgent } from './compliance-agent';
 import { MediaAgent } from './media-agent';
+import { SkillRouterService } from './skill-router.service';
 import { AgentRuntimeService } from '../orchestrator/runtime.service';
 import { AvatarV2Module } from '../multimodal/avatar/avatar-v2.module';
-import { ServiceDiscoveryModule } from '@wattweiser/shared';
+
 
 /**
  * Agents Module
@@ -27,9 +28,10 @@ import { ServiceDiscoveryModule } from '@wattweiser/shared';
     AvatarV2Module,
     ComplianceModule,
     HttpModule,
-    ServiceDiscoveryModule,
+    
   ],
   providers: [
+    SkillRouterService,
     ConversationAgent,
     RetrievalAgent,
     ComplianceAgent,

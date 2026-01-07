@@ -94,7 +94,7 @@ export class PgVectorStore implements IVectorStore {
             queryParams.push(value);
           } else if (Array.isArray(value)) {
             filterConditions.push(`metadata->>'${key}' = ANY($${queryParams.length + 1}::text[])`);
-            queryParams.push(value);
+            queryParams.push(value as any);
           }
         });
       }

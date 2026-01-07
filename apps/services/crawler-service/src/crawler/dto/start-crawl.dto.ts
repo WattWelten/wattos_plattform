@@ -26,6 +26,12 @@ export class StartCrawlDto {
   excludePaths?: string[];
 
   @IsOptional()
+  deltaCrawl?: boolean; // Only crawl changed pages (delta crawl)
+
+  @IsOptional()
+  reindex?: boolean; // Reindex all pages even if unchanged
+
+  @IsOptional()
   metadata?: Record<string, any>;
 }
 

@@ -12,13 +12,13 @@ export class TokenBlacklistGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers?.authorization;
-    
+
     if (!authHeader) {
       return true; // Lassen Sie JWT Guard den Fehler behandeln
     }
 
     const token = authHeader.replace('Bearer ', '');
-    
+
     if (token) {
       const isBlacklisted = await this.tokenBlacklistService.isBlacklisted(token);
       if (isBlacklisted) {
@@ -29,14 +29,3 @@ export class TokenBlacklistGuard implements CanActivate {
     return true;
   }
 }
-
-
-
-
-
-
-
-
-
-
-

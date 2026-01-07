@@ -50,6 +50,17 @@ export class HealthController {
     }
     return this.metricsService.exportPrometheus();
   }
+
+  /**
+   * KPI Endpoint (JSON-Format für Dashboards)
+   */
+  @Get('kpi')
+  async kpi() {
+    if (!this.metricsService) {
+      return { error: 'Metrics service not available' };
+    }
+    return this.metricsService.getKpiMetrics(60); // Letzte 60 Minuten
+  }
 }
 
 

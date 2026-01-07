@@ -3,7 +3,7 @@ import { F13Client } from '../client';
 
 /**
  * F13 LLM Provider
- * 
+ *
  * Adapter für F13 LLM/Chat API
  */
 @Injectable()
@@ -15,16 +15,19 @@ export class F13LLMProvider {
   /**
    * Chat Completion mit Fallback-Logik
    */
-  async chatCompletion(messages: Array<{ role: string; content: string }>, options?: {
-    model?: string;
-    temperature?: number;
-    maxTokens?: number;
-    fallback?: () => Promise<{
-      content: string;
-      model: string;
-      usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
-    }>;
-  }): Promise<{
+  async chatCompletion(
+    messages: Array<{ role: string; content: string }>,
+    options?: {
+      model?: string;
+      temperature?: number;
+      maxTokens?: number;
+      fallback?: () => Promise<{
+        content: string;
+        model: string;
+        usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
+      }>;
+    }
+  ): Promise<{
     content: string;
     model: string;
     usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
@@ -89,7 +92,7 @@ export class F13LLMProvider {
       model?: string;
       temperature?: number;
       maxTokens?: number;
-    },
+    }
   ): AsyncGenerator<string, void, unknown> {
     try {
       this.logger.debug('F13 LLM streaming chat completion', { messageCount: messages.length });

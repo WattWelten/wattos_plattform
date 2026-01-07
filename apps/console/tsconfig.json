@@ -1,4 +1,4 @@
-﻿{
+{
   "extends": "../../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
@@ -10,6 +10,9 @@
     "allowJs": true,
     "incremental": true,
     "rootDir": ".",
+    "typeRoots": ["../../node_modules/@types", "node_modules/@types", "./src/types"],
+    "types": [],
+    "skipLibCheck": true,
     "plugins": [
       {
         "name": "next"

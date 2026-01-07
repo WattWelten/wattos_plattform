@@ -28,7 +28,8 @@ export class FeatureFlagsService {
    */
   async isEnabled(tenantId: string, feature: keyof FeatureFlags): Promise<boolean> {
     const profile = await this.profileService.getProfile(tenantId);
-    return profile.features[feature] ?? false;
+    const value = profile.features[feature];
+    return typeof value === 'boolean' ? value : false;
   }
 
   /**
@@ -49,7 +50,8 @@ export class FeatureFlagsService {
     const result: Record<string, boolean> = {};
 
     for (const feature of features) {
-      result[feature] = profile.features[feature] ?? false;
+      const value = profile.features[feature];
+      result[feature] = typeof value === 'boolean' ? value : false;
     }
 
     return result;

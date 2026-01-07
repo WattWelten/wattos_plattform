@@ -13,6 +13,8 @@ import {
   type Artifact,
 } from '@/lib/api';
 import { useAuthContext } from '@/contexts/auth-context';
+import { ArtifactCard } from '@/components/dashboard/artifact-card';
+import { Search, RefreshCw, FileText } from 'lucide-react';
 
 export default function KnowledgePage() {
   const { tenantId } = useAuthContext();
@@ -22,6 +24,7 @@ export default function KnowledgePage() {
   const [isTriggering, setIsTriggering] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingArtifactId, setDeletingArtifactId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -42,7 +45,7 @@ export default function KnowledgePage() {
     if (!tenantId) return;
     setIsTriggering(true);
     try {
-      await triggerCrawl(tenantId);
+      await triggerCrawl(tenantId, '');
       // Reload crawls
       const updatedCrawls = await getCrawls(tenantId);
       setCrawls(updatedCrawls);
@@ -56,31 +59,47 @@ export default function KnowledgePage() {
 
   const handleDeleteArtifact = async (artifactId: string) => {
     if (!confirm('Artefakt wirklich löschen?')) return;
+    setDeletingArtifactId(artifactId);
     try {
       await deleteArtifact(artifactId);
       setArtifacts(artifacts.filter((a) => a.id !== artifactId));
     } catch (err: any) {
       console.error('Failed to delete artifact:', err);
       setError(err.message || 'Fehler beim Löschen des Artefakts');
+    } finally {
+      setDeletingArtifactId(null);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Knowledge</h1>
-        <p className="text-gray-600 mt-2">Quellen, Crawls und Artefakte</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Knowledge</h1>
+        <p className="text-lg text-gray-600">
+          Verwalten Sie Ihre Quellen, Crawls und Artefakte
+        </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-error-50 border border-error-200 rounded-lg text-error-700" role="alert">
+        <div
+          className="p-4 bg-error-50 border border-error-200 rounded-xl text-error-700 animate-in fade-in slide-in-from-left-4 duration-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AppleCard padding="lg">
-          <h2 className="text-xl font-semibold mb-4">Quellen</h2>
+        {/* Sources Card */}
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ animationDelay: '100ms' }}>
+          <AppleCard variant="elevated" padding="lg" className="h-full">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <Search className="w-5 h-5 text-primary-600" />
+              </div>
+              <h2 className="text-xl font-semibold">Quellen</h2>
+            </div>
           {isLoading ? (
             <div className="text-gray-400 text-center py-8" aria-label="Lädt Quellen...">
               Lädt Quellen...
@@ -90,18 +109,21 @@ export default function KnowledgePage() {
               Keine Quellen konfiguriert
             </div>
           ) : (
-            <div className="space-y-2">
-              {sources.map((source) => (
+            <div className="space-y-3">
+              {sources.map((source, idx) => (
                 <div
                   key={source.id}
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-left-4"
+                  style={{ animationDelay: `${idx * 50}ms` }}
                 >
-                  <div>
-                    <p className="text-sm font-medium">{source.url}</p>
-                    <p className="text-xs text-gray-500">{source.type}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {source.url}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{source.type}</p>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded ${
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium ${
                       source.enabled
                         ? 'bg-success-100 text-success-700'
                         : 'bg-gray-100 text-gray-700'
@@ -113,28 +135,42 @@ export default function KnowledgePage() {
               ))}
             </div>
           )}
-        </AppleCard>
+          </AppleCard>
+        </div>
 
-        <AppleCard padding="lg">
-          <h2 className="text-xl font-semibold mb-4">Crawls</h2>
+        {/* Crawls Card */}
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ animationDelay: '200ms' }}>
+          <AppleCard variant="elevated" padding="lg" className="h-full">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <RefreshCw className="w-5 h-5 text-primary-600" />
+              </div>
+              <h2 className="text-xl font-semibold">Crawls</h2>
+            </div>
           <div className="space-y-4">
             {crawls.length === 0 ? (
               <div className="text-gray-400 text-center py-8">
                 Keine Crawls vorhanden
               </div>
             ) : (
-              <div className="space-y-2">
-                {crawls.slice(0, 5).map((crawl) => (
+              <div className="space-y-3">
+                {crawls.slice(0, 5).map((crawl, idx) => (
                   <div
                     key={crawl.id}
-                    className="p-3 border border-gray-200 rounded-lg"
+                    className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-left-4"
+                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">
-                        {new Date(crawl.startedAt).toLocaleString('de-DE')}
+                      <span className="text-sm font-semibold text-gray-900">
+                        {new Date(crawl.startedAt).toLocaleString('de-DE', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </span>
                       <span
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`text-xs px-3 py-1.5 rounded-full font-medium ${
                           crawl.status === 'completed'
                             ? 'bg-success-100 text-success-700'
                             : crawl.status === 'running'
@@ -154,80 +190,62 @@ export default function KnowledgePage() {
             )}
             <AppleButton
               variant="outline"
-              className="w-full"
+              className="w-full mt-4"
               onClick={handleTriggerCrawl}
               disabled={isTriggering}
               aria-label="Crawler jetzt starten"
               aria-busy={isTriggering}
             >
-              {isTriggering ? 'Läuft...' : 'Jetzt neu indexieren'}
+              {isTriggering ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Läuft...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Jetzt neu indexieren
+                </>
+              )}
             </AppleButton>
           </div>
-        </AppleCard>
+          </AppleCard>
+        </div>
       </div>
 
-      <AppleCard padding="lg">
-        <h2 className="text-xl font-semibold mb-4">Artefakte</h2>
-        {artifacts.length === 0 ? (
-          <div className="text-gray-400 text-center py-8">
-            Keine Artefakte vorhanden
+      {/* Artifacts Card */}
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ animationDelay: '300ms' }}>
+        <AppleCard variant="elevated" padding="lg">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-primary-50 rounded-lg">
+              <FileText className="w-5 h-5 text-primary-600" />
+            </div>
+            <h2 className="text-xl font-semibold">Artefakte</h2>
+            {artifacts.length > 0 && (
+              <span className="ml-auto text-sm text-gray-500">
+                {artifacts.length} {artifacts.length === 1 ? 'Artefakt' : 'Artefakte'}
+              </span>
+            )}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                    Name
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                    URL
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                    Erstellt
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                    Aktionen
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {artifacts.map((artifact) => (
-                  <tr
-                    key={artifact.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="py-3 px-4 text-sm">{artifact.name}</td>
-                    <td className="py-3 px-4 text-sm">
-                      <a
-                        href={artifact.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-500 hover:underline"
-                      >
-                        {artifact.url.substring(0, 50)}...
-                      </a>
-                    </td>
-                    <td className="py-3 px-4 text-sm">
-                      {new Date(artifact.createdAt).toLocaleDateString('de-DE')}
-                    </td>
-                    <td className="py-3 px-4">
-                      <AppleButton
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteArtifact(artifact.id)}
-                        aria-label={`Artefakt ${artifact.name} löschen`}
-                      >
-                        Löschen
-                      </AppleButton>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </AppleCard>
+          {artifacts.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-400">Keine Artefakte vorhanden</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {artifacts.map((artifact) => (
+                <ArtifactCard
+                  key={artifact.id}
+                  artifact={artifact}
+                  onDelete={handleDeleteArtifact}
+                  isDeleting={deletingArtifactId === artifact.id}
+                />
+              ))}
+            </div>
+          )}
+        </AppleCard>
+      </div>
     </div>
   );
 }

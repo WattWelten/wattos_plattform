@@ -33,6 +33,3 @@ export const kayaDefaultPolicy: KayaPolicy = {
     noPII: true,
   },
 };
-
-
-

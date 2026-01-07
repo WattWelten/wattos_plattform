@@ -22,18 +22,11 @@ const variantMap = {
 export const AppleCard = React.forwardRef<HTMLDivElement, AppleCardProps>(
   ({ className, variant = 'default', padding = 'md', children, ...props }, ref) => {
     return (
-      <div
-        ref={ref}
-        className={cn(variantMap[variant], paddingMap[padding], className)}
-        {...props}
-      >
+      <div ref={ref} className={cn(variantMap[variant], paddingMap[padding], className)} {...props}>
         {children}
       </div>
     );
-  },
+  }
 );
 
 AppleCard.displayName = 'AppleCard';
-
-
-

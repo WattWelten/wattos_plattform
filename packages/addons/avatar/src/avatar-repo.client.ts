@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import axios, { AxiosInstance } from 'axios';
 import { AvatarConfig, defaultAvatarConfig } from './config';
 
 /**
@@ -13,11 +12,14 @@ export class AvatarRepoClient {
   private readonly logger = new Logger(AvatarRepoClient.name);
   private readonly config: AvatarConfig;
 
-  constructor(
-    private readonly httpService: HttpService,
-    config?: Partial<AvatarConfig>,
-  ) {
+  private readonly httpClient: AxiosInstance;
+
+  constructor(config?: Partial<AvatarConfig>) {
     this.config = { ...defaultAvatarConfig, ...config };
+    this.httpClient = axios.create({
+      baseURL: this.config.avatarRepoUrl || '',
+      timeout: 30000,
+    });
   }
 
   /**
@@ -30,9 +32,7 @@ export class AvatarRepoClient {
     metadata: Record<string, unknown>;
   }> {
     try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.config.avatarRepoUrl}/api/v1/avatars/${avatarId}`),
-      );
+      const response = await this.httpClient.get(`/api/v1/avatars/${avatarId}`);
 
       return {
         id: response.data.id,
@@ -67,13 +67,11 @@ export class AvatarRepoClient {
       });
       formData.append('metadata', JSON.stringify(metadata));
 
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.config.avatarRepoUrl}/api/v1/avatars/upload`, formData, {
-          headers: {
-            ...formData.getHeaders(), // Wichtig: Headers von FormData verwenden
-          },
-        }),
-      );
+      const response = await this.httpClient.post('/api/v1/avatars/upload', formData, {
+        headers: {
+          ...formData.getHeaders(), // Wichtig: Headers von FormData verwenden
+        },
+      });
 
       return {
         id: response.data.id,
@@ -91,9 +89,7 @@ export class AvatarRepoClient {
    */
   async deleteAvatarModel(avatarId: string): Promise<void> {
     try {
-      await firstValueFrom(
-        this.httpService.delete(`${this.config.avatarRepoUrl}/api/v1/avatars/${avatarId}`),
-      );
+      await this.httpClient.delete(`/api/v1/avatars/${avatarId}`);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Failed to delete avatar model: ${errorMessage}`, { avatarId });

@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@wattweiser/db';
-import { EventBusService, Event, EventDomain } from '@wattweiser/core';
+import { EventDomain, type Event, type IEventBusService } from '@wattweiser/shared';
 import { DMSService } from './dms.service';
 import { v4 as uuid } from 'uuid';
 
 /**
  * DMS Sync Service
- * 
+ *
  * Verwaltet vollständige Sync-Funktionalität mit Error-Recovery
  * und Integration mit Ingestion-Service
  */
@@ -18,7 +18,7 @@ export class DMSSyncService {
 
   constructor(
     private readonly dmsService: DMSService,
-    private readonly eventBus: EventBusService,
+    private readonly eventBus: IEventBusService
   ) {
     this.prisma = new PrismaClient();
     this.setupEventSubscriptions();
@@ -30,7 +30,10 @@ export class DMSSyncService {
   private setupEventSubscriptions(): void {
     // DMS Document Created Event
     this.eventBus.subscribe('dms.document.created', async (event: Event) => {
-      const payload = event.payload as { tenantId?: string; documentId?: string };
+      const payload = (event.payload || event.metadata) as {
+        tenantId?: string;
+        documentId?: string;
+      };
       if (payload?.tenantId && payload?.documentId) {
         await this.syncDocument(payload.tenantId, payload.documentId);
       }
@@ -38,7 +41,10 @@ export class DMSSyncService {
 
     // DMS Document Updated Event
     this.eventBus.subscribe('dms.document.updated', async (event: Event) => {
-      const payload = event.payload as { tenantId?: string; documentId?: string };
+      const payload = (event.payload || event.metadata) as {
+        tenantId?: string;
+        documentId?: string;
+      };
       if (payload?.tenantId && payload?.documentId) {
         await this.syncDocument(payload.tenantId, payload.documentId);
       }
@@ -46,7 +52,10 @@ export class DMSSyncService {
 
     // DMS Document Deleted Event
     this.eventBus.subscribe('dms.document.deleted', async (event: Event) => {
-      const payload = event.payload as { tenantId?: string; documentId?: string };
+      const payload = (event.payload || event.metadata) as {
+        tenantId?: string;
+        documentId?: string;
+      };
       if (payload?.tenantId && payload?.documentId) {
         await this.handleDocumentDeletion(payload.tenantId, payload.documentId);
       }
@@ -61,14 +70,12 @@ export class DMSSyncService {
 
     try {
       const documents = await this.dmsService.listDocuments(tenantId);
-      
+
       // Batch-Processing: 10 Dokumente gleichzeitig
       const batchSize = 10;
       for (let i = 0; i < documents.length; i += batchSize) {
         const batch = documents.slice(i, i + batchSize);
-        await Promise.all(
-          batch.map((doc) => this.syncDocument(tenantId, doc.id)),
-        );
+        await Promise.all(batch.map((doc) => this.syncDocument(tenantId, doc.id)));
       }
 
       this.logger.log(`Full sync completed for tenant: ${tenantId}, ${documents.length} documents`);
@@ -88,10 +95,10 @@ export class DMSSyncService {
     });
 
     try {
-      const since = lastSyncAt || await this.getLastSyncTime(tenantId);
+      const since = lastSyncAt || (await this.getLastSyncTime(tenantId));
       // MVP: listDocuments unterstützt noch kein modifiedSince, daher alle Dokumente
       const documents = await this.dmsService.listDocuments(tenantId);
-      
+
       // Filter nach modifiedSince (wenn vorhanden)
       const filteredDocuments = since
         ? documents.filter((doc) => {
@@ -114,23 +121,18 @@ export class DMSSyncService {
       const batchSize = 10;
       for (let i = 0; i < filteredDocuments.length; i += batchSize) {
         const batch = filteredDocuments.slice(i, i + batchSize);
-        await Promise.all(
-          batch.map((doc) => this.syncDocument(tenantId, doc.id)),
-        );
+        await Promise.all(batch.map((doc) => this.syncDocument(tenantId, doc.id)));
       }
 
       // Last sync time aktualisieren
       await this.updateLastSyncTime(tenantId);
 
       this.logger.log(
-        `Incremental sync completed for tenant: ${tenantId}, ${filteredDocuments.length} documents`,
+        `Incremental sync completed for tenant: ${tenantId}, ${filteredDocuments.length} documents`
       );
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Incremental sync failed for tenant: ${tenantId}`,
-        errorMessage,
-      );
+      this.logger.error(`Incremental sync failed for tenant: ${tenantId}`, errorMessage);
       throw error;
     }
   }
@@ -163,7 +165,7 @@ export class DMSSyncService {
   private async syncDocumentWithRetry(
     tenantId: string,
     documentId: string,
-    maxRetries = 3,
+    maxRetries = 3
   ): Promise<void> {
     let lastError: Error | null = null;
 
@@ -187,15 +189,13 @@ export class DMSSyncService {
         // Sync-Status in DB aktualisieren
         await this.updateSyncStatus(tenantId, documentId, 'synced');
 
-        this.logger.debug(
-          `Document synced successfully: ${documentId} (attempt ${attempt})`,
-        );
+        this.logger.debug(`Document synced successfully: ${documentId} (attempt ${attempt})`);
         return;
       } catch (error: unknown) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
         this.logger.warn(
           `Sync attempt ${attempt} failed for document: ${documentId}`,
-          lastError.message,
+          lastError.message
         );
 
         if (attempt < maxRetries) {
@@ -221,18 +221,17 @@ export class DMSSyncService {
       name: string;
       content: string;
       metadata?: Record<string, any>;
-    },
+    }
   ): Promise<void> {
     // MVP: Event-basierte Integration mit Ingestion-Service
     const event: Event = {
       id: uuid(),
       type: 'knowledge.document.ready',
       domain: EventDomain.KNOWLEDGE,
-      action: 'document.ready',
       timestamp: Date.now(),
       sessionId: uuid(),
       tenantId,
-      payload: {
+      metadata: {
         documentId: document.id,
         name: document.name,
         content: document.content,
@@ -248,10 +247,7 @@ export class DMSSyncService {
   /**
    * Dokument-Löschung behandeln
    */
-  private async handleDocumentDeletion(
-    tenantId: string,
-    documentId: string,
-  ): Promise<void> {
+  private async handleDocumentDeletion(tenantId: string, documentId: string): Promise<void> {
     this.logger.log(`Handling document deletion: ${documentId}`);
 
     try {
@@ -260,11 +256,10 @@ export class DMSSyncService {
         id: uuid(),
         type: 'knowledge.document.deleted',
         domain: EventDomain.KNOWLEDGE,
-        action: 'document.deleted',
         timestamp: Date.now(),
         sessionId: uuid(),
         tenantId,
-        payload: {
+        metadata: {
           documentId,
           source: 'dms',
         },
@@ -277,10 +272,7 @@ export class DMSSyncService {
       this.logger.debug(`Document deletion handled: ${documentId}`);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Failed to handle document deletion: ${documentId}`,
-        errorMessage,
-      );
+      this.logger.error(`Failed to handle document deletion: ${documentId}`, errorMessage);
       throw error;
     }
   }
@@ -313,10 +305,12 @@ export class DMSSyncService {
       where: { id: tenantId },
       data: {
         settings: {
-          ...((await this.prisma.tenant.findUnique({
-            where: { id: tenantId },
-            select: { settings: true },
-          }))?.settings as any || {}),
+          ...(((
+            await this.prisma.tenant.findUnique({
+              where: { id: tenantId },
+              select: { settings: true },
+            })
+          )?.settings as any) || {}),
           dmsLastSyncAt: new Date().toISOString(),
         },
       },
@@ -330,7 +324,7 @@ export class DMSSyncService {
     tenantId: string,
     documentId: string,
     status: 'syncing' | 'synced' | 'error',
-    errorMessage?: string,
+    errorMessage?: string
   ): Promise<void> {
     // MVP: Sync-Status in KnowledgeSpace oder separater Tabelle
     // Für MVP: Logging
@@ -345,10 +339,7 @@ export class DMSSyncService {
   /**
    * Sync-Status entfernen
    */
-  private async removeSyncStatus(
-    tenantId: string,
-    documentId: string,
-  ): Promise<void> {
+  private async removeSyncStatus(tenantId: string, documentId: string): Promise<void> {
     // MVP: Sync-Status entfernen
     this.logger.debug(`Sync status removed: ${documentId}`, {
       tenantId,

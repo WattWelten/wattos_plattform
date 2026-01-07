@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import * as cheerio from 'cheerio';
 import { firstValueFrom } from 'rxjs';
+import { createHash } from 'crypto';
 import { CrawledPage } from './interfaces/crawled-page.interface';
 
 @Injectable()
@@ -89,16 +90,29 @@ export class CrawlerEngineService {
         modifiedDate: $('meta[property="article:modified_time"]').attr('content'),
       };
 
+      // Content-Hash für Delta-Detection berechnen
+      const hash = this.calculateContentHash(content, title);
+
+      // Last-Modified aus Response-Header oder Meta-Tags
+      const lastModifiedHeader = response.headers['last-modified'];
+      const lastModified = lastModifiedHeader 
+        ? new Date(lastModifiedHeader)
+        : metadata.modifiedDate 
+          ? new Date(metadata.modifiedDate)
+          : undefined;
+
       return {
         url,
         title,
         content,
         html,
+        hash,
         metadata,
         links,
         images,
         depth,
         crawledAt: new Date(),
+        lastModified,
       };
     } catch (error: any) {
       this.logger.warn(`Failed to crawl page ${url}: ${error.message}`);
@@ -157,6 +171,14 @@ export class CrawlerEngineService {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Content-Hash berechnen für Delta-Detection
+   */
+  calculateContentHash(content: string, title: string): string {
+    const hashInput = `${title}\n${content}`;
+    return createHash('sha256').update(hashInput).digest('hex');
   }
 }
 

@@ -11,6 +11,8 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ChatMessageDto } from './chat-message.dto';
+import { OpenAITool } from '@wattweiser/shared';
+import { OpenAIToolDto } from './openai-tool.dto';
 
 export class ChatCompletionRequestDto {
   @IsString()
@@ -52,4 +54,10 @@ export class ChatCompletionRequestDto {
   @IsOptional()
   @IsObject()
   metadata?: Record<string, any>;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OpenAIToolDto)
+  tools?: OpenAITool[];
 }

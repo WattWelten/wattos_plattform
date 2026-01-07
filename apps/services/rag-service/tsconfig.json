@@ -10,6 +10,7 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": ".",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -17,10 +18,10 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "exactOptionalPropertyTypes": false,
+    "typeRoots": ["../../../node_modules/@types", "node_modules/@types"]
   },
-  "rootDir": ".",    "include": ["src/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
-
-

@@ -25,8 +25,7 @@ async function bootstrap() {
     }),
   );
 
-  // Rate Limiting
-  app.useGlobalGuards(new ThrottlerGuard());
+  // Rate Limiting wird über APP_GUARD Provider in app.module.ts konfiguriert
 
   const port = process.env.PORT || 3004;
   await app.listen(port);

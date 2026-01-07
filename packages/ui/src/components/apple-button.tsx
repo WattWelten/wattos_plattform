@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
 import { cn } from '../lib/utils';
 
 const appleButtonVariants = cva(
@@ -23,12 +23,12 @@ const appleButtonVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  },
+  }
 );
 
-export interface AppleButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof appleButtonVariants> {
+export interface AppleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive';
+  size?: 'sm' | 'default' | 'lg';
   asChild?: boolean;
 }
 
@@ -41,12 +41,9 @@ const AppleButton = React.forwardRef<HTMLButtonElement, AppleButtonProps>(
         {...props}
       />
     );
-  },
+  }
 );
 
 AppleButton.displayName = 'AppleButton';
 
 export { AppleButton, appleButtonVariants };
-
-
-

@@ -4,9 +4,22 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "types": [],
+    "typeRoots": ["./src/types", "../../node_modules/@types", "node_modules/@types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**"],
+  "references": [
+    {
+      "path": "../addons/avatar"
+    },
+    {
+      "path": "../addons/dms"
+    },
+    {
+      "path": "../shared"
+    }
+  ]
 }
 

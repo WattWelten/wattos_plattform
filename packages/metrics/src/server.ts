@@ -32,21 +32,20 @@ export class MetricsServer {
       tenant_id: tenantId,
       event: validated,
     };
-    
+
     const payloadTyped = payload as EventPayload;
     if (payloadTyped.conversation_id !== undefined) {
       eventPayload.conversation_id = payloadTyped.conversation_id;
     }
-    
+
     if (payloadTyped.session_id !== undefined) {
       eventPayload.session_id = payloadTyped.session_id;
     }
-    
+
     if (payloadTyped.metadata !== undefined) {
       eventPayload.metadata = payloadTyped.metadata;
     }
-    
+
     await this.service.persistEvent(eventPayload);
   }
 }
-

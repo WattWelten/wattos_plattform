@@ -110,6 +110,8 @@ export class AvatarV2Service {
   constructor(
     private readonly eventBus: EventBusService,
     private readonly ttsService: TtsService,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-expect-error - unused but may be needed in future
     private readonly avatarService?: AvatarService,
   ) {}
 
@@ -128,25 +130,30 @@ export class AvatarV2Service {
     try {
       this.logger.debug(`Generating avatar for agent: ${agentId}`, { textLength: text.length });
 
+      // Session-ID und Tenant-ID sollten aus Context kommen
+      const sessionId = (options as any)?.sessionId || uuid();
+      const tenantId = (options as any)?.tenantId || 'default';
+
       // 1. TTS generieren
-      const ttsResult = await this.ttsService.synthesize(text, {
-        voiceId: options?.voiceId || 'default',
-        language: options?.language || 'de',
-      });
+      const audioData = await this.ttsService.textToSpeech(
+        text,
+        sessionId,
+        tenantId,
+        options?.language || 'de',
+        options?.voiceId || 'default',
+      );
 
       // 2. Visemes generieren (optional)
       let visemes: number[] | undefined;
       if (options?.generateVisemes !== false) {
-        visemes = await this.generateVisemes(ttsResult.audioData);
+        visemes = await this.generateVisemes(audioData);
       }
 
       // 3. Scene Config abrufen/erstellen
       const sceneConfig = await this.getSceneConfig(agentId);
 
       // 4. Avatar-Event emittieren
-      // Session-ID und Tenant-ID sollten aus Context kommen
-      const sessionId = (options as any)?.sessionId || uuid();
-      const tenantId = (options as any)?.tenantId || 'default';
+
       const avatarEvent = AvatarEventSchema.parse({
         id: uuid(),
         type: `${EventDomain.AVATAR}.animation.started`,
@@ -157,7 +164,7 @@ export class AvatarV2Service {
         tenantId,
         payload: {
           animationType: 'speech',
-          audioData: ttsResult.audioData,
+          audioData,
           visemeData: visemes,
         },
         metadata: {
@@ -170,10 +177,10 @@ export class AvatarV2Service {
 
       return {
         agentId,
-        audioUrl: `data:audio/mpeg;base64,${ttsResult.audioData.toString('base64')}`,
-        audioData: ttsResult.audioData,
+        audioUrl: `data:audio/mpeg;base64,${audioData.toString('base64')}`,
+        audioData,
         sceneConfig,
-        visemes: visemes ?? undefined,
+        visemes: visemes ?? [],
         metadata: {
           text,
           voiceId: options?.voiceId,
@@ -201,7 +208,7 @@ export class AvatarV2Service {
       agentId,
       model: {
         type: 'gltf',
-        url: undefined, // Wird später aus DB/Config geladen
+        // url wird später aus DB/Config geladen
         fallback: 'box',
         quality: {
           textureResolution: '2K',
@@ -266,6 +273,11 @@ export class AvatarV2Service {
             loop: true,
           },
         },
+      },
+      performance: {
+        lodEnabled: true,
+        maxPolygons: 50000,
+        textureCompression: true,
       },
     };
 

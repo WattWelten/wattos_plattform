@@ -23,4 +23,3 @@ export const getDefaultF13Config = (): Partial<F13Config> => ({
   retryAttempts: parseInt(process.env.F13_RETRY_ATTEMPTS || '3', 10),
   retryDelay: parseInt(process.env.F13_RETRY_DELAY || '1000', 10),
 });
-

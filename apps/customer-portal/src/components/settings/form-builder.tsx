@@ -18,7 +18,8 @@ export function FormBuilder({
   onSave,
 }: FormBuilderProps) {
   const [showPreview, setShowPreview] = useState(false);
-  const [isDryRun, setIsDryRun] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isDryRun, setIsDryRun] = useState(false);
 
   const {
     register,

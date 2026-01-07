@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AppleCard } from '@wattweiser/ui';
-import { type ConversationMessage } from '@/lib/api';
+import { type ConversationMessage, getConversationMessages } from '@/lib/api';
 import { Loading } from './loading';
 import { MessageCircle, User, Bot, Clock } from 'lucide-react';
 
@@ -27,11 +27,11 @@ export function ConversationReplay({
 
     // getConversationMessages API call implementiert
     getConversationMessages(conversationId, tenantId)
-      .then((data) => {
+      .then((data: ConversationMessage[]) => {
         setMessages(data);
         setIsLoading(false);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         setError(err.message || 'Failed to load conversation messages');
         setIsLoading(false);
       });

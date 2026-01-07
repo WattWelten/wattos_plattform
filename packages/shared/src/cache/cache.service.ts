@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
+import { safeJsonParse, safeJsonStringify } from '../utils';
 
 /**
  * Cache Service
@@ -31,7 +32,7 @@ export class CacheService {
       const redisUrl = this.configService?.get<string>('REDIS_URL') || process.env.REDIS_URL;
       if (redisUrl) {
         this.redisClient = createClient({ url: redisUrl });
-        this.redisClient.on('error', (err) => {
+        this.redisClient.on('error', (err: Error) => {
           this.logger.warn(`Redis cache error: ${err.message}, falling back to in-memory cache`);
         });
         await this.redisClient.connect();
@@ -58,7 +59,7 @@ export class CacheService {
       if (this.redisClient && this.redisClient.isOpen) {
         const value = await this.redisClient.get(key);
         if (value) {
-          return JSON.parse(value) as T;
+          return safeJsonParse<T>(value, { fallback: null });
         }
       }
 
@@ -92,7 +93,7 @@ export class CacheService {
     try {
       // Redis speichern
       if (this.redisClient && this.redisClient.isOpen) {
-        await this.redisClient.setEx(key, ttl, JSON.stringify(value));
+        await this.redisClient.setEx(key, ttl, safeJsonStringify(value, { strict: true }));
         return;
       }
 
@@ -197,6 +198,73 @@ export class CacheService {
   }
 
   /**
+   * Cache-Strategie: Write-Through
+   * Schreibt sowohl in Cache als auch in Datenbank
+   */
+  async writeThrough<T>(
+    key: string,
+    value: T,
+    writeFn: () => Promise<T>,
+    ttlSeconds?: number,
+  ): Promise<T> {
+    const result = await writeFn();
+    await this.set(key, result, ttlSeconds);
+    return result;
+  }
+
+  /**
+   * Cache-Strategie: Write-Back (Lazy Write)
+   * Schreibt zuerst in Cache, später asynchron in DB
+   */
+  async writeBack<T>(
+    key: string,
+    value: T,
+    writeFn: () => Promise<T>,
+    ttlSeconds?: number,
+  ): Promise<T> {
+    await this.set(key, value, ttlSeconds);
+    // Asynchron in DB schreiben (nicht blockierend)
+    writeFn().catch((error) => {
+      this.logger.warn(`Write-back failed for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
+    });
+    return value;
+  }
+
+  /**
+   * Cache-Strategie: Refresh-Ahead
+   * Erneuert Cache-Einträge bevor sie ablaufen
+   */
+  async refreshAhead<T>(
+    key: string,
+    factory: () => Promise<T>,
+    ttlSeconds: number,
+    refreshThreshold: number = 0.8, // Refresh bei 80% der TTL
+  ): Promise<T> {
+    const cached = await this.get<{ value: T; cachedAt: number }>(key);
+    
+    if (cached === null) {
+      // Cache miss - normaler Fall
+      const value = await factory();
+      await this.set(key, { value, cachedAt: Date.now() }, ttlSeconds);
+      return value;
+    }
+
+    const age = (Date.now() - cached.cachedAt) / 1000;
+    const shouldRefresh = age > ttlSeconds * refreshThreshold;
+
+    if (shouldRefresh) {
+      // Asynchron im Hintergrund erneuern
+      factory()
+        .then((value) => this.set(key, { value, cachedAt: Date.now() }, ttlSeconds))
+        .catch((error) => {
+          this.logger.warn(`Refresh-ahead failed for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
+        });
+    }
+
+    return cached.value;
+  }
+
+  /**
    * LRU Eviction: Entfernt den am wenigsten verwendeten Eintrag
    */
   private evictLRU(): void {
@@ -240,10 +308,9 @@ export class CacheService {
         const values = await this.redisClient.mGet(keys);
         keys.forEach((key, index) => {
           if (values[index]) {
-            try {
-              results.set(key, JSON.parse(values[index]) as T);
-            } catch (error) {
-              this.logger.warn(`Failed to parse cached value for key ${key}`);
+            const parsed = safeJsonParse<T>(values[index], { fallback: null });
+            if (parsed !== null) {
+              results.set(key, parsed);
             }
           }
         });
@@ -280,7 +347,7 @@ export class CacheService {
       if (this.redisClient && this.redisClient.isOpen) {
         const pipeline = this.redisClient.multi();
         entries.forEach(({ key, value, ttl }) => {
-          pipeline.setEx(key, ttl || this.defaultTtl, JSON.stringify(value));
+          pipeline.setEx(key, ttl || this.defaultTtl, safeJsonStringify(value, { strict: true }));
         });
         await pipeline.exec();
       } else {

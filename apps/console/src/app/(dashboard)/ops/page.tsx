@@ -1,4 +1,4 @@
-import { AppleCard, AppleButton } from '@wattweiser/ui';
+import { AppleCard } from '@wattweiser/ui';
 
 export default function OpsPage() {
   return (

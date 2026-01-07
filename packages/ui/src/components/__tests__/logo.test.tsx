@@ -26,6 +26,3 @@ describe('Logo', () => {
     expect(svg).toHaveClass('h-12', 'w-12');
   });
 });
-
-
-

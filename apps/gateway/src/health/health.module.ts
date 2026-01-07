@@ -8,14 +8,3 @@ import { PrismaModule } from '@wattweiser/db';
   controllers: [HealthController],
 })
 export class HealthModule {}
-
-
-
-
-
-
-
-
-
-
-

@@ -87,5 +87,28 @@ export class AsrService {
       this.logger.debug(`Stream interrupted for session: ${sessionId}`);
     }
   }
+
+  /**
+   * Transcribe (Alias für speechToText)
+   */
+  async transcribe(
+    audioData: Buffer,
+    sessionId: string,
+    tenantId: string,
+    language?: string,
+  ): Promise<string> {
+    return this.speechToText(audioData, sessionId, tenantId, language);
+  }
+
+  /**
+   * Health Check
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      return this.eventBus !== undefined;
+    } catch {
+      return false;
+    }
+  }
 }
 

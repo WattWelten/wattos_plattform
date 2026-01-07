@@ -1,5 +1,6 @@
 'use client';
 
+import '../types/react-three-fiber-global';
 import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
@@ -26,6 +27,11 @@ export function AvatarV2({
   onAnimationComplete,
   onError,
 }: AvatarV2Props) {
+  // Visemes können als Array<{viseme: string, timestamp: number, weight: number}> oder number[] sein
+  const visemeEvents: Array<{ viseme: string; timestamp: number; weight: number }> | undefined = 
+    Array.isArray(visemes) && visemes.length > 0 && typeof visemes[0] === 'object' && visemes[0] !== null && 'viseme' in visemes[0]
+      ? (visemes as unknown as Array<{ viseme: string; timestamp: number; weight: number }>)
+      : undefined;
   const groupRef = useRef<THREE.Group>(null);
   const morphDictRef = useRef<Map<string, { mesh: THREE.SkinnedMesh; idx: number }[]>>(new Map());
 
@@ -67,42 +73,69 @@ export function AvatarV2({
     }
   }, [gltfScene]);
 
-  // Lip-Sync Animation mit Morph-Handling
-  useFrame((state, delta) => {
+  // Audio-Ref für Viseme-Sync
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioStartTimeRef = useRef<number>(0);
+
+  // Lip-Sync Animation mit timestamp-basierter Viseme-Synchronisation
+  useFrame((state: any, delta: number) => {
     if (!gltfScene || !groupRef.current) return;
 
     // Decay für alle Morph Targets (Glättung)
     decayAll(morphDictRef.current, 0.1);
 
-    // Visemes anwenden
-    if (visemes && visemes.length > 0) {
+    // Visemes mit Audio-Sync anwenden
+    if (visemeEvents && visemeEvents.length > 0 && audioRef.current) {
+      // Audio-Zeit ermitteln (synchronisiert mit Audio-Playback)
+      const audioTime = audioRef.current.currentTime;
+      const currentTime = audioTime * 1000; // in ms
+
+      // Viseme-Event für aktuelle Zeit finden
+      const currentViseme = visemeEvents.find((v, i) => {
+        const prevViseme = i > 0 && visemeEvents ? visemeEvents[i - 1] : undefined;
+        const prevTimestamp = prevViseme ? prevViseme.timestamp : 0;
+        return currentTime >= prevTimestamp && currentTime < v.timestamp;
+      });
+
+      if (currentViseme) {
+        // Viseme-Mapping (MBP/FV/TH/AA-Visemes)
+        const visemeMap: Record<string, string> = {
+          MBP: 'viseme_mm',
+          FV: 'viseme_ff',
+          TH: 'viseme_th',
+          AA: 'viseme_aa',
+          // Fallback-Mapping
+          PP: 'viseme_pp',
+          II: 'viseme_ii',
+          UU: 'viseme_uu',
+          EE: 'viseme_ee',
+          OO: 'viseme_oo',
+          DD: 'viseme_dd',
+          KK: 'viseme_kk',
+          CH: 'viseme_ch',
+          SS: 'viseme_ss',
+          NN: 'viseme_nn',
+          RR: 'viseme_rr',
+        };
+
+        const visemeName = visemeMap[currentViseme.viseme] || 'viseme_aa';
+        setViseme(morphDictRef.current, visemeName, currentViseme.weight);
+      }
+    } else if (visemeEvents && visemeEvents.length > 0) {
+      // Fallback: Zeit-basierte Viseme (wenn kein Audio)
       const time = state.clock.elapsedTime;
-      const visemeIndex = Math.floor((time * 10) % visemes.length);
-      const visemeValue = visemes[visemeIndex] || 0;
-
-      // Viseme-Mapping (vereinfacht - kann erweitert werden)
-      const visemeNames = [
-        'viseme_aa',
-        'viseme_ii',
-        'viseme_uu',
-        'viseme_ee',
-        'viseme_oo',
-        'viseme_pp',
-        'viseme_ff',
-        'viseme_th',
-        'viseme_dd',
-        'viseme_kk',
-        'viseme_ch',
-        'viseme_ss',
-        'viseme_nn',
-        'viseme_rr',
-        'viseme_mm',
-      ];
-
-      if (visemeValue > 0.1) {
-        // Aktiviere entsprechenden Viseme
-        const visemeName = visemeNames[visemeIndex % visemeNames.length] || 'viseme_aa';
-        setViseme(morphDictRef.current, visemeName, visemeValue);
+      const visemeIndex = Math.floor((time * 10) % visemeEvents.length);
+      const viseme = visemeEvents[visemeIndex];
+      
+      if (viseme && viseme.weight > 0.1) {
+        const visemeMap: Record<string, string> = {
+          MBP: 'viseme_mm',
+          FV: 'viseme_ff',
+          TH: 'viseme_th',
+          AA: 'viseme_aa',
+        };
+        const visemeName = visemeMap[viseme.viseme] || 'viseme_aa';
+        setViseme(morphDictRef.current, visemeName, viseme.weight);
       }
     }
 
@@ -112,10 +145,13 @@ export function AvatarV2({
     }
   });
 
-  // Audio-Integration
+  // Audio-Integration mit Viseme-Sync
   useEffect(() => {
     if (audioUrl) {
       const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      audioStartTimeRef.current = Date.now();
+
       audio.play().catch((error: Error) => {
         if (onError) {
           onError(error);
@@ -126,13 +162,24 @@ export function AvatarV2({
         if (onAnimationComplete) {
           onAnimationComplete();
         }
+        audioRef.current = null;
+      };
+
+      const handleError = (error: Error) => {
+        if (onError) {
+          onError(error);
+        }
+        audioRef.current = null;
       };
 
       audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError as any);
 
       return () => {
         audio.pause();
         audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError as any);
+        audioRef.current = null;
       };
     }
     return undefined;
@@ -159,20 +206,27 @@ export function AvatarV2({
   }, [config]);
 
   return (
+    // @ts-ignore - Three.js JSX elements from @react-three/fiber
     <group ref={groupRef}>
       {config.model.url ? (
+        // @ts-ignore
         <primitive object={gltfScene} />
       ) : (
         // Fallback: Box-Primitive
+        // @ts-ignore
         <mesh>
+          {/* @ts-ignore */}
           <boxGeometry args={[1, 2, 1]} />
+          {/* @ts-ignore */}
           <meshStandardMaterial
             color={config.avatar.material?.color || '#4a90e2'}
             metalness={config.avatar.material?.metalness || 0.3}
             roughness={config.avatar.material?.roughness || 0.7}
           />
+        {/* @ts-ignore */}
         </mesh>
       )}
+    {/* @ts-ignore */}
     </group>
   );
 }

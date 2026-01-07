@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@wattweiser/db';
+import { PrismaService } from '@wattweiser/db';
 
 interface RecordUsageInput {
   tenantId?: string;

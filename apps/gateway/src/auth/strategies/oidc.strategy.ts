@@ -5,7 +5,10 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
-  constructor(private configService: ConfigService) {
+  constructor(
+    // @ts-expect-error - Used in super() call, but TypeScript doesn't detect it
+    private configService: ConfigService
+  ) {
     super({
       authorizationURL: configService.get<string>('OIDC_AUTHORIZATION_URL'),
       tokenURL: configService.get<string>('OIDC_TOKEN_URL'),
@@ -15,7 +18,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any) {
+  async validate(accessToken: string, _refreshToken: string, profile: any) {
     return {
       id: profile.id,
       email: profile.email,
@@ -23,5 +26,3 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
     };
   }
 }
-
-

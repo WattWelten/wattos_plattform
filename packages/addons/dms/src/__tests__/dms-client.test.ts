@@ -101,7 +101,11 @@ describe('DMSClient', () => {
 
       const result = await (dmsClient as any).post('/documents', { title: 'New Document' });
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/documents', { title: 'New Document' }, undefined);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/documents',
+        { title: 'New Document' },
+        undefined
+      );
       expect(result).toEqual(mockData);
     });
   });
@@ -142,11 +146,6 @@ describe('DMSClient', () => {
     });
   });
 });
-
-
-
-
-
 
 
 

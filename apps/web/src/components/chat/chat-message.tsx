@@ -19,6 +19,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
       role="article"
       aria-label={`Nachricht von ${isUser ? 'Benutzer' : 'Assistent'}`}
+      aria-live={isStreaming ? 'polite' : 'off'}
+      aria-atomic="true"
     >
       <div
         className={`max-w-3xl rounded-lg p-4 shadow-sm ${

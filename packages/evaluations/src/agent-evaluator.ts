@@ -62,13 +62,13 @@ export class AgentEvaluator {
         responseTime,
         cost,
         toolCallsCount: actions.length,
-        accuracy,
+        ...(accuracy !== undefined && { accuracy }),
       },
       passed,
     };
   }
 
-  private checkFCR(testCase: AgentTestCase, output: string, actions: string[]): boolean {
+  private checkFCR(_testCase: AgentTestCase, output: string, actions: string[]): boolean {
     // FCR: Problem sollte beim ersten Kontakt gelöst werden
     // Prüft ob Output sinnvoll ist und keine Eskalation nötig war
     const hasEscalation = actions.some((action) =>

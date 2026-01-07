@@ -1,6 +1,6 @@
 /**
  * F13 Add-on für WattOS V2
- * 
+ *
  * F13 (Land Baden-Württemberg) als optionales Gov-Backend-Add-on
  */
 
@@ -15,4 +15,3 @@ export * from './providers/llm.provider';
 export * from './providers/rag.provider';
 export * from './providers/parser.provider';
 export * from './providers/summarize.provider';
-

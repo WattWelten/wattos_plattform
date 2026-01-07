@@ -13,25 +13,28 @@ export class TokenBlacklistService {
   private readonly ttl: number;
 
   constructor(private configService: ConfigService) {
-    this.ttl = this.parseJwtExpiry(
-      this.configService.get<string>('JWT_EXPIRES_IN', '1h')
-    );
+    this.ttl = this.parseJwtExpiry(this.configService.get<string>('JWT_EXPIRES_IN', '1h'));
     this.initializeRedis();
   }
 
   private async initializeRedis(): Promise<void> {
     try {
-      const redisUrl = this.configService.get<string>('REDIS_URL', 'redis://localhost:6379');
+      const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
       this.redisClient = createClient({ url: redisUrl });
-      
-      this.redisClient.on('error', (err) => {
-        this.logger.error(`Redis Client Error: ${err.message}`);
+
+      this.redisClient.on('error', (err?: Error) => {
+        if (err) {
+          this.logger.error(`Redis Client Error: ${err.message}`);
+        }
       });
 
       await this.redisClient.connect();
       this.logger.log('Redis client connected for token blacklist');
-    } catch (error: any) {
-      this.logger.warn(`Failed to connect to Redis: ${error.message}. Token blacklist will not work.`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(
+        `Failed to connect to Redis: ${errorMessage}. Token blacklist will not work.`
+      );
       // Fallback: In-Memory blacklist (nur für Entwicklung)
       this.logger.warn('Using in-memory blacklist (not recommended for production)');
     }
@@ -44,28 +47,33 @@ export class TokenBlacklistService {
     const match = expiry.match(/^(\d+)([smhd])$/);
     if (!match) return 3600; // Default: 1 Stunde
 
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
+    const value = parseInt(match[1]!, 10);
+    const unit = match[2]!;
 
     switch (unit) {
-      case 's': return value;
-      case 'm': return value * 60;
-      case 'h': return value * 3600;
-      case 'd': return value * 86400;
-      default: return 3600;
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 3600;
+      case 'd':
+        return value * 86400;
+      default:
+        return 3600;
     }
   }
 
   /**
    * Token zur Blacklist hinzufügen
    */
-  async addToBlacklist(token: string, userId?: string): Promise<void> {
+  async addToBlacklist(token: string, userId?: string | undefined): Promise<void> {
     try {
       if (this.redisClient && this.redisClient.isOpen) {
         // Token-Hash als Key verwenden (kürzer)
         const tokenHash = this.hashToken(token);
         await this.redisClient.setEx(`blacklist:${tokenHash}`, this.ttl, '1');
-        
+
         if (userId) {
           // Auch User-spezifische Blacklist für schnelleres Lookup
           await this.redisClient.sAdd(`user:blacklist:${userId}`, tokenHash);
@@ -75,8 +83,9 @@ export class TokenBlacklistService {
         // Fallback: In-Memory (nur für Entwicklung)
         this.logger.warn('Redis not available, using in-memory blacklist');
       }
-    } catch (error: any) {
-      this.logger.error(`Failed to add token to blacklist: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to add token to blacklist: ${errorMessage}`);
     }
   }
 
@@ -91,8 +100,9 @@ export class TokenBlacklistService {
         return result === '1';
       }
       return false;
-    } catch (error: any) {
-      this.logger.error(`Failed to check token blacklist: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to check token blacklist: ${errorMessage}`);
       return false; // Bei Fehler: Token nicht blockieren
     }
   }
@@ -106,8 +116,9 @@ export class TokenBlacklistService {
         // User-spezifische Blacklist löschen (wird bei nächstem Login neu erstellt)
         await this.redisClient.del(`user:blacklist:${userId}`);
       }
-    } catch (error: any) {
-      this.logger.error(`Failed to invalidate user tokens: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to invalidate user tokens: ${errorMessage}`);
     }
   }
 
@@ -119,7 +130,7 @@ export class TokenBlacklistService {
     let hash = 0;
     for (let i = 0; i < token.length; i++) {
       const char = token.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash).toString(36);
@@ -131,14 +142,3 @@ export class TokenBlacklistService {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-

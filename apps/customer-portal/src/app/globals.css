@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './styles/a11y.css';
+@import '../styles/a11y.css';
 
 :root {
   --background: 0 0% 100%;
@@ -26,5 +26,82 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-}
 
+  /* Apple Design Animations */
+  .animate-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .slide-in-from-top-4 {
+    animation: slideInFromTop 0.3s ease-out;
+  }
+
+  .slide-in-from-bottom-4 {
+    animation: slideInFromBottom 0.3s ease-out;
+  }
+
+  .slide-in-from-left-4 {
+    animation: slideInFromLeft 0.3s ease-out;
+  }
+
+  .zoom-in-95 {
+    animation: zoomIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInFromTop {
+    from {
+      opacity: 0;
+      transform: translateY(-1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInFromBottom {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}

@@ -55,7 +55,25 @@ export class HitlService {
       // Fallback: Notification an Agent-Besitzer oder Admin
       const agentRun = await this.prismaService.client.agentRun.findUnique({
         where: { id: runId },
-        include: { agent: { include: { tenant: { include: { users: { include: { userRoles: { include: { role: true } } } } } } } } } },
+        include: {
+          agent: {
+            include: {
+              tenant: {
+                include: {
+                  users: {
+                    include: {
+                      userRoles: {
+                        include: {
+                          role: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (agentRun?.agent?.tenant?.users) {

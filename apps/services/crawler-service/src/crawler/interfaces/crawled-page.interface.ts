@@ -3,6 +3,7 @@ export interface CrawledPage {
   title: string;
   content: string;
   html: string;
+  hash?: string; // Content hash for delta detection
   metadata: {
     description?: string;
     keywords?: string[];
@@ -15,6 +16,7 @@ export interface CrawledPage {
   images: string[];
   depth: number;
   crawledAt: Date;
+  lastModified?: Date; // Last modified date from page
 }
 
 export interface CrawlResult {

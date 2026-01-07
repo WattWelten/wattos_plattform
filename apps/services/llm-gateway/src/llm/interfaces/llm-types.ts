@@ -1,8 +1,18 @@
+export interface ToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
 export interface ChatCompletionChoice {
   index: number;
   message: {
     role: string;
     content: string;
+    tool_calls?: ToolCall[];
   };
   finish_reason: string | null;
 }
@@ -34,6 +44,15 @@ export interface ChatCompletionChunk {
     delta: {
       content?: string;
       role?: string;
+      tool_calls?: Array<{
+        index?: number;
+        id?: string;
+        type?: string;
+        function?: {
+          name?: string;
+          arguments?: string;
+        };
+      }>;
     };
     finish_reason: string | null;
   }>;

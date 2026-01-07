@@ -3,22 +3,28 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { KeycloakService } from './keycloak.service';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { sanitizeText } from '@wattweiser/shared';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private configService: ConfigService,
+    // @ts-expect-error - Reserved for future use
+    private _configService: ConfigService,
     private keycloakService: KeycloakService,
     private tokenBlacklistService: TokenBlacklistService
   ) {}
 
   async validateUser(username: string, password: string) {
+    // Input-Sanitization: Entferne gefährliche Zeichen
+    const sanitizedUsername = sanitizeText(username);
+    const sanitizedPassword = sanitizeText(password);
+
     // Keycloak validation
     try {
-      const token = await this.keycloakService.login(username, password);
+      const token = await this.keycloakService.login(sanitizedUsername, sanitizedPassword);
       const userInfo = await this.keycloakService.getUserInfo(token.access_token);
-      
+
       return {
         id: userInfo.sub,
         email: userInfo.email,
@@ -36,7 +42,7 @@ export class AuthService {
       email: user.email,
       keycloakId: user.keycloakId,
     };
-    
+
     return {
       access_token: this.jwtService.sign(payload),
       user,
@@ -77,5 +83,3 @@ export class AuthService {
     await this.tokenBlacklistService.invalidateUserTokens(userId);
   }
 }
-
-

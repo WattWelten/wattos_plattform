@@ -17,5 +17,3 @@ import { ObservabilityModule } from '@wattweiser/shared';
   exports: [AuditService],
 })
 export class AuditModule {}
-
-

@@ -33,13 +33,19 @@ export class AzureOpenAiProvider extends BaseProvider {
 
   async createChatCompletion(request: ChatCompletionRequestDto): Promise<ChatCompletionResponse> {
     const url = this.buildUrl('/chat/completions');
-    const payload = {
+    const payload: any = {
       model: request.model,
       messages: request.messages,
       temperature: request.temperature,
       top_p: request.top_p,
       max_tokens: request.max_tokens,
     };
+
+    // Tools hinzufügen, falls vorhanden
+    if (request.tools && request.tools.length > 0) {
+      payload.tools = request.tools;
+    }
+
     const { data } = await this.http.post(url, payload, { headers: this.headers });
 
     return this.buildResponse({
@@ -51,6 +57,14 @@ export class AzureOpenAiProvider extends BaseProvider {
         message: {
           role: choice.message?.role ?? 'assistant',
           content: choice.message?.content ?? '',
+          tool_calls: choice.message?.tool_calls?.map((toolCall: any) => ({
+            id: toolCall.id,
+            type: toolCall.type ?? 'function',
+            function: {
+              name: toolCall.function?.name ?? '',
+              arguments: toolCall.function?.arguments ?? '',
+            },
+          })),
         },
         finish_reason: choice.finish_reason ?? null,
       })),

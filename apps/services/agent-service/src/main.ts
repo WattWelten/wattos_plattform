@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+// ThrottlerGuard wird über APP_GUARD Provider in app.module.ts konfiguriert
 import { AppModule } from './app.module';
 import { StructuredLoggerService } from '@wattweiser/shared';
 import helmet from 'helmet';
@@ -29,8 +29,7 @@ async function bootstrap() {
     }),
   );
 
-  // Rate Limiting
-  app.useGlobalGuards(new ThrottlerGuard());
+  // Rate Limiting wird über APP_GUARD Provider in app.module.ts konfiguriert
 
   const port = process.env.PORT || 3003;
   await app.listen(port);

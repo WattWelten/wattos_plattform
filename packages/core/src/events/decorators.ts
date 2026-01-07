@@ -1,5 +1,4 @@
 import { SetMetadata } from '@nestjs/common';
-import { EventHandler } from './types';
 
 /**
  * Metadata Key für Event-Handler

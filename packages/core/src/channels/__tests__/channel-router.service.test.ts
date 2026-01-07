@@ -2,7 +2,16 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ChannelRouterService } from '../channel-router.service';
 import { EventBusService } from '../../events/bus.service';
 import { IChannel, ChannelSessionConfig, ChannelMessage } from '../interfaces/channel.interface';
-import { createMockEventBus } from '../../__tests__/helpers/mocks';
+
+// Gültige Test-UUIDs
+const TEST_SESSION_ID = '00000000-0000-4000-8000-000000000001';
+const TEST_TENANT_ID = '00000000-0000-4000-8000-000000000002';
+const TEST_USER_ID = '00000000-0000-4000-8000-000000000003';
+const TEST_CHANNEL_ID = '00000000-0000-4000-8000-000000000004';
+const TEST_TENANT_1 = '00000000-0000-4000-8000-000000000005';
+const TEST_TENANT_2 = '00000000-0000-4000-8000-000000000006';
+const TEST_USER_1 = '00000000-0000-4000-8000-000000000007';
+const TEST_USER_2 = '00000000-0000-4000-8000-000000000008';
 
 describe('ChannelRouterService', () => {
   let channelRouter: ChannelRouterService;
@@ -10,18 +19,22 @@ describe('ChannelRouterService', () => {
   let mockChannel: IChannel;
 
   beforeEach(() => {
-    mockEventBus = createMockEventBus();
+    // EventBus mocken - korrektes Mocking mit echten Funktionen
+    mockEventBus = {
+      emit: vi.fn().mockResolvedValue(undefined),
+    } as unknown as EventBusService;
+
     channelRouter = new ChannelRouterService(mockEventBus);
 
     mockChannel = {
       name: 'test-channel',
       type: 'web' as any,
       createSession: vi.fn().mockResolvedValue({
-        id: 'session-id',
+        id: TEST_SESSION_ID,
         channel: 'test-channel',
-        channelId: 'channel-id',
-        tenantId: 'tenant-id',
-        userId: 'user-id',
+        channelId: TEST_CHANNEL_ID,
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
         status: 'active',
         metadata: {},
       }),
@@ -95,24 +108,24 @@ describe('ChannelRouterService', () => {
 
     it('should create a session', async () => {
       const config: ChannelSessionConfig = {
-        tenantId: 'tenant-id',
-        userId: 'user-id',
-        channelId: 'channel-id',
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+        channelId: TEST_CHANNEL_ID,
       };
 
       const session = await channelRouter.createSession('test-channel', config);
 
       expect(session).toBeDefined();
-      expect(session.id).toBe('session-id');
+      expect(session.id).toBe(TEST_SESSION_ID);
       expect(mockChannel.createSession).toHaveBeenCalledWith(config);
       expect(mockEventBus.emit).toHaveBeenCalled();
     });
 
     it('should throw error for non-existent channel', async () => {
       const config: ChannelSessionConfig = {
-        tenantId: 'tenant-id',
-        userId: 'user-id',
-        channelId: 'channel-id',
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+        channelId: TEST_CHANNEL_ID,
       };
 
       await expect(channelRouter.createSession('non-existent', config)).rejects.toThrow();
@@ -123,9 +136,9 @@ describe('ChannelRouterService', () => {
     beforeEach(async () => {
       channelRouter.registerChannel(mockChannel);
       const config: ChannelSessionConfig = {
-        tenantId: 'tenant-id',
-        userId: 'user-id',
-        channelId: 'channel-id',
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+        channelId: TEST_CHANNEL_ID,
       };
       await channelRouter.createSession('test-channel', config);
     });
@@ -136,10 +149,10 @@ describe('ChannelRouterService', () => {
         timestamp: Date.now(),
       };
 
-      const response = await channelRouter.sendMessage('test-channel', 'session-id', message);
+      const response = await channelRouter.sendMessage('test-channel', TEST_SESSION_ID, message);
 
       expect(response.success).toBe(true);
-      expect(mockChannel.sendMessage).toHaveBeenCalledWith('session-id', message);
+      expect(mockChannel.sendMessage).toHaveBeenCalledWith(TEST_SESSION_ID, message);
       expect(mockEventBus.emit).toHaveBeenCalled();
     });
 
@@ -166,9 +179,9 @@ describe('ChannelRouterService', () => {
         timestamp: Date.now(),
       };
 
-      await channelRouter.receiveMessage('test-channel', 'session-id', message);
+      await channelRouter.receiveMessage('test-channel', TEST_SESSION_ID, message);
 
-      expect(mockChannel.receiveMessage).toHaveBeenCalledWith('session-id', message);
+      expect(mockChannel.receiveMessage).toHaveBeenCalledWith(TEST_SESSION_ID, message);
       expect(mockEventBus.emit).toHaveBeenCalled();
     });
   });
@@ -177,19 +190,19 @@ describe('ChannelRouterService', () => {
     beforeEach(async () => {
       channelRouter.registerChannel(mockChannel);
       const config: ChannelSessionConfig = {
-        tenantId: 'tenant-id',
-        userId: 'user-id',
-        channelId: 'channel-id',
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+        channelId: TEST_CHANNEL_ID,
       };
       await channelRouter.createSession('test-channel', config);
     });
 
     it('should close session', async () => {
-      await channelRouter.closeSession('test-channel', 'session-id');
+      await channelRouter.closeSession('test-channel', TEST_SESSION_ID);
 
-      expect(mockChannel.closeSession).toHaveBeenCalledWith('session-id');
+      expect(mockChannel.closeSession).toHaveBeenCalledWith(TEST_SESSION_ID);
       expect(mockEventBus.emit).toHaveBeenCalled();
-      expect(channelRouter.getSession('session-id')).toBeUndefined();
+      expect(channelRouter.getSession(TEST_SESSION_ID)).toBeUndefined();
     });
 
     it('should throw error for non-existent session', async () => {
@@ -201,17 +214,17 @@ describe('ChannelRouterService', () => {
     beforeEach(async () => {
       channelRouter.registerChannel(mockChannel);
       const config: ChannelSessionConfig = {
-        tenantId: 'tenant-id',
-        userId: 'user-id',
-        channelId: 'channel-id',
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+        channelId: TEST_CHANNEL_ID,
       };
       await channelRouter.createSession('test-channel', config);
     });
 
     it('should return session', () => {
-      const session = channelRouter.getSession('session-id');
+      const session = channelRouter.getSession(TEST_SESSION_ID);
       expect(session).toBeDefined();
-      expect(session?.id).toBe('session-id');
+      expect(session?.id).toBe(TEST_SESSION_ID);
     });
 
     it('should return undefined for non-existent session', () => {
@@ -224,43 +237,59 @@ describe('ChannelRouterService', () => {
     beforeEach(async () => {
       channelRouter.registerChannel(mockChannel);
       await channelRouter.createSession('test-channel', {
-        tenantId: 'tenant-1',
-        userId: 'user-1',
-        channelId: 'channel-1',
+        tenantId: TEST_TENANT_1,
+        userId: TEST_USER_1,
+        channelId: TEST_CHANNEL_ID,
       });
       await channelRouter.createSession('test-channel', {
-        tenantId: 'tenant-2',
-        userId: 'user-2',
-        channelId: 'channel-2',
+        tenantId: TEST_TENANT_2,
+        userId: TEST_USER_2,
+        channelId: TEST_CHANNEL_ID,
       });
     });
 
     it('should filter sessions by tenant', () => {
-      const sessions = channelRouter.getSessionsByTenant('tenant-1');
+      const sessions = channelRouter.getSessionsByTenant(TEST_TENANT_1);
       expect(sessions).toHaveLength(1);
-      expect(sessions[0].tenantId).toBe('tenant-1');
+      expect(sessions[0].tenantId).toBe(TEST_TENANT_1);
     });
   });
 
   describe('switchChannel', () => {
     beforeEach(async () => {
       channelRouter.registerChannel(mockChannel);
-      const otherChannel = { ...mockChannel, name: 'other-channel' };
+      const otherChannel = {
+        ...mockChannel,
+        name: 'other-channel',
+        createSession: vi.fn().mockImplementation((config: ChannelSessionConfig) => {
+          return Promise.resolve({
+            id: TEST_SESSION_ID,
+            channel: 'other-channel',
+            channelId: config.channelId,
+            tenantId: config.tenantId,
+            userId: config.userId,
+            status: 'active',
+            metadata: config.metadata || {},
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          });
+        }),
+      };
       channelRouter.registerChannel(otherChannel);
 
       await channelRouter.createSession('test-channel', {
-        tenantId: 'tenant-id',
-        userId: 'user-id',
-        channelId: 'channel-id',
+        tenantId: TEST_TENANT_ID,
+        userId: TEST_USER_ID,
+        channelId: TEST_CHANNEL_ID,
       });
     });
 
     it('should switch channel', async () => {
-      const newSession = await channelRouter.switchChannel('session-id', 'test-channel', 'other-channel');
+      const newSession = await channelRouter.switchChannel(TEST_SESSION_ID, 'test-channel', 'other-channel');
 
       expect(newSession).toBeDefined();
       expect(newSession.channel).toBe('other-channel');
-      expect(channelRouter.getSession('session-id')).toBeUndefined();
+      expect(channelRouter.getSession(TEST_SESSION_ID)).toBeUndefined();
     });
   });
 
@@ -277,10 +306,6 @@ describe('ChannelRouterService', () => {
     });
   });
 });
-
-
-
-
 
 
 

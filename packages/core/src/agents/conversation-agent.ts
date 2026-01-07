@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import axios from 'axios';
 import { EventBusService } from '../events/bus.service';
 import { Agent } from '../orchestrator/runtime.service';
 import { Event, EventDomain, IntentEvent, IntentEventSchema } from '../events/types';
@@ -12,6 +11,8 @@ import { SourceCardsService } from '../compliance/source-cards.service';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
 import { TenantProfile } from '../profiles/types';
 import { Citation } from '../compliance/source-cards.service';
+import { SkillRouterService } from './skill-router.service';
+import { createSearchToolConfig } from '../knowledge/tools/search-tool.config';
 import { v4 as uuid } from 'uuid';
 
 /**
@@ -27,12 +28,17 @@ export class ConversationAgent implements Agent {
 
   constructor(
     private readonly eventBus: EventBusService,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-expect-error - unused but may be needed in future
     private readonly streamingService: TextStreamingService,
     private readonly ragService: RAGService,
     private readonly toolExecutionService: ToolExecutionService,
     private readonly profileService: ProfileService,
     private readonly sourceCardsService: SourceCardsService,
-    private readonly httpService: HttpService,
+    private readonly skillRouter: SkillRouterService,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-expect-error - replaced with axios
+    private readonly httpService: any,
     private readonly serviceDiscovery: ServiceDiscoveryService,
   ) {}
 
@@ -83,15 +89,26 @@ export class ConversationAgent implements Agent {
     // 1. Profile laden für Tenant-spezifische Konfiguration
     const profile = await this.profileService.getProfile(tenantId);
 
-    // 2. RAG-Suche (wenn aktiviert)
+    // 2. Skill erkennen und entsprechend handeln
+    const skill = this.skillRouter.detectSkill(message, (event.payload as any).intent);
     let context = '';
     let citations: Citation[] = [];
-    if (profile.features.ragEnabled !== false) {
+    
+    // RAG-Suche mit search_tool_config (wenn aktiviert)
+    if (profile.features.ragEnabled !== false && (skill?.ragEnabled || !skill)) {
       try {
+        // Search Tool Config erstellen
+        const searchConfig = createSearchToolConfig({
+          defaultTopK: 5,
+          maxTopK: 20,
+          minScore: 0.7,
+          knowledgeSpaceId: profile.features.defaultKnowledgeSpaceId,
+        });
+
         const ragResponse = await this.ragService.search(message, {
           tenantId,
-          knowledgeSpaceId: profile.features.defaultKnowledgeSpaceId,
-          topK: 5,
+          ...(searchConfig.knowledgeSpaceId && { knowledgeSpaceId: searchConfig.knowledgeSpaceId }),
+          topK: searchConfig.defaultTopK,
         });
         context = ragResponse.results.map((r) => r.content).join('\n\n');
         
@@ -109,8 +126,11 @@ export class ConversationAgent implements Agent {
       }
     }
 
-    // 3. LLM-Antwort generieren (mit Context)
-    const systemPrompt = this.buildSystemPrompt(profile, context);
+    // 3. Character Role aus Event oder Profile ermitteln
+    const characterRole = (event.payload as any).characterRole || profile.features.defaultCharacterRole;
+
+    // 4. LLM-Antwort generieren (mit Context)
+    const systemPrompt = await this.buildSystemPrompt(profile, context, characterRole);
     const response = await this.generateResponse(systemPrompt, message, profile);
 
     // 4. Response-Event emittieren
@@ -160,11 +180,38 @@ export class ConversationAgent implements Agent {
   /**
    * System-Prompt bauen
    */
-  private buildSystemPrompt(profile: TenantProfile, context: string): string {
-    let prompt = `Du bist ein hilfreicher KI-Assistent für ${profile.market} Kunden.\n\n`;
+  private async buildSystemPrompt(profile: TenantProfile, context: string, characterRole?: string): Promise<string> {
+    // Versuche Character-spezifischen Prompt zu laden (z.B. Kaya)
+    let characterPrompt: string | null = null;
+    if (characterRole) {
+      try {
+        const character = await this.getCharacterByRole(profile.tenantId, characterRole);
+        if (character?.systemPrompt) {
+          characterPrompt = character.systemPrompt;
+        } else if (character?.prompt) {
+          characterPrompt = character.prompt;
+        }
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        this.logger.debug(`Failed to load character prompt: ${errorMessage}`);
+      }
+    }
+
+    // Fallback: Kaya Prompt für Gov-Mode
+    if (!characterPrompt && (profile.mode === 'gov-f13' || profile.mode === 'regulated')) {
+      try {
+        const { kayaSystemPrompt } = await import('@wattweiser/characters');
+        characterPrompt = kayaSystemPrompt;
+      } catch {
+        // Kaya prompt nicht verfügbar, verwende Standard
+      }
+    }
+
+    // Character Prompt verwenden oder Standard-Prompt
+    let prompt = characterPrompt || `Du bist ein hilfreicher KI-Assistent für ${profile.market} Kunden.\n\n`;
 
     if (context) {
-      prompt += `Kontext aus Wissensbasis:\n${context}\n\n`;
+      prompt += `\nKontext aus Wissensbasis:\n${context}\n\n`;
     }
 
     if (profile.mode === 'gov-f13' || profile.mode === 'regulated') {
@@ -177,6 +224,25 @@ export class ConversationAgent implements Agent {
     }
 
     return prompt;
+  }
+
+  /**
+   * Character nach Role abrufen
+   */
+  private async getCharacterByRole(tenantId: string, role: string): Promise<{ systemPrompt?: string; prompt?: string } | null> {
+    try {
+      // Character Service über Service Discovery aufrufen
+      const characterServiceUrl = this.serviceDiscovery.getServiceUrl('character-service', 3013);
+      const response = await axios.get(`${characterServiceUrl}/v1/characters`, {
+        params: { tenantId, role },
+        timeout: 5000,
+      });
+      return response.data || null;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.debug(`Failed to get character: ${errorMessage}`);
+      return null;
+    }
   }
 
   /**
@@ -198,22 +264,20 @@ export class ConversationAgent implements Agent {
       ];
 
       // LLM-Gateway aufrufen
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `${llmGatewayUrl}/v1/chat/completions`,
-          {
-            model: profile.features.defaultModel || 'gpt-4',
-            provider: profile.features.defaultProvider || 'openai',
-            messages,
-            stream: false,
-            temperature: profile.features.temperature || 0.7,
-            max_tokens: profile.features.maxTokens || 2000,
-            tenantId: profile.tenantId,
-          },
-          {
-            timeout: 30000, // 30 Sekunden Timeout
-          },
-        ),
+      const response = await axios.post(
+        `${llmGatewayUrl}/v1/chat/completions`,
+        {
+          model: profile.features.defaultModel || 'gpt-4',
+          provider: profile.features.defaultProvider || 'openai',
+          messages,
+          stream: false,
+          temperature: profile.features.temperature || 0.7,
+          max_tokens: profile.features.maxTokens || 2000,
+          tenantId: profile.tenantId,
+        },
+        {
+          timeout: 30000, // 30 Sekunden Timeout
+        },
       );
 
       // Response extrahieren
@@ -261,10 +325,8 @@ export class ConversationAgent implements Agent {
   private async checkLLMGatewayHealth(): Promise<boolean> {
     try {
       const llmGatewayUrl = this.serviceDiscovery.getServiceUrl('llm-gateway', 3009);
-      const response = await firstValueFrom(
-        this.httpService.get(`${llmGatewayUrl}/health`, { timeout: 5000 }),
-      );
-      return response.status === 200;
+      const response = await axios.get(`${llmGatewayUrl}/health`, { timeout: 5000 });
+      return response.status === 200 || response.status === 204;
     } catch {
       // LLM-Gateway nicht verfügbar, aber Agent kann trotzdem funktionieren (mit Fallback)
       return true;

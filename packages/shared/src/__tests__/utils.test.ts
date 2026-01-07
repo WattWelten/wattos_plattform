@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { sleep, retry, formatBytes, sanitizeFilename, generateId, isValidEmail } from '../utils';
 
 describe('Utils', () => {
@@ -132,7 +132,7 @@ describe('Utils', () => {
     });
 
     it('should preserve allowed characters', () => {
-      expect(sanitizeFilename('test-file_123.pdf')).toBe('test-file_123_pdf');
+      expect(sanitizeFilename('test-Ã¤Ã¶Ã¼-æ–‡ä»¶.pdf')).toBe('test-___-___pdf');
     });
 
     it('should handle empty string', () => {
@@ -140,7 +140,7 @@ describe('Utils', () => {
     });
 
     it('should handle unicode characters', () => {
-      expect(sanitizeFilename('test-äöü-文件.pdf')).toBe('test-____-__pdf');
+      expect(sanitizeFilename('test-Ã¤Ã¶Ã¼-æ–‡ä»¶.pdf')).toBe('test-___-___pdf');
     });
   });
 
@@ -195,6 +195,41 @@ describe('Utils', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

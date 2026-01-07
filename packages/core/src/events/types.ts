@@ -6,35 +6,10 @@
  */
 
 import { z } from 'zod';
+import { EventDomain, BaseEventSchema, type BaseEvent } from '@wattweiser/shared';
 
-/**
- * Event-Domains
- */
-export enum EventDomain {
-  PERCEPTION = 'perception',
-  INTENT = 'intent',
-  TOOL = 'tool',
-  KNOWLEDGE = 'knowledge',
-  AVATAR = 'avatar',
-  COMPLIANCE = 'compliance',
-  CHANNEL = 'channel',
-}
-
-/**
- * Base Event Schema
- */
-export const BaseEventSchema = z.object({
-  id: z.string().uuid(),
-  type: z.string(),
-  domain: z.nativeEnum(EventDomain),
-  timestamp: z.number(),
-  sessionId: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  userId: z.string().uuid().optional(),
-  metadata: z.record(z.any()).optional(),
-});
-
-export type BaseEvent = z.infer<typeof BaseEventSchema>;
+// Re-export for backward compatibility
+export { EventDomain, BaseEventSchema, type BaseEvent };
 
 /**
  * Perception Events
@@ -62,6 +37,7 @@ export const IntentEventSchema = BaseEventSchema.extend({
     intent: z.string().optional(),
     confidence: z.number().optional(),
     response: z.string().optional(),
+    citations: z.array(z.any()).optional(),
   }),
 });
 
@@ -75,8 +51,8 @@ export const ToolEventSchema = BaseEventSchema.extend({
   action: z.enum(['call.executed', 'call.failed', 'call.approved']),
   payload: z.object({
     toolName: z.string(),
-    toolInput: z.record(z.any()),
-    toolOutput: z.record(z.any()).optional(),
+    toolInput: z.record(z.string(), z.any()),
+    toolOutput: z.record(z.string(), z.any()).optional(),
     error: z.string().optional(),
   }),
 });
@@ -103,8 +79,9 @@ export const KnowledgeEventSchema = BaseEventSchema.extend({
     documentId: z.string().optional(),
     name: z.string().optional(),
     content: z.string().optional(),
-    metadata: z.record(z.any()).optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
     source: z.string().optional(),
+    error: z.string().optional(),
   }),
 });
 
@@ -141,7 +118,7 @@ export const ComplianceEventSchema = BaseEventSchema.extend({
     disclosureType: z.string().optional(),
     piiType: z.string().optional(),
     action: z.string().optional(),
-    details: z.record(z.any()).optional(),
+    details: z.record(z.string(), z.any()).optional(),
     retentionDays: z.number().optional(),
     cutoffDate: z.string().optional(),
     deletedCounts: z

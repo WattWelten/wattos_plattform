@@ -2,7 +2,8 @@ import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { v4 as uuid } from 'uuid';
-import { Event, EventHandler, EventFilter, BaseEventSchema } from './types';
+import { Event, EventHandler, BaseEventSchema } from './types';
+import { safeJsonParse, safeJsonStringify } from '@wattweiser/shared';
 
 /**
  * Event Bus Service
@@ -74,7 +75,7 @@ export class EventBusService implements OnModuleInit, OnModuleDestroy {
 
       // Publish zu Redis
       const channel = `events:${event.domain}:${event.action}`;
-      await this.publisher.publish(channel, JSON.stringify(validatedEvent));
+      await this.publisher.publish(channel, safeJsonStringify(validatedEvent, { strict: true }));
       
       this.logger.debug(`Event emitted: ${event.type}`, { channel, eventId: validatedEvent.id });
     } catch (error: unknown) {
@@ -172,7 +173,7 @@ export class EventBusService implements OnModuleInit, OnModuleDestroy {
    */
   private async handleMessage(channel: string, message: string): Promise<void> {
     try {
-      const event: Event = JSON.parse(message);
+      const event: Event = safeJsonParse<Event>(message, { strict: true });
       const eventType = `${event.domain}.${event.action}`;
       
       const handlers = this.handlers.get(eventType);

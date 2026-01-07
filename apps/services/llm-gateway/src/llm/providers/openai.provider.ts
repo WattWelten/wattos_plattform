@@ -25,7 +25,7 @@ export class OpenAiProvider extends BaseProvider {
   }
 
   async createChatCompletion(request: ChatCompletionRequestDto): Promise<ChatCompletionResponse> {
-    const payload = {
+    const payload: any = {
       model: request.model,
       messages: request.messages,
       temperature: request.temperature,
@@ -33,6 +33,11 @@ export class OpenAiProvider extends BaseProvider {
       max_tokens: request.max_tokens,
       stream: false,
     };
+
+    // Tools hinzufügen, falls vorhanden
+    if (request.tools && request.tools.length > 0) {
+      payload.tools = request.tools;
+    }
 
     const { data } = await this.http.post('/chat/completions', payload, {
       headers: this.headers,
@@ -47,6 +52,14 @@ export class OpenAiProvider extends BaseProvider {
         message: {
           role: choice.message?.role ?? 'assistant',
           content: choice.message?.content ?? '',
+          tool_calls: choice.message?.tool_calls?.map((toolCall: any) => ({
+            id: toolCall.id,
+            type: toolCall.type ?? 'function',
+            function: {
+              name: toolCall.function?.name ?? '',
+              arguments: toolCall.function?.arguments ?? '',
+            },
+          })),
         },
         finish_reason: choice.finish_reason ?? null,
       })),

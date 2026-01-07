@@ -7,8 +7,10 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
+    // @ts-expect-error - Used in super() call
     private configService: ConfigService,
-    private authService: AuthService
+    // @ts-expect-error - Reserved for future use
+    private _authService: AuthService
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -26,5 +28,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
   }
 }
-
-

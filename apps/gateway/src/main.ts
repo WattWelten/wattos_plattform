@@ -4,6 +4,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { StructuredLoggerService } from '@wattweiser/shared';
+import compression from 'compression';
+import helmet from 'helmet';
+import { Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -11,6 +14,31 @@ async function bootstrap() {
   });
   const configService = app.get(ConfigService);
   const logger = app.get(StructuredLoggerService).setContext('Gateway');
+
+  // Security Headers (Helmet)
+  app.use(
+    helmet({
+      contentSecurityPolicy: configService.get<string>('NODE_ENV') === 'production',
+      crossOriginEmbedderPolicy: false, // Für Swagger UI
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
+
+  // Response Compression
+  app.use(
+    compression({
+      filter: (req: Request, res: Response) => {
+        // Komprimiere nur wenn Client es unterstützt
+        if (req.headers['x-no-compression']) {
+          return false;
+        }
+        // Komprimiere nur JSON, Text und HTML
+        return compression.filter(req, res);
+      },
+      level: 6, // Balance zwischen Kompression und CPU
+      threshold: 1024, // Nur Dateien > 1KB komprimieren
+    })
+  );
 
   // Global prefix
   app.setGlobalPrefix('api');
@@ -32,7 +60,10 @@ async function bootstrap() {
   );
 
   // Swagger/OpenAPI Documentation
-  if (configService.get<string>('NODE_ENV') !== 'production' || configService.get<boolean>('ENABLE_SWAGGER', false)) {
+  if (
+    configService.get<string>('NODE_ENV') !== 'production' ||
+    configService.get<boolean>('ENABLE_SWAGGER', false)
+  ) {
     const config = new DocumentBuilder()
       .setTitle('WattOS KI API')
       .setDescription('WattOS KI Platform API Documentation')
@@ -46,7 +77,7 @@ async function bootstrap() {
           description: 'Enter JWT token',
           in: 'header',
         },
-        'JWT-auth',
+        'JWT-auth'
       )
       .addTag('auth', 'Authentication endpoints')
       .addTag('proxy', 'Service proxy endpoints')
@@ -60,7 +91,24 @@ async function bootstrap() {
       customCss: '.swagger-ui .topbar { display: none }',
     });
 
-    logger.log(`📚 API Documentation available at: http://localhost:${configService.get<number>('PORT', 3001)}/api/docs`);
+    // Export OpenAPI spec to JSON (if enabled)
+    if (configService.get<boolean>('EXPORT_OPENAPI_SPEC', false)) {
+      const fs = require('fs');
+      const path = require('path');
+      const specPath = path.join(process.cwd(), 'openapi', 'gateway-api.json');
+      const specDir = path.dirname(specPath);
+
+      if (!fs.existsSync(specDir)) {
+        fs.mkdirSync(specDir, { recursive: true });
+      }
+
+      fs.writeFileSync(specPath, JSON.stringify(document, null, 2));
+      logger.log(`📄 OpenAPI spec exported to: ${specPath}`);
+    }
+
+    logger.log(
+      `📚 API Documentation available at: http://localhost:${configService.get<number>('PORT', 3001)}/api/docs`
+    );
   }
 
   const port = configService.get<number>('PORT', 3001);
@@ -70,5 +118,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-
-

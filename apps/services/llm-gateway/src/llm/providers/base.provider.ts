@@ -35,7 +35,19 @@ export abstract class BaseProvider implements LlmProvider {
       model: response.model,
       choices: response.choices.map((choice) => ({
         index: choice.index,
-        delta: { content: choice.message.content, role: choice.message.role },
+        delta: {
+          content: choice.message.content,
+          role: choice.message.role,
+          tool_calls: choice.message.tool_calls?.map((toolCall, idx) => ({
+            index: idx,
+            id: toolCall.id,
+            type: toolCall.type,
+            function: {
+              name: toolCall.function.name,
+              arguments: toolCall.function.arguments,
+            },
+          })),
+        },
         finish_reason: choice.finish_reason,
       })),
     };

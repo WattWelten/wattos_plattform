@@ -7,6 +7,3 @@ export { MetricsClient } from './client';
 // Server
 export { MetricsServer } from './server';
 export type { MetricsService } from './server';
-
-
-

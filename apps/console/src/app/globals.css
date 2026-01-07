@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import '@/styles/a11y.css';
+@import '../styles/a11y.css';
 
 :root {
   --background: 0 0% 100%;

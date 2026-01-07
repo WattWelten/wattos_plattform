@@ -3,7 +3,11 @@
   "extends": "../config/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "lib": ["ES2022", "DOM"],
+    "skipLibCheck": true,
+    "typeRoots": ["../../node_modules/@types", "node_modules/@types"],
+    "types": []
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]

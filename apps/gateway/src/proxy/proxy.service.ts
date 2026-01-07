@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { RequestHandler } from 'express';
+import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
 
 /**
@@ -37,13 +38,13 @@ export class ProxyService {
     }
   }
 
-  getProxyMiddleware(serviceName: string) {
+  getProxyMiddleware(serviceName: string): RequestHandler {
     const target = this.serviceUrls.get(serviceName);
     if (!target) {
       throw new Error(`Service ${serviceName} not found`);
     }
 
-    return createProxyMiddleware({
+    const options: Options = {
       target,
       changeOrigin: true,
       pathRewrite: {
@@ -57,8 +58,8 @@ export class ProxyService {
           proxyReq.setHeader('X-Tenant-Id', req.user.tenantId || '');
         }
       },
-    } as any);
+    };
+
+    return createProxyMiddleware(options);
   }
 }
-
-

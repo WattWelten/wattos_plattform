@@ -26,8 +26,9 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
+  const variantValue = variant ?? 'default';
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant: variantValue }), className)} {...props} />
   );
 }
 

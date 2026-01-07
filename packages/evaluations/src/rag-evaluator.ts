@@ -80,7 +80,7 @@ export class RAGEvaluator {
         precision,
         recall,
         f1Score,
-        answerAccuracy,
+        ...(answerAccuracy !== undefined && { answerAccuracy }),
         responseTime,
       },
       passed: f1Score >= 0.7 && (answerAccuracy === undefined || answerAccuracy >= 0.8),

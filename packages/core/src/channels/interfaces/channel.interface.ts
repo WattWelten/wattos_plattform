@@ -15,9 +15,9 @@ export const ChannelMessageSchema = z.object({
   media: z.object({
     type: z.string(),
     url: z.string(),
-    metadata: z.record(z.any()).optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
   }).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export type ChannelMessage = z.infer<typeof ChannelMessageSchema>;
@@ -31,9 +31,9 @@ export const ChannelResponseSchema = z.object({
   media: z.object({
     type: z.string(),
     url: z.string(),
-    metadata: z.record(z.any()).optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
   }).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export type ChannelResponse = z.infer<typeof ChannelResponseSchema>;
@@ -45,7 +45,7 @@ export const ChannelSessionConfigSchema = z.object({
   tenantId: z.string().uuid(),
   userId: z.string().uuid().optional(),
   channelId: z.string(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export type ChannelSessionConfig = z.infer<typeof ChannelSessionConfigSchema>;
@@ -60,7 +60,7 @@ export const ChannelSessionSchema = z.object({
   tenantId: z.string().uuid(),
   userId: z.string().uuid().optional(),
   status: z.enum(['active', 'closed', 'paused']),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });

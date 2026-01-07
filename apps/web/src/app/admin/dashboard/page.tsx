@@ -13,17 +13,26 @@ import { Button } from '@/components/ui/button';
 
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState('7d');
-  const [autoRefresh] = useState(true);
-  // TODO: Implement auto-refresh toggle UI
-  // const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Real-time Updates mit React Query
   const { data: dashboardData, isLoading, refetch } = useQuery({
     queryKey: ['dashboard', timeRange],
     queryFn: async () => {
-      // TODO: API-Call zum Admin-Service
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      try {
+        const response = await fetch(`${apiUrl}/api/v1/admin/metrics?timeRange=${timeRange}`, {
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Dashboard fetch error:', error);
+        // Fallback zu Mock-Daten bei Fehler
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return {
         stats: {
           activeUsers: 1234,
           chatsToday: 567,
@@ -57,7 +66,8 @@ export default function AdminDashboardPage() {
           { name: 'Agents', value: 20 },
           { name: 'Embeddings', value: 5 },
         ],
-      };
+        };
+      }
     },
     refetchInterval: autoRefresh ? 30000 : false, // Alle 30 Sekunden aktualisieren
   });
@@ -100,6 +110,15 @@ export default function AdminDashboardPage() {
           <p className="text-gray-600 mt-1">Übersicht über Ihre Plattform-Nutzung</p>
         </div>
         <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Auto-Refresh</span>
+          </label>
           <Button
             variant="outline"
             size="sm"

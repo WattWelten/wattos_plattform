@@ -1,15 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Agent as AgentType, AgentRun, LLMProvider } from '@wattweiser/shared';
+import { AgentRun } from '@wattweiser/shared';
 import {
   IAgent,
   AgentState,
   AgentConfig,
   AgentMessage,
-  ToolCallResult,
-  MemoryContext,
-  AgentMetrics,
-  EvaluationContext,
-  EvaluationResult,
 } from '../interfaces';
 import { PersonaEngine } from '../persona/persona-engine';
 import { MemoryManager } from '../memory/memory-manager';
@@ -218,12 +213,11 @@ export abstract class BaseAgent implements IAgent {
   protected createInitialState(
     input: string,
     userId?: string,
-    runId?: string,
+    _runId?: string,
   ): AgentState {
-    return {
+    const state: AgentState = {
       agentId: this.id,
       tenantId: this.tenantId,
-      userId,
       input,
       messages: [],
       toolCalls: [],
@@ -248,26 +242,43 @@ export abstract class BaseAgent implements IAgent {
       },
       metadata: {},
     };
+    
+    if (userId !== undefined) {
+      state.userId = userId;
+    }
+    
+    return state;
   }
 
   /**
    * AgentRun aus State erstellen
    */
   protected createAgentRun(state: AgentState, runId: string): AgentRun {
-    return {
+    const run: AgentRun = {
       id: runId,
       agentId: this.id,
-      userId: state.userId,
       input: state.input,
-      output: state.output,
       status: state.status as 'pending' | 'running' | 'completed' | 'failed',
       metrics: {
         ...state.metrics,
         duration: state.metrics.duration,
       },
       createdAt: state.metrics.startTime,
-      completedAt: state.metrics.endTime,
     };
+    
+    if (state.userId !== undefined) {
+      run.userId = state.userId;
+    }
+    
+    if (state.output !== undefined) {
+      run.output = state.output;
+    }
+    
+    if (state.metrics.endTime !== undefined) {
+      run.completedAt = state.metrics.endTime;
+    }
+    
+    return run;
   }
 
   /**

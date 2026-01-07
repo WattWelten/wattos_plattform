@@ -4,6 +4,45 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Code Cleanup & Refactoring (2025-01-27)
+
+#### 🧹 Code Cleanup
+
+- ✅ Build-Artefakte entfernt (.map, .tsbuildinfo Dateien)
+- ✅ TypeScript-Konfigurationen optimiert und vereinheitlicht
+- ✅ .gitignore und .dockerignore aktualisiert
+- ✅ Cleanup-Skripte hinzugefügt (cleanup-wattos.ps1, cleanup-wattos-v2.ps1, cleanup-wattos-optimized.ps1)
+
+#### 🔧 Refactoring
+
+- ✅ Gateway Service: Auth-Module optimiert, Token-Blacklist verbessert
+- ✅ LLM Gateway: Provider-Implementierungen refactored (OpenAI, Anthropic, Azure, Google)
+- ✅ Agent Service: Graph Service und HITL Service verbessert
+- ✅ Crawler Service: Engine und Controller optimiert
+- ✅ Core Package: Channel Router, Event Bus, RAG Service refactored
+- ✅ Shared Package: Cache Service, Observability Module, Resilience Services verbessert
+- ✅ UI Package: Komponenten optimiert und vereinheitlicht
+
+#### ✅ Test Updates
+
+- ✅ Test-Setup mit Vitest konfiguriert
+- ✅ Test-Mocks und Helpers aktualisiert
+- ✅ Compliance-Tests erweitert (Audit Replay, Disclosure, PII Redaction, Retention Policy)
+- ✅ Channel Router Tests verbessert
+- ✅ Event Bus Tests aktualisiert
+
+#### 📝 Dokumentation
+
+- ✅ CI/CD Workflows aktualisiert
+- ✅ Dependabot-Konfiguration erweitert
+- ✅ Test-Dokumentation aktualisiert (TEST_EXECUTION_STATUS.md, TEST_FIXES_STRATEGY.md, TEST_IMPLEMENTATION_STATUS.md)
+- ✅ Reports aktualisiert (findings.md, service-matrix.md, test-summary.md)
+
+#### 🔄 Dependency Updates
+
+- ✅ pnpm-lock.yaml aktualisiert
+- ✅ Package.json Dateien in allen Services und Packages aktualisiert
+
 ### Phase 1-3: Basis-Implementierung (2025-01-27)
 
 #### ✨ Neue Features

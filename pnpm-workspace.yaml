@@ -1,5 +1,5 @@
-packages:
+﻿packages:
   - 'apps/*'
-  - 'apps/services/*'
   - 'packages/*'
   - 'packages/addons/*'
+

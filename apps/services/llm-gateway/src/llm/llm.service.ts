@@ -87,6 +87,15 @@ export class LlmService {
               delta: {
                 role: choice.message.role,
                 content: choice.message.content,
+                tool_calls: choice.message.tool_calls?.map((toolCall, idx) => ({
+                  index: idx,
+                  id: toolCall.id,
+                  type: toolCall.type,
+                  function: {
+                    name: toolCall.function.name,
+                    arguments: toolCall.function.arguments,
+                  },
+                })),
               },
               finish_reason: choice.finish_reason,
             },

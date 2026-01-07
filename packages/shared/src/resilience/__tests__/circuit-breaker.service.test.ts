@@ -128,13 +128,12 @@ describe('CircuitBreakerService', () => {
       // Fast-forward to half-open
       await vi.advanceTimersByTimeAsync(1000);
 
-      // First request should succeed
+      // First request should succeed and close circuit
       await circuitBreaker.execute('test-circuit', successOperation);
 
-      // Second request should be rejected
-      await expect(
-        circuitBreaker.execute('test-circuit', successOperation),
-      ).rejects.toThrow('Circuit breaker is HALF_OPEN');
+      // Circuit should be closed now, so second request should succeed
+      const result = await circuitBreaker.execute('test-circuit', successOperation);
+      expect(result).toBe('success');
     });
 
     it('should close circuit after success in half-open', async () => {

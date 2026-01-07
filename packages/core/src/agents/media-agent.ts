@@ -30,6 +30,8 @@ export class MediaAgent implements Agent {
     private readonly eventBus: EventBusService,
     private readonly asrService: AsrService,
     private readonly ttsService: TtsService,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-expect-error - unused but may be needed in future
     private readonly avatarV2Service: AvatarV2Service,
   ) {}
 
@@ -88,12 +90,11 @@ export class MediaAgent implements Agent {
 
     try {
       // ASR durchführen
-      const transcription = await this.asrService.transcribe(
+      const transcriptionText = await this.asrService.transcribe(
         audioData instanceof Buffer ? audioData : Buffer.from(audioData as string),
-        {
-          language: payload.language || 'de',
-          format: payload.format,
-        },
+        sessionId,
+        tenantId,
+        payload.language || 'de',
       );
 
       // Intent-Event emittieren (Text wurde erkannt)
@@ -107,8 +108,7 @@ export class MediaAgent implements Agent {
         tenantId,
         userId: event.userId,
         payload: {
-          message: transcription.text,
-          confidence: transcription.confidence,
+          message: transcriptionText,
         },
         metadata: {
           agent: this.name,
@@ -131,7 +131,7 @@ export class MediaAgent implements Agent {
   /**
    * Video empfangen
    */
-  private async handleVideoReceived(event: PerceptionEvent): Promise<Event | null> {
+  private async handleVideoReceived(_event: PerceptionEvent): Promise<Event | null> {
     // TODO: Video-Processing (z.B. Frame-Analyse)
     this.logger.debug('Video received (not yet implemented)');
     return null;
@@ -252,7 +252,7 @@ export class MediaAgent implements Agent {
         this.ttsService.healthCheck(),
       ]);
 
-      return checks.every((check) => check === true);
+      return checks.every((check: boolean) => check === true);
     } catch {
       return false;
     }

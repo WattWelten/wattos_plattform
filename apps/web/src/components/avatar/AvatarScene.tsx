@@ -45,6 +45,7 @@ export function AvatarScene({
             switch (light.type) {
               case 'ambient':
                 return (
+                  // @ts-ignore - Three.js JSX elements from @react-three/fiber
                   <ambientLight
                     key={index}
                     color={light.color || '#ffffff'}
@@ -53,6 +54,7 @@ export function AvatarScene({
                 );
               case 'directional':
                 return (
+                  // @ts-ignore
                   <directionalLight
                     key={index}
                     position={light.position || [0, 1, 0]}
@@ -62,6 +64,7 @@ export function AvatarScene({
                 );
               case 'point':
                 return (
+                  // @ts-ignore
                   <pointLight
                     key={index}
                     position={light.position || [0, 1, 0]}
@@ -71,6 +74,7 @@ export function AvatarScene({
                 );
               case 'spot':
                 return (
+                  // @ts-ignore
                   <spotLight
                     key={index}
                     position={light.position || [0, 1, 0]}

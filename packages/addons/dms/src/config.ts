@@ -29,4 +29,3 @@ export const getDefaultDMSConfig = (): Partial<DMSConfig> => ({
   syncInterval: parseInt(process.env.DMS_SYNC_INTERVAL || '3600000', 10),
   batchSize: parseInt(process.env.DMS_BATCH_SIZE || '100', 10),
 });
-

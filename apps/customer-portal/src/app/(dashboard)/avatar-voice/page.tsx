@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AppleCard, AppleButton } from '@wattweiser/ui';
+import { AppleCard } from '@wattweiser/ui';
 import { getVisemeEvents, type VisemeEvent } from '@/lib/api';
 import { VisemeHeatmap } from '@/components/viseme-heatmap';
 import { TTSProbe } from '@/components/tts-probe';
@@ -9,11 +9,15 @@ import { useAuthContext } from '@/contexts/auth-context';
 
 export default function AvatarVoicePage() {
   const { tenantId } = useAuthContext();
-  const [voice, setVoice] = useState('de-DE-neutral');
-  const [rate, setRate] = useState(1.0);
-  const [pitch, setPitch] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [voice, _setVoice] = useState('de-DE-neutral');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [rate, _setRate] = useState(1.0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [pitch, _setPitch] = useState(0);
   const [visemeEvents, setVisemeEvents] = useState<VisemeEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +41,11 @@ export default function AvatarVoicePage() {
 
     const intervals: number[] = [];
     for (let i = 1; i < visemeEvents.length; i++) {
-      intervals.push(visemeEvents[i].timestamp - visemeEvents[i - 1].timestamp);
+      const prev = visemeEvents[i - 1];
+      const curr = visemeEvents[i];
+      if (prev && curr) {
+        intervals.push(curr.timestamp - prev.timestamp);
+      }
     }
 
     const mean = intervals.reduce((a, b) => a + b, 0) / intervals.length;

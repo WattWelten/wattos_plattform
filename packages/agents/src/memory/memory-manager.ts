@@ -148,8 +148,9 @@ export class MemoryManager {
             if (!facts['names']) {
               facts['names'] = [];
             }
-            if (!facts['names'].includes(name)) {
-              facts['names'].push(name);
+            const namesArray = facts['names'] as string[];
+            if (!namesArray.includes(name)) {
+              namesArray.push(name);
             }
           });
         }

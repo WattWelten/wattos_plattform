@@ -1,6 +1,6 @@
 /**
  * DMS Add-on für WattOS V2
- * 
+ *
  * DMS (Document Management System) Integration
  */
 

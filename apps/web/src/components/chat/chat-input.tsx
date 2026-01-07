@@ -27,7 +27,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" role="form" aria-label="Nachrichteneingabe">
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -36,9 +36,20 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         className="flex-1 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
         rows={1}
         disabled={disabled}
+        aria-label="Nachrichteneingabe"
+        aria-describedby="chat-input-help"
+        aria-required="true"
       />
-      <Button onClick={handleSend} disabled={disabled || !message.trim()}>
-        <Send className="w-4 h-4" />
+      <span id="chat-input-help" className="sr-only">
+        Drücken Sie Enter zum Senden, Shift+Enter für neue Zeile
+      </span>
+      <Button
+        onClick={handleSend}
+        disabled={disabled || !message.trim()}
+        aria-label="Nachricht senden"
+      >
+        <Send className="w-4 h-4" aria-hidden="true" />
+        <span className="sr-only">Senden</span>
       </Button>
     </div>
   );

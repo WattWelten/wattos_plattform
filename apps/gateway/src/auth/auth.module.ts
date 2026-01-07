@@ -27,5 +27,3 @@ import { TokenBlacklistService } from './token-blacklist.service';
   exports: [AuthService, TokenBlacklistService],
 })
 export class AuthModule {}
-
-

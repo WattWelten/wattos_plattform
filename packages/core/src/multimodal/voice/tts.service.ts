@@ -91,6 +91,36 @@ export class TtsService {
     
     return chunks;
   }
+
+  /**
+   * Synthesize (Wrapper für textToSpeech)
+   */
+  async synthesize(
+    text: string,
+    options?: SynthesizeOptions,
+  ): Promise<SynthesizeResult> {
+    const sessionId = uuid();
+    const tenantId = 'default';
+    const audioData = await this.textToSpeech(
+      text,
+      sessionId,
+      tenantId,
+      options?.language,
+      options?.voiceId,
+    );
+    return { audioData };
+  }
+
+  /**
+   * Health Check
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      return this.eventBus !== undefined;
+    } catch {
+      return false;
+    }
+  }
 }
 
 /**
@@ -101,5 +131,20 @@ export interface ProsodyConfig {
   pitch?: number; // Tonhöhe (-50 - 50)
   volume?: number; // Lautstärke (0.0 - 1.0)
   emphasis?: string[]; // Wörter die betont werden sollen
+}
+
+/**
+ * Synthesize Options
+ */
+export interface SynthesizeOptions {
+  voiceId?: string;
+  language?: string;
+}
+
+/**
+ * Synthesize Result
+ */
+export interface SynthesizeResult {
+  audioData: Buffer;
 }
 

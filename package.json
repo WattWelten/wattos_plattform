@@ -29,27 +29,42 @@
     "cursor:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-cursor-global.ps1",
     "clean": "turbo run clean && rm -rf node_modules",
     "db:migrate": "cd apps/api && npm run db:migrate",
-    "db:generate": "cd apps/api && npm run db:generate"
+    "db:generate": "cd apps/api && npm run db:generate",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build:gateway": "docker build -f docker/Dockerfile.gateway -t wattos-gateway:latest .",
+    "docker:build:web": "docker build -f docker/Dockerfile.web -t wattos-web:latest --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001/api .",
+    "docker:build:customer-portal": "docker build -f docker/Dockerfile.customer-portal -t wattos-customer-portal:latest --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001/api .",
+    "docker:build:console": "docker build -f docker/Dockerfile.console -t wattos-console:latest --build-arg NEXT_PUBLIC_API_URL=http://localhost:3001/api .",
+    "test:wsl": "powershell -ExecutionPolicy Bypass -File scripts/test-wsl.ps1",
+    "test:wsl:package": "powershell -ExecutionPolicy Bypass -File scripts/test-wsl.ps1",
+    "test:docker": "docker build -f docker/Dockerfile.test -t wattos-test:latest . && docker run --rm -v \"%cd%/test-results:/app/test-results\" wattos-test:latest",
+    "build:wsl": "powershell -ExecutionPolicy Bypass -File scripts/build-wsl.ps1",
+    "build:wsl:package": "powershell -ExecutionPolicy Bypass -File scripts/build-wsl.ps1"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
+    "@eslint/js": "^9.39.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.6",
+    "@types/node-fetch": "^2.6.11",
     "autocannon": "^8.0.0",
     "concurrently": "^9.1.2",
     "cors": "^2.8.5",
+    "esbuild": "^0.25.0",
     "express": "^4.21.2",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.0",
+    "node-fetch": "^3.3.2",
     "prettier": "^3.7.4",
     "ts-node": "^10.9.2",
     "turbo": "^2.6.3",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.9",
-    "esbuild": "^0.25.0",
-    "node-fetch": "^3.3.2",
-    "@types/node-fetch": "^2.6.11"
+    "typescript-eslint": "^8.52.0",
+    "vitest": "^2.1.9"
   },
   "engines": {
     "node": ">=20.9.0",
@@ -58,7 +73,16 @@
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
     "overrides": {
-      "esbuild": ">=0.25.0"
+      "esbuild": ">=0.25.0",
+      "zod": "^4.2.1",
+      "@hookform/resolvers": "^5.2.2",
+      "react-hook-form": "^7.68.0"
     }
+  },
+  "dependencies": {
+    "@next/env": "^16.1.1",
+    "baseline-browser-mapping": "^2.9.11",
+    "browserslist": "^4.28.1",
+    "caniuse-lite": "^1.0.30001762"
   }
 }

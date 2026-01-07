@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { EventBusService } from './bus.service';
 import { EventDomain, ChannelEventSchema } from './types';
 import { v4 as uuid } from 'uuid';
+import { safeJsonStringify } from '@wattweiser/shared';
 
 /**
  * Event Middleware
@@ -13,7 +14,7 @@ import { v4 as uuid } from 'uuid';
 export class EventMiddleware implements NestMiddleware {
   constructor(private readonly eventBus: EventBusService) {}
 
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: Request, _res: Response, next: NextFunction) {
     // Erstelle Session-ID falls nicht vorhanden
     const sessionId = (req.headers['x-session-id'] as string) || uuid();
     req.headers['x-session-id'] = sessionId;
@@ -39,12 +40,12 @@ export class EventMiddleware implements NestMiddleware {
           payload: {
             channel: 'http',
             channelId: req.path,
-            message: JSON.stringify(req.body),
+            message: safeJsonStringify(req.body, { strict: true }),
             direction: 'inbound',
           },
         });
 
-        this.eventBus.emit(event).catch((error) => {
+        this.eventBus.emit(event).catch((_error) => {
           // Nicht blockierend, nur loggen
           // Error wird bereits im EventBusService geloggt
         });

@@ -8,7 +8,7 @@ export class WebhooksController {
 
   constructor(
     private readonly contentEnrichmentService: ContentEnrichmentService,
-    private readonly prisma: PrismaService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   /**
@@ -26,7 +26,7 @@ export class WebhooksController {
       }
 
       // Content für alle Target Groups der aktiven Analysen anreichern
-      const activeAnalyses = await this.prisma.customerAnalysis.findMany({
+      const activeAnalyses = await this.prismaService.client.customerAnalysis.findMany({
         where: {
           tenantId,
           status: { in: ['running', 'completed'] },
@@ -76,7 +76,7 @@ export class WebhooksController {
       }
 
       // Dokument aus DB laden (falls vorhanden)
-      const document = await this.prisma.client.document.findUnique({
+      const document = await this.prismaService.client.document.findUnique({
         where: { id: document_id },
         include: {
           knowledgeSpace: {
@@ -93,7 +93,7 @@ export class WebhooksController {
       }
 
       // Content für alle Target Groups der aktiven Analysen anreichern
-      const activeAnalyses = await this.prisma.customerAnalysis.findMany({
+      const activeAnalyses = await this.prismaService.client.customerAnalysis.findMany({
         where: {
           tenantId: tenantId || document.knowledgeSpace.tenantId,
           status: { in: ['running', 'completed'] },
@@ -105,7 +105,7 @@ export class WebhooksController {
 
       if (activeAnalyses && activeAnalyses.length > 0) {
         // Dokument-Content aus Chunks extrahieren (vereinfacht)
-        const chunks = await this.prisma.client.chunk.findMany({
+        const chunks = await this.prismaService.client.chunk.findMany({
           where: { documentId: document_id },
           select: { content: true },
           take: 10, // Erste 10 Chunks für Content-Anreicherung

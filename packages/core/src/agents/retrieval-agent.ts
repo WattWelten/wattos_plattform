@@ -63,6 +63,11 @@ export class RetrievalAgent implements Agent {
     const { sessionId, tenantId, payload } = event;
     const query = payload.query;
 
+    if (!query) {
+      this.logger.warn('RAG search executed without query');
+      return null;
+    }
+
     this.logger.debug(`Executing RAG search: ${query.substring(0, 50)}...`);
 
     try {

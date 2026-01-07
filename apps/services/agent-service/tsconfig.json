@@ -10,17 +10,28 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": ".",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "composite": false,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "exactOptionalPropertyTypes": false,
+    "typeRoots": ["../../../node_modules/@types", "node_modules/@types"],
+    "paths": {
+      "@wattweiser/shared": ["../../../packages/shared/src"],
+      "@wattweiser/shared/*": ["../../../packages/shared/src/*"]
+    }
   },
-  "rootDir": ".",    "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../../../packages/shared"
+    }
+  ]
 }
-
-

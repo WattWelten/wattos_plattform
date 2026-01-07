@@ -19,7 +19,28 @@ const envSchema = z.object({
 
   // API Gateway
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  CORS_ORIGIN: z.string().optional(),
+  CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  ENABLE_SWAGGER: z
+    .string()
+    .transform((val) => val === 'true')
+    .pipe(z.boolean())
+    .optional(),
+  
+  // OIDC/Keycloak
+  OIDC_AUTHORIZATION_URL: z.string().url().optional(),
+  OIDC_TOKEN_URL: z.string().url().optional(),
+  OIDC_CLIENT_ID: z.string().optional(),
+  OIDC_CLIENT_SECRET: z.string().optional(),
+  OIDC_CALLBACK_URL: z.string().url().optional(),
+  
+  // Cache
+  CACHE_ENABLED: z
+    .string()
+    .transform((val) => val !== 'false')
+    .pipe(z.boolean())
+    .default(true),
+  CACHE_DEFAULT_TTL: z.string().transform(Number).pipe(z.number().int().min(1)).default(3600),
+  CACHE_MAX_SIZE: z.string().transform(Number).pipe(z.number().int().min(1)).default(1000),
 
   // LLM Providers
   OPENAI_API_KEY: z.string().regex(/^sk-/, 'Must be a valid OpenAI API key').optional(),
@@ -63,6 +84,34 @@ const envSchema = z.object({
     .pipe(z.boolean())
     .default(true),
   SANDBOX_ENABLED: z
+    .string()
+    .transform((val) => val === 'true')
+    .pipe(z.boolean())
+    .default(false),
+
+  // Performance & Observability
+  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
+  SERVICE_NAME: z.string().default('wattos-service'),
+  METRICS_ENABLED: z
+    .string()
+    .transform((val) => val !== 'false')
+    .pipe(z.boolean())
+    .default(true),
+  METRICS_MAX_HISTOGRAM_SIZE: z.string().transform(Number).pipe(z.number().int().min(100)).default(1000),
+  
+  // OpenTelemetry (optional)
+  OTEL_ENABLED: z
+    .string()
+    .transform((val) => val === 'true')
+    .pipe(z.boolean())
+    .default(false),
+  OTEL_EXPORTER_TYPE: z.enum(['console', 'jaeger', 'zipkin', 'otlp']).default('console'),
+  OTEL_EXPORTER_JAEGER_ENDPOINT: z.string().url().optional(),
+  OTEL_EXPORTER_ZIPKIN_ENDPOINT: z.string().url().optional(),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
+
+  // Production Settings
+  EXPORT_OPENAPI_SPEC: z
     .string()
     .transform((val) => val === 'true')
     .pipe(z.boolean())

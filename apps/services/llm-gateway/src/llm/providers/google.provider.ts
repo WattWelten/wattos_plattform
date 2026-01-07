@@ -21,7 +21,7 @@ export class GoogleProvider extends BaseProvider {
 
   async createChatCompletion(request: ChatCompletionRequestDto): Promise<ChatCompletionResponse> {
     const url = this.buildUrl(request.model);
-    const payload = {
+    const payload: any = {
       contents: request.messages.map((message) => ({
         role: message.role,
         parts: [{ text: message.content }],
@@ -33,11 +33,42 @@ export class GoogleProvider extends BaseProvider {
       },
     };
 
+    // Tools hinzufügen, falls vorhanden (Google Gemini Format)
+    if (request.tools && request.tools.length > 0) {
+      payload.tools = [
+        {
+          functionDeclarations: request.tools.map((tool) => ({
+            name: tool.function.name,
+            description: tool.function.description,
+            parameters: tool.function.parameters,
+          })),
+        },
+      ];
+    }
+
     const { data } = await this.http.post(url, payload);
-    const text = data?.candidates?.[0]?.content?.parts?.map((part: any) => part.text ?? '').join('\n') ?? '';
+    const candidate = data?.candidates?.[0];
+    const text = candidate?.content?.parts?.map((part: any) => part.text ?? '').join('\n') ?? '';
+
+    // Tool calls aus Google Response extrahieren
+    const toolCalls: any[] = [];
+    if (candidate?.content?.parts) {
+      for (const part of candidate.content.parts) {
+        if (part.functionCall) {
+          toolCalls.push({
+            id: `${Date.now()}-${Math.random()}`,
+            type: 'function',
+            function: {
+              name: part.functionCall.name ?? '',
+              arguments: JSON.stringify(part.functionCall.args ?? {}),
+            },
+          });
+        }
+      }
+    }
 
     return this.buildResponse({
-      id: data?.candidates?.[0]?.id ?? `${Date.now()}`,
+      id: candidate?.id ?? `${Date.now()}`,
       created: Math.floor(Date.now() / 1000),
       model: request.model,
       choices: [
@@ -46,8 +77,9 @@ export class GoogleProvider extends BaseProvider {
           message: {
             role: 'assistant',
             content: text,
+            tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
           },
-          finish_reason: data?.candidates?.[0]?.finishReason ?? null,
+          finish_reason: candidate?.finishReason ?? null,
         },
       ],
       usage: {

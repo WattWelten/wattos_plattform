@@ -167,7 +167,7 @@ export function ConversationsTable({
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className="border-b border-gray-200">
-              {headerGroup.headers.map((header) => (
+              {headerGroup.headers.map((header: any) => (
                 <th
                   key={header.id}
                   scope="col"
@@ -187,7 +187,7 @@ export function ConversationsTable({
               key={row.id}
               className="border-b border-gray-100 hover:bg-gray-50"
             >
-              {row.getVisibleCells().map((cell) => (
+              {row.getVisibleCells().map((cell: any) => (
                 <td key={cell.id} className="py-3 px-4 text-sm">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>

@@ -167,12 +167,115 @@ export class MetricsService implements OnModuleInit {
   }
 
   /**
+   * KPI-Aggregation: Hole aggregierte Metriken für Dashboards
+   */
+  getKpiMetrics(timeWindowMinutes: number = 60): {
+    httpRequests: {
+      total: number;
+      success: number;
+      error: number;
+      avgDuration: number;
+    };
+    llmCalls: {
+      total: number;
+      totalTokens: number;
+      totalCost: number;
+      avgDuration: number;
+    };
+    dbQueries: {
+      total: number;
+      success: number;
+      failed: number;
+      avgDuration: number;
+    };
+    cacheOperations: {
+      hits: number;
+      misses: number;
+      hitRate: number;
+    };
+  } {
+    // HTTP Requests
+    const httpRequestsTotal = this.getCounterValue('http_requests_total', {});
+    const httpRequestsSuccess = this.getCounterValue('http_requests_total', { status_code: 200 });
+    const httpRequestsError = this.getCounterValue('http_requests_total', { status_code: 500 });
+    const httpDurationAvg = this.getHistogramAverage('http_request_duration_ms', {});
+
+    // LLM Calls
+    const llmCallsTotal = this.getCounterValue('llm_calls_total', {});
+    const llmTokensTotal = this.getHistogramSum('llm_tokens_total', {});
+    const llmCostTotal = this.getHistogramSum('llm_cost_usd', {});
+    const llmDurationAvg = this.getHistogramAverage('llm_call_duration_ms', {});
+
+    // DB Queries
+    const dbQueriesTotal = this.getCounterValue('db_queries_total', {});
+    const dbQueriesSuccess = this.getCounterValue('db_queries_total', { success: 'true' });
+    const dbQueriesFailed = this.getCounterValue('db_queries_total', { success: 'false' });
+    const dbDurationAvg = this.getHistogramAverage('db_query_duration_ms', {});
+
+    // Cache Operations
+    const cacheHits = this.getCounterValue('cache_operations_total', { operation: 'hit' });
+    const cacheMisses = this.getCounterValue('cache_operations_total', { operation: 'miss' });
+    const cacheTotal = cacheHits + cacheMisses;
+    const cacheHitRate = cacheTotal > 0 ? (cacheHits / cacheTotal) * 100 : 0;
+
+    return {
+      httpRequests: {
+        total: httpRequestsTotal,
+        success: httpRequestsSuccess,
+        error: httpRequestsError,
+        avgDuration: httpDurationAvg,
+      },
+      llmCalls: {
+        total: llmCallsTotal,
+        totalTokens: llmTokensTotal,
+        totalCost: llmCostTotal,
+        avgDuration: llmDurationAvg,
+      },
+      dbQueries: {
+        total: dbQueriesTotal,
+        success: dbQueriesSuccess,
+        failed: dbQueriesFailed,
+        avgDuration: dbDurationAvg,
+      },
+      cacheOperations: {
+        hits: cacheHits,
+        misses: cacheMisses,
+        hitRate: cacheHitRate,
+      },
+    };
+  }
+
+  /**
    * Metriken zurücksetzen (für Tests)
    */
   reset(): void {
     this.counters.clear();
     this.histograms.clear();
     this.gauges.clear();
+  }
+
+  private getCounterValue(name: string, labels: MetricLabels): number {
+    const key = this.createKey(name, labels);
+    const counterMap = this.counters.get(key);
+    if (!counterMap) return 0;
+    
+    const labelKey = JSON.stringify(labels);
+    return counterMap.get(labelKey) || 0;
+  }
+
+  private getHistogramSum(name: string, labels: MetricLabels): number {
+    const key = this.createKey(name, labels);
+    const values = this.histograms.get(key);
+    if (!values || values.length === 0) return 0;
+    return values.reduce((a, b) => a + b, 0);
+  }
+
+  private getHistogramAverage(name: string, labels: MetricLabels): number {
+    const key = this.createKey(name, labels);
+    const values = this.histograms.get(key);
+    if (!values || values.length === 0) return 0;
+    const sum = values.reduce((a, b) => a + b, 0);
+    return sum / values.length;
   }
 
   private createKey(name: string, labels: MetricLabels): string {

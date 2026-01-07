@@ -98,10 +98,20 @@ export class WorkflowService {
           const conditionResult = step.condition(context);
           if (conditionResult && step.next.length > 0) {
             // Condition erfüllt: Nimm ersten nächsten Step
-            currentStepId = step.next[0];
+            const nextId = step.next[0];
+            if (nextId) {
+              currentStepId = nextId;
+            } else {
+              break;
+            }
           } else if (!conditionResult && step.next.length > 1) {
             // Condition nicht erfüllt: Nimm zweiten nächsten Step (else-Branch)
-            currentStepId = step.next[1];
+            const nextId = step.next[1];
+            if (nextId) {
+              currentStepId = nextId;
+            } else {
+              break;
+            }
           } else {
             // Kein else-Branch: Workflow beenden
             break;
@@ -110,9 +120,19 @@ export class WorkflowService {
           // Condition-Step mit config-basierter Evaluierung
           const conditionResult = this.evaluateCondition(step.config, context);
           if (conditionResult && step.next.length > 0) {
-            currentStepId = step.next[0];
+            const nextId = step.next[0];
+            if (nextId) {
+              currentStepId = nextId;
+            } else {
+              break;
+            }
           } else if (!conditionResult && step.next.length > 1) {
-            currentStepId = step.next[1];
+            const nextId = step.next[1];
+            if (nextId) {
+              currentStepId = nextId;
+            } else {
+              break;
+            }
           } else {
             break;
           }

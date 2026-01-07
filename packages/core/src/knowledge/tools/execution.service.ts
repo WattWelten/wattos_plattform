@@ -134,4 +134,16 @@ export class ToolExecutionService {
       }
     }
   }
+
+  /**
+   * Health Check
+   */
+  async healthCheck(): Promise<boolean> {
+    try {
+      // Prüfe ob Tool Registry verfügbar ist
+      return this.toolRegistry !== undefined;
+    } catch {
+      return false;
+    }
+  }
 }

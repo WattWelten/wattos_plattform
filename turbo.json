@@ -1,17 +1,19 @@
-{
+﻿{
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+      "outputs": [".next/**", "dist/**", "build/**", "!.next/cache/**"],
+      "env": ["NODE_ENV", "NEXT_PUBLIC_*"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^build"],
+      "outputs": []
     },
     "test": {
       "dependsOn": ["^build"],
@@ -38,7 +40,7 @@
       "outputs": ["coverage/**"]
     },
     "type-check": {
-      "dependsOn": ["^type-check"],
+      "dependsOn": ["^build"],
       "outputs": [],
       "cache": false
     },

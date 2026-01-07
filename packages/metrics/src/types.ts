@@ -53,4 +53,3 @@ export interface EventPayload {
   event: Event;
   metadata?: Record<string, unknown> | undefined;
 }
-

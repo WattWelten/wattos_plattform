@@ -8,8 +8,11 @@
     "start": "node dist/main",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest",
-    "type-check": "tsc --noEmit"
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:watch": "vitest watch",
+    "type-check": "tsc --noEmit",
+    "generate:openapi": "ts-node scripts/generate-openapi.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.9",
@@ -20,33 +23,43 @@
     "@nestjs/platform-express": "^11.1.9",
     "@nestjs/swagger": "^11.2.3",
     "@nestjs/throttler": "^6.5.0",
+    "@wattweiser/config": "workspace:*",
     "@wattweiser/db": "workspace:*",
     "@wattweiser/shared": "workspace:*",
+    "axios": "^1.13.2",
+    "compression": "^1.8.1",
+    "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.5",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-oauth2": "^1.8.0",
     "redis": "^5.10.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.14",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.9",
+    "@types/compression": "^1.8.1",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.3",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-oauth2": "^1.8.0",
+    "@eslint/js": "^9.18.0",
     "@typescript-eslint/eslint-plugin": "^8.50.0",
     "@typescript-eslint/parser": "^8.50.0",
+    "typescript-eslint": "^8.50.0",
+    "@vitest/ui": "^2.1.8",
     "eslint": "^9.39.2",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   }
 }

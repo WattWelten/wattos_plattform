@@ -45,7 +45,7 @@ export class MetricsClient {
     viseme: 'MBP' | 'FV' | 'TH' | 'AA',
     timestamp: number,
     conversationId?: string,
-    sessionId?: string,
+    sessionId?: string
   ): Promise<void> {
     const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
@@ -67,7 +67,7 @@ export class MetricsClient {
     voice: string,
     duration: number,
     latency: number,
-    conversationId?: string,
+    conversationId?: string
   ): Promise<void> {
     const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
@@ -89,7 +89,7 @@ export class MetricsClient {
     error: string,
     message: string,
     stack?: string,
-    conversationId?: string,
+    conversationId?: string
   ): Promise<void> {
     const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
@@ -110,7 +110,7 @@ export class MetricsClient {
     metric: string,
     value: number,
     unit?: string,
-    conversationId?: string,
+    conversationId?: string
   ): Promise<void> {
     const payload: Omit<EventPayload, 'tenant_id'> = {
       event: {
@@ -124,4 +124,3 @@ export class MetricsClient {
     await this.logEvent(payload);
   }
 }
-

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+// ThrottlerGuard wird über APP_GUARD Provider in app.module.ts konfiguriert
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { StructuredLoggerService } from '@wattweiser/shared';

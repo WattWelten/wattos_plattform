@@ -3,10 +3,14 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true,
-    "declarationMap": true
+    "typeRoots": ["../../../node_modules/@types", "node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../shared"
+    }
+  ]
 }
 

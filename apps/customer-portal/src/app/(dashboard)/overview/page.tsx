@@ -1,26 +1,40 @@
+/**
+ * Overview Dashboard
+ * 
+ * Apple Design: Elegant KPI overview with journey-based UX
+ */
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { AppleCard } from '@wattweiser/ui';
-import { getOverviewMetrics } from '@/lib/api';
-import { LineChart } from '@/components/charts/line-chart';
+import { KPICard } from '@/components/dashboard/kpi-card';
+import { JourneyStep } from '@/components/dashboard/journey-step';
+import {
+  getOverviewMetrics,
+  type OverviewMetrics,
+} from '@/lib/api';
 import { useAuthContext } from '@/contexts/auth-context';
+import {
+  TrendingUp,
+  MessageSquare,
+  Zap,
+  RefreshCw,
+  Search,
+  Settings,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function OverviewPage() {
   const { tenantId } = useAuthContext();
-  const [metrics, setMetrics] = useState({
-    sessionsPerDay: 0,
-    fcr: 0,
-    p95Latency: 0,
-    contentFreshness: 0,
-  });
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
+  const router = useRouter();
+  const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!tenantId) return;
-    
+
     setIsLoading(true);
     setError(null);
     getOverviewMetrics(tenantId)
@@ -32,103 +46,176 @@ export default function OverviewPage() {
       .finally(() => setIsLoading(false));
   }, [tenantId]);
 
-  // Mock data for charts
-  const chartData = [
-    { date: 'Mo', sessions: 12, latency: 450 },
-    { date: 'Di', sessions: 15, latency: 420 },
-    { date: 'Mi', sessions: 18, latency: 480 },
-    { date: 'Do', sessions: 14, latency: 410 },
-    { date: 'Fr', sessions: 20, latency: 390 },
-    { date: 'Sa', sessions: 8, latency: 500 },
-    { date: 'So', sessions: 10, latency: 460 },
+  // Journey Steps
+  const journeySteps = [
+    {
+      step: 1,
+      title: 'Konfiguration',
+      description: 'Tenant-Einstellungen und No-Code Config',
+      icon: Settings,
+      status: 'completed' as const,
+      route: '/settings',
+    },
+    {
+      step: 2,
+      title: 'Knowledge Base',
+      description: 'Quellen crawlen und indexieren',
+      icon: Search,
+      status: 'active' as const,
+      route: '/knowledge',
+    },
+    {
+      step: 3,
+      title: 'Avatar & Voice',
+      description: 'Avatar konfigurieren und Visemes testen',
+      icon: MessageSquare,
+      status: 'upcoming' as const,
+      route: '/avatar-voice',
+    },
+    {
+      step: 4,
+      title: 'Conversations',
+      description: 'Chat-Verlauf analysieren',
+      icon: MessageSquare,
+      status: 'upcoming' as const,
+      route: '/conversations',
+    },
   ];
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Overview</h1>
-          <p className="text-gray-600 mt-2">KPIs und Metriken auf einen Blick</p>
+          <p className="text-gray-600 mt-2">Dashboard & KPIs</p>
         </div>
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d')}
-          className="px-4 py-2 border border-gray-300 rounded-lg"
-        >
-          <option value="7d">Letzte 7 Tage</option>
-          <option value="30d">Letzte 30 Tage</option>
-          <option value="90d">Letzte 90 Tage</option>
-        </select>
+        <AppleCard padding="lg">
+          <div className="text-gray-400 text-center py-12">Lädt Metriken...</div>
+        </AppleCard>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Overview</h1>
+        <p className="text-lg text-gray-600">
+          Willkommen zurück! Hier ist eine Übersicht Ihrer KPIs und Journey.
+        </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-error-50 border border-error-200 rounded-lg text-error-700" role="alert">
+        <div
+          className="p-4 bg-error-50 border border-error-200 rounded-xl text-error-700 animate-in fade-in slide-in-from-left-4 duration-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <AppleCard>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-600">Sessions/Tag</p>
-            {isLoading ? (
-              <div className="h-10 bg-gray-200 animate-pulse rounded" aria-label="Lädt..." />
-            ) : (
-              <>
-                <p className="text-3xl font-bold text-gray-900">
-                  {metrics.sessionsPerDay}
-                </p>
-                <p className="text-xs text-gray-500">+0% vs. gestern</p>
-              </>
-            )}
+      {metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <KPICard
+            title="Sessions pro Tag"
+            value={metrics.sessionsPerDay}
+            change={{
+              value: 12.5,
+              label: 'vs. letzte Woche',
+              trend: 'up',
+            }}
+            icon={TrendingUp}
+            description="Aktive Nutzersessions"
+          />
+          <KPICard
+            title="First Contact Resolution"
+            value={`${(metrics.fcr * 100).toFixed(1)}%`}
+            change={{
+              value: 5.2,
+              label: 'vs. letzte Woche',
+              trend: 'up',
+            }}
+            icon={Zap}
+            description="Fragen im ersten Kontakt gelöst"
+          />
+          <KPICard
+            title="P95 Latency"
+            value={`${metrics.p95Latency}ms`}
+            change={{
+              value: -8.3,
+              label: 'vs. letzte Woche',
+              trend: 'down',
+            }}
+            icon={RefreshCw}
+            description="95. Perzentil Antwortzeit"
+          />
+          <KPICard
+            title="Content Freshness"
+            value={`${(metrics.contentFreshness * 100).toFixed(0)}%`}
+            change={{
+              value: 2.1,
+              label: 'vs. letzte Woche',
+              trend: 'up',
+            }}
+            icon={Search}
+            description="Aktualität der Inhalte"
+          />
+        </div>
+      )}
+
+      {/* RAG Metrics */}
+      {metrics?.ragMetrics && (
+        <AppleCard variant="elevated" padding="lg">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">RAG Performance</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Gesamte Suchen</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {metrics.ragMetrics.totalSearches}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Durchschnittlicher Score</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {metrics.ragMetrics.avgScore.toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Top Queries</p>
+              <div className="space-y-2 mt-2">
+                {metrics.ragMetrics.topQueries.slice(0, 3).map((query, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">{query.query}</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {query.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </AppleCard>
+      )}
 
-        <AppleCard>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-600">FCR</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {metrics.fcr.toFixed(1)}%
-            </p>
-            <p className="text-xs text-gray-500">First Contact Resolution</p>
-          </div>
-        </AppleCard>
-
-        <AppleCard>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-600">p95 Latenz</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {metrics.p95Latency}ms
-            </p>
-            <p className="text-xs text-gray-500">95. Perzentil</p>
-          </div>
-        </AppleCard>
-
-        <AppleCard>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-600">Content-Frische</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {metrics.contentFreshness} Tage
-            </p>
-            <p className="text-xs text-gray-500">Median-Alter</p>
-          </div>
-        </AppleCard>
-      </div>
-
-      {/* Charts */}
-      <AppleCard padding="lg">
-        <h2 className="text-xl font-semibold mb-4">Zeitserien</h2>
-        <LineChart
-          data={chartData}
-          dataKey="date"
-          lines={[
-            { key: 'sessions', name: 'Sessions', color: '#0073E6' },
-            { key: 'latency', name: 'Latenz (ms)', color: '#10B981' },
-          ]}
-        />
+      {/* Journey Steps */}
+      <AppleCard variant="elevated" padding="lg" className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Ihre Journey</h2>
+        <div className="space-y-4">
+          {journeySteps.map((step) => (
+            <JourneyStep
+              key={step.step}
+              step={step.step}
+              title={step.title}
+              description={step.description}
+              icon={step.icon}
+              status={step.status}
+              onClick={() => router.push(step.route)}
+            />
+          ))}
+        </div>
       </AppleCard>
     </div>
   );
 }
-

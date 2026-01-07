@@ -9,12 +9,21 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src"
   },
   "dependencies": {},
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "@types/node": "^25.0.3",
-    "typescript": "^5.9.3"
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0"
   }
 }
 

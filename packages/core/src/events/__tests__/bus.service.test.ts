@@ -1,10 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+﻿import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { EventBusService } from '../bus.service';
 import { ConfigService } from '@nestjs/config';
 import { Event, EventDomain } from '../types';
-import Redis from 'ioredis';
 
-// Mock ioredis
+// GÃ¼ltige Test-UUIDs
+const TEST_UUID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+const TEST_SESSION_ID = 'ffffffff-ffff-ffff-ffff-fffffffffffe';
+const TEST_TENANT_ID = 'ffffffff-ffff-ffff-ffff-fffffffffffd';
+
+// Mock ioredis - korrektes Mocking mit echten Funktionen
 const mockPublisher = {
   publish: vi.fn().mockResolvedValue(1),
   ping: vi.fn().mockResolvedValue('PONG'),
@@ -21,15 +25,27 @@ const mockSubscriber = {
   on: vi.fn(),
 };
 
-vi.mock('ioredis', () => {
-  return {
-    default: vi.fn().mockImplementation(() => {
-      // Erste Instanz = Publisher, zweite = Subscriber
-      const callCount = (vi.fn() as any).mock.calls?.length || 0;
-      return callCount % 2 === 0 ? mockPublisher : mockSubscriber;
-    }),
-  };
-});
+// Mock Redis-Konstruktor als Funktion
+function MockRedis() {
+  // Diese Funktion wird als Konstruktor verwendet
+  // Wir tracken die Anzahl der Aufrufe Ã¼ber eine Closure
+  if (!MockRedis.callCount) {
+    MockRedis.callCount = 0;
+  }
+  MockRedis.callCount++;
+  
+  // Erste Instanz = Publisher, zweite = Subscriber
+  if (MockRedis.callCount % 2 === 1) {
+    return mockPublisher;
+  } else {
+    return mockSubscriber;
+  }
+}
+
+// Mock als default export
+vi.mock('ioredis', () => ({
+  default: MockRedis,
+}));
 
 describe('EventBusService', () => {
   let eventBus: EventBusService;
@@ -37,6 +53,7 @@ describe('EventBusService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    MockRedis.callCount = 0;
 
     configService = {
       get: vi.fn().mockReturnValue('redis://localhost:6379'),
@@ -85,13 +102,13 @@ describe('EventBusService', () => {
 
     it('should emit event successfully', async () => {
       const event: Event = {
-        id: 'test-id',
+        id: TEST_UUID,
         type: 'knowledge.search.executed',
         domain: EventDomain.KNOWLEDGE,
         action: 'search.executed',
         timestamp: Date.now(),
-        sessionId: 'session-id',
-        tenantId: 'tenant-id',
+        sessionId: TEST_SESSION_ID,
+        tenantId: TEST_TENANT_ID,
         payload: {
           query: 'test query',
         },
@@ -110,8 +127,8 @@ describe('EventBusService', () => {
         type: 'knowledge.search.executed',
         domain: EventDomain.KNOWLEDGE,
         action: 'search.executed',
-        sessionId: 'session-id',
-        tenantId: 'tenant-id',
+        sessionId: TEST_SESSION_ID,
+        tenantId: TEST_TENANT_ID,
         payload: {
           query: 'test query',
         },
@@ -131,13 +148,13 @@ describe('EventBusService', () => {
       (eventBus as any).isConnected = false;
 
       const event: Event = {
-        id: 'test-id',
+        id: TEST_UUID,
         type: 'knowledge.search.executed',
         domain: EventDomain.KNOWLEDGE,
         action: 'search.executed',
         timestamp: Date.now(),
-        sessionId: 'session-id',
-        tenantId: 'tenant-id',
+        sessionId: TEST_SESSION_ID,
+        tenantId: TEST_TENANT_ID,
         payload: {
           query: 'test query',
         },
@@ -260,13 +277,13 @@ describe('EventBusService', () => {
     it('should handle message and call registered handlers', async () => {
       const handler = vi.fn().mockResolvedValue(undefined);
       const event: Event = {
-        id: 'test-id',
+        id: TEST_UUID,
         type: 'knowledge.search.executed',
         domain: EventDomain.KNOWLEDGE,
         action: 'search.executed',
         timestamp: Date.now(),
-        sessionId: 'session-id',
-        tenantId: 'tenant-id',
+        sessionId: TEST_SESSION_ID,
+        tenantId: TEST_TENANT_ID,
         payload: {
           query: 'test query',
         },
@@ -289,13 +306,13 @@ describe('EventBusService', () => {
     it('should handle handler errors gracefully', async () => {
       const handler = vi.fn().mockRejectedValue(new Error('Handler error'));
       const event: Event = {
-        id: 'test-id',
+        id: TEST_UUID,
         type: 'knowledge.search.executed',
         domain: EventDomain.KNOWLEDGE,
         action: 'search.executed',
         timestamp: Date.now(),
-        sessionId: 'session-id',
-        tenantId: 'tenant-id',
+        sessionId: TEST_SESSION_ID,
+        tenantId: TEST_TENANT_ID,
         payload: {
           query: 'test query',
         },
@@ -315,10 +332,3 @@ describe('EventBusService', () => {
     });
   });
 });
-
-
-
-
-
-
-

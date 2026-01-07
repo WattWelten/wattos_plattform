@@ -45,11 +45,32 @@ export class StructuredLoggerService implements LoggerService {
     return this;
   }
 
+  /**
+   * Holt Request-ID aus AsyncLocalStorage oder Request-Objekt
+   */
+  private getRequestId(): string | undefined {
+    // Versuche AsyncLocalStorage (falls initialisiert)
+    if (typeof (global as any).asyncLocalStorage !== 'undefined') {
+      const store = (global as any).asyncLocalStorage.getStore();
+      if (store?.requestId) {
+        return store.requestId;
+      }
+    }
+    return undefined;
+  }
+
   private createChildLogger(additionalFields?: Record<string, any>): pino.Logger {
     const fields: Record<string, any> = {};
     if (this.context) {
       fields.context = this.context;
     }
+    
+    // Füge Request-ID automatisch hinzu, falls verfügbar
+    const requestId = this.getRequestId();
+    if (requestId) {
+      fields.requestId = requestId;
+    }
+    
     return this.logger.child({ ...fields, ...additionalFields });
   }
 

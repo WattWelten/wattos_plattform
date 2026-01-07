@@ -18,7 +18,7 @@ export class KeycloakService {
 
   async login(username: string, password: string) {
     const url = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/token`;
-    
+
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
     params.append('client_id', this.clientId);
@@ -37,7 +37,7 @@ export class KeycloakService {
 
   async getUserInfo(accessToken: string) {
     const url = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/userinfo`;
-    
+
     const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -49,7 +49,7 @@ export class KeycloakService {
 
   async validateToken(token: string) {
     const url = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/token/introspect`;
-    
+
     const params = new URLSearchParams();
     params.append('token', token);
     params.append('client_id', this.clientId);
@@ -64,5 +64,3 @@ export class KeycloakService {
     return response.data.active === true;
   }
 }
-
-

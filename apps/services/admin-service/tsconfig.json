@@ -19,8 +19,11 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "rootDir": ".",
+    "typeRoots": ["../../../node_modules/@types", "node_modules/@types"],
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@wattweiser/shared": ["../../../packages/shared/src"],
+      "@wattweiser/shared/*": ["../../../packages/shared/src/*"]
     }
   },
   "include": ["src/**/*"],

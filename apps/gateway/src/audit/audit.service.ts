@@ -24,14 +24,14 @@ export class AuditService {
     }
   ) {
     const auditEnabled = this.configService.get<boolean>('AUDIT_ENABLED', true);
-    
+
     if (!auditEnabled) {
       return;
     }
 
     try {
       // In Datenbank speichern
-      await this.prisma.auditLog.create({
+      await (this.prisma as any).auditLog.create({
         data: {
           tenantId: options?.tenantId || 'default',
           userId: options?.userId,
@@ -43,9 +43,10 @@ export class AuditService {
           userAgent: options?.userAgent,
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Fallback: Console-Logging bei DB-Fehler
-      this.logger.error(`Failed to write audit log to database: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to write audit log to database: ${errorMessage}`);
       this.logger.debug('[AUDIT]', {
         action,
         details,
@@ -56,5 +57,3 @@ export class AuditService {
     }
   }
 }
-
-

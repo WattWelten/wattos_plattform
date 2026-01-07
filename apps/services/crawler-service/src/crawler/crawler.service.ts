@@ -7,6 +7,7 @@ import { CrawlResult, CrawledPage } from './interfaces/crawled-page.interface';
 import { StartCrawlDto } from './dto/start-crawl.dto';
 import { firstValueFrom } from 'rxjs';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
+import { PrismaService } from '@wattweiser/db';
 
 @Injectable()
 export class CrawlerService {
@@ -20,6 +21,7 @@ export class CrawlerService {
     private readonly httpService: HttpService,
     private readonly crawlerEngine: CrawlerEngineService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
+    private readonly prisma: PrismaService,
   ) {
     this.maxDepth = this.configService.get<number>('crawler.maxDepth', 3);
     this.maxPages = this.configService.get<number>('crawler.maxPages', 100);
@@ -100,9 +102,29 @@ export class CrawlerService {
 
       visitedUrls.add(normalizedUrl);
 
+      // Delta-Crawl: Prüfe ob Seite geändert wurde
+      if (dto.deltaCrawl && !dto.reindex) {
+        const existingHash = await this.getStoredHash(normalizedUrl, dto.tenantId);
+        if (existingHash) {
+          // Seite crawlen und Hash vergleichen
+          const page = await this.crawlerEngine.crawlPage(normalizedUrl, depth);
+          if (page && page.hash === existingHash) {
+            // Seite unverändert, überspringen
+            this.logger.debug(`Page unchanged (delta crawl): ${normalizedUrl}`);
+            continue;
+          }
+          // Seite geändert oder neu, weiter verarbeiten
+        }
+      }
+
       // Seite crawlen
       const page = await this.crawlerEngine.crawlPage(normalizedUrl, depth);
       if (page) {
+        // Hash speichern für Delta-Crawl
+        if (page.hash) {
+          await this.storeHash(normalizedUrl, page.hash, dto.tenantId);
+        }
+
         result.pages.push(page);
         result.crawledPages++;
 
@@ -168,6 +190,81 @@ export class CrawlerService {
    */
   getCrawlsForTenant(tenantId: string): CrawlResult[] {
     return Array.from(this.crawlResults.values()).filter(crawl => crawl.tenantId === tenantId);
+  }
+
+  /**
+   * Gespeicherten Hash für URL abrufen
+   */
+  private async getStoredHash(url: string, tenantId: string): Promise<string | null> {
+    try {
+      const artifact = await this.prisma.client.artifact.findFirst({
+        where: {
+          url,
+          tenantId,
+        },
+        select: {
+          hash: true,
+        },
+      });
+      return artifact?.hash || null;
+    } catch (error: any) {
+      this.logger.warn(`Failed to get stored hash for ${url}: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Hash für URL speichern
+   */
+  private async storeHash(url: string, hash: string, tenantId: string): Promise<void> {
+    try {
+      // Find existing artifact or create new one
+      const existing = await this.prisma.client.artifact.findFirst({
+        where: {
+          url,
+          tenantId,
+        },
+      });
+
+      if (existing) {
+        await this.prisma.client.artifact.update({
+          where: { id: existing.id },
+          data: {
+            hash,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        await this.prisma.client.artifact.create({
+          data: {
+            tenantId,
+            url,
+            hash,
+            name: url,
+            storageType: 'url',
+          },
+        });
+      }
+    } catch (error: any) {
+      // Ignore errors - hash storage is not critical
+      this.logger.debug(`Failed to store hash for ${url}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Reindex: Alle Seiten neu crawlen und indexieren
+   */
+  async reindex(tenantId: string, url?: string): Promise<CrawlResult> {
+    this.logger.log(`Starting reindex for tenant ${tenantId}${url ? ` (${url})` : ''}`);
+    
+    const dto: StartCrawlDto = {
+      url: url || 'https://example.com', // Fallback, sollte in Production nicht vorkommen
+      tenantId,
+      reindex: true, // Force reindex even if unchanged
+      deltaCrawl: false, // Disable delta crawl for reindex
+    };
+
+    return this.startCrawl(dto);
   }
 }
 

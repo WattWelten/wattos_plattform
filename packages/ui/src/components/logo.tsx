@@ -64,10 +64,7 @@ export function Logo({ className, size = 'md', variant = 'full' }: LogoProps) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className={cn('font-bold text-primary-500', textSizeMap[size])}>
-        WattWeiser
-      </span>
+      <span className={cn('font-bold text-primary-500', textSizeMap[size])}>WattWeiser</span>
     </div>
   );
 }
-

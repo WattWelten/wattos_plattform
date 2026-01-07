@@ -5,13 +5,21 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node -e \"require('fs').mkdirSync('dist/styles', {recursive: true}); require('fs').copyFileSync('src/styles/apple-theme.css', 'dist/styles/apple-theme.css')\"",
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src",
     "test": "vitest",
     "test:ui": "vitest --ui"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles/apple-theme.css": "./dist/styles/apple-theme.css"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -27,10 +35,20 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@eslint/js": "^9.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "typescript-eslint": "^8.50.0",
     "jsdom": "^23.0.1",
+    "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.9"
+    "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "react": "^19.2.3",

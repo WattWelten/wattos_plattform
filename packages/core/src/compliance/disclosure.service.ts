@@ -126,7 +126,7 @@ export class DisclosureService {
   /**
    * Disclosure erstellen
    */
-  private createDisclosure(type: DisclosureType, profile: TenantProfile): DisclosureContent {
+  private createDisclosure(type: DisclosureType, _profile: TenantProfile): DisclosureContent {
     const disclosures: Record<DisclosureType, DisclosureContent> = {
       'gov-full': {
         title: 'KI-Assistent Hinweis (Vollständig)',

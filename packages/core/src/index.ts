@@ -7,7 +7,7 @@
 // Events
 export * from './events/types';
 export * from './events/bus.service';
-export * from './events/decorators';
+export { EventHandler, EventEmitter, EVENT_HANDLER_METADATA } from './events/decorators';
 export * from './events/middleware';
 export * from './events/events.module';
 

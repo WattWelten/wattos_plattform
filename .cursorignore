@@ -1,132 +1,392 @@
-# Dependencies - nicht für Kontext benötigt
+﻿# BLACKLIST-STRATEGIE fuer WattOS_Plattform
+# Erweitert für optimale Indexierungs-Performance
+
+# Node.js / JavaScript / TypeScript
 node_modules/
-.pnp
-.pnp.js
-.pnpm-store/
+**/node_modules/
+*.map
+**/*.map
+dist/
+**/dist/
+build/
+**/build/
+.next/
+**/.next/
+.turbo/
+**/.turbo/
+.nuxt/
+**/.nuxt/
+.output/
+**/.output/
+*.tsbuildinfo
+**/*.tsbuildinfo
+.svelte-kit/
+**/.svelte-kit/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+**/*.egg-info/
+.eggs/
+**/.eggs/
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+
+# Git
+.git/
+**/.git/
+
+# Cache und temporäre Dateien
+.cache/
+**/.cache/
+.cursor/
+**/.cursor/
+.cursor-cache/
+**/.cursor-cache/
+.cursor-index/
+**/.cursor-index/
+.temp/
+**/.temp/
+tmp/
+**/tmp/
+*.tmp
+**/*.tmp
+*.temp
+**/*.temp
+*.swp
+**/*.swp
+*.swo
+**/*.swo
+
+# Test und Coverage
+coverage/
+**/coverage/
+.nyc_output/
+**/.nyc_output/
+htmlcov/
+**/htmlcov/
+
+# Logs
+logs/
+**/logs/
+*.log
+**/*.log
+*.log.*
+
+# Reports
+reports/
+**/reports/
+*.report
+
+# Lock-Dateien
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Build-Artefakte
-build/
-dist/
-.next/
-out/
+*.o
+*.a
+*.lib
+*.dll
+*.exe
+*.bin
+*.class
+*.jar
+*.war
+*.ear
+
+# Große Daten-Dateien
+*.parquet
+*.xlsx
+*.xls
+*.xlsm
+*.ods
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+*.gz
+*.bz2
+
+# Datenbanken
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Media-Dateien
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+
+# Modelle & ML-Artefakte
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.pb
+*.tflite
+*.joblib
+models/
+**/models/
+checkpoints/
+**/checkpoints/
+weights/
+**/weights/
+
+# TypeScript generierte Dateien (mit Ausnahmen für Source)
+**/*.d.ts
+!src/**/*.d.ts
+!apps/**/src/**/*.d.ts
+!packages/**/src/**/*.d.ts
+
+# JavaScript generierte Dateien (mit Ausnahmen für Source)
+**/*.js
+!src/**/*.js
+!apps/**/src/**/*.js
+!packages/**/src/**/*.js
+!**/*.test.js
+!**/*.spec.js
+!**/e2e/**/*.js
+
+**/*.jsx
+!src/**/*.jsx
+!apps/**/src/**/*.jsx
+!packages/**/src/**/*.jsx
+!**/*.test.jsx
+!**/*.spec.jsx
+!**/e2e/**/*.jsx
+
+# Weitere Build-Artefakte
+*.min.js
+*.min.css
+*.bundle.js
+*.chunk.js
+*.vendor.js
+*.runtime.js
+webpack-stats.json
+stats.json
+*.stats.json
+.eslintcache
+.stylelintcache
+.vite/
+.rollup/
+.rpt2_cache/
+.rts2_cache/
+.esm-cache/
+
+# Dokumentation (außer wichtige READMEs)
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
+!CONTRIBUTING.md
+docs/
+**/docs/
+
+# E2E Screenshots und Test-Artefakte
+**/e2e-screens/
+**/screenshots/
+**/test-results/
+**/playwright-report/
+**/test-results.json
+
+# Turbo Cache und Build-Info
+.turbo/
+**/.turbo/
+turbo.json
+
+# TypeScript Build Info (alle)
 *.tsbuildinfo
-*.map
-*.js.map
-*.d.ts.map
+**/*.tsbuildinfo
+tsconfig.tsbuildinfo
 
-# Testing & Coverage
-coverage/
-.nyc_output/
+# Lock-Dateien (alle)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+**/pnpm-lock.yaml
+**/package-lock.json
+**/yarn.lock
+
+# OpenAPI/Schema generierte Dateien
+openapi/
+**/openapi/
+schemas/
+**/schemas/
+*.schema.json
+
+# Railway/Vercel Config (nicht kritisch für Code-Indexierung)
+railway.json
+railway.toml
+vercel.json
+nixpacks.toml
+
+# Scripts (optional - nur wenn sehr viele)
+scripts/
+**/scripts/
+
+# Infra (Docker, Railway configs)
+infra/
+**/infra/
+docker-compose.yml
+docker-compose.yaml
+compose.yml
+*.dockerfile
+Dockerfile*
+
+# Docker Build-Artefakte und temporäre Dateien
+.docker/
+**/.docker/
+docker/build/
+**/docker/build/
+docker/build-context/
+**/docker/build-context/
+.dockerignore
+docker/.dockerignore
+**/docker/.dockerignore
+
+# Docker Layer Cache und Build-Cache
+.docker-cache/
+**/.docker-cache/
+docker/cache/
+**/docker/cache/
+.docker-build/
+**/.docker-build/
+docker/build-cache/
+**/docker/build-cache/
+
+# Docker Build-Kontext (temporäre Dateien während Build)
+.docker-context/
+**/.docker-context/
+docker/context/
+**/docker/context/
+*.docker.tmp
+**/*.docker.tmp
+*.docker.temp
+**/*.docker.temp
+
+# Docker Compose Build-Verzeichnisse
+.docker-compose/
+**/.docker-compose/
+docker-compose.build/
+**/docker-compose.build/
+
+# Docker Build-Outputs
+docker/dist/
+**/docker/dist/
+docker/output/
+**/docker/output/
+docker/artifacts/
+**/docker/artifacts/
+
+# Test-Dateien (optional - nur wenn sehr viele)
+tests/
+**/tests/
+**/__tests__/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+vitest.config.*
+vitest.setup.*
+
+# Backup-Dateien
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+# Temporäre Analyse-Dateien
+*.analysis
+*.summary
+*-summary.md
+*-status.md
+*-notes.md
+*-readiness.md
+
+# Fehlende Patterns aus .gitignore
+.pnp
+.pnp.js
 *.lcov
-test-results/
-playwright-report/
-.vitest/
-
-# Logs & Debug
-logs/
-*.log
+out/
+**/out/
+.DS_Store
+*.pem
+.env*.local
+.env.production
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-debug.log*
-lerna-debug.log*
-
-# Environment & Secrets
-.env
-.env*.local
-.env.production
-.env.development
-.env.test
-.railway-secrets.env
-
-# Cache & Temporary
-.cache/
-.turbo/
-.vercel/
-.railway/
-*.tmp
-*.temp
-*.bak
-*.backup
-
-# Analysis Reports & Logs (zu groß für Kontext)
-log-analysis-*/
-railway-analysis-*/
-github-workflow-logs-*.txt
-*.pdf
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-env/
-ENV/
-.venv/
-
-# IDEs (außer .vscode für Settings)
+.env.development.local
+.env.test.local
+.env.production.local
+.vercel
+**/.vercel/
 .idea/
+**/.idea/
+.vscode/
+**/.vscode/
 *.swp
 *.swo
 *~
-
-# OS
-.DS_Store
 Thumbs.db
-desktop.ini
-
-# Large generated files
-pnpm-lock.yaml
-package-lock.json
-yarn.lock
-
-# Reports (können bei Bedarf manuell eingefügt werden)
-reports/*.md
-reports/*.json
-reports/*.txt
-
-# Migration files (zu groß, nicht für Kontext)
-**/migrations/*.sql
-
-# Docker
-Dockerfile*
-docker-compose*.yml
-.dockerignore
-
-# Infrastructure
-infra/
-*.yml
-*.yaml
-!vitest.config.ts
-!vitest.integration.config.ts
-!turbo.json
-!pnpm-workspace.yaml
-!.github/workflows/*.yml
-
-# Scripts (nur bei Bedarf, Setup-Scripts ausgenommen)
-scripts/*.sh
-scripts/*.ps1
-!scripts/setup-cursor-global.ps1
-
-# Documentation (nur bei Bedarf, kann manuell geöffnet werden)
-docs/**/*.md
-!README.md
-
-# TypeScript configs (nur base, nicht alle)
-**/tsconfig.json
-!tsconfig.base.json
-
-# Package files (nur root)
-**/package.json
-!package.json
-
-
+*$py.class
+.Python
+ENV/
+**/ENV/
+.railway/
+**/.railway/
+.railway-secrets.env
+log-analysis-*/
+**/log-analysis-*/
+railway-analysis-*/
+**/railway-analysis-*/
+github-workflow-logs-*.txt
+*-logs-*.txt
+install.log
+playwright-report/
+**/playwright-report/
+test-results/
+**/test-results/
+packages/db/node_modules/.prisma
+**/node_modules/.prisma
+.docker/
+**/.docker/
+.env.local
+.env.*.local

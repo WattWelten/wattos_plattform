@@ -6,9 +6,11 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "dev": "tsc --watch",
     "test": "vitest",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
@@ -16,10 +18,12 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",
     "@wattweiser/avatar": "workspace:*",
+    "@wattweiser/characters": "workspace:*",
     "@wattweiser/db": "workspace:*",
-    "@wattweiser/dms": "workspace:*",
-    "@wattweiser/f13": "workspace:*",
+    "@wattweiser/shared": "workspace:*",
+    "axios": "^1.13.2",
     "ioredis": "^5.8.2",
+    "rxjs": "^7.8.1",
     "uuid": "^13.0.0",
     "zod": "^4.2.1"
   },
@@ -30,6 +34,7 @@
     "vitest": "^4.0.16"
   },
   "peerDependencies": {
-    "@nestjs/common": "^10.0.0"
+    "@nestjs/common": "^10.0.0",
+    "@wattweiser/dms": "workspace:*"
   }
 }

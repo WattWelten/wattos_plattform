@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 import { EventBusService } from '../events/bus.service';
 import { Event, EventDomain } from '../events/types';
 import { ProfileService } from '../profiles/profile.service';
+import { safeJsonParse, safeJsonStringify } from '@wattweiser/shared';
 
 /**
  * Replay Session
@@ -26,7 +29,7 @@ export class AuditReplayService {
   private readonly logger = new Logger(AuditReplayService.name);
   private eventHistory: Map<string, Event[]> = new Map(); // sessionId -> events (In-Memory Cache)
   private replaySessions: Map<string, ReplaySession> = new Map(); // replayId -> session
-  private readonly redis: Redis;
+  private readonly redis?: Redis;
   private readonly useRedis: boolean;
   private readonly maxHistorySize: number = 1000;
 
@@ -39,8 +42,8 @@ export class AuditReplayService {
     const redisUrl = this.configService.get<string>('REDIS_URL');
     this.useRedis = !!redisUrl;
     
-    if (this.useRedis) {
-      this.redis = new Redis(redisUrl!, {
+    if (this.useRedis && redisUrl) {
+      this.redis = new Redis(redisUrl, {
         maxRetriesPerRequest: null,
       });
       this.logger.log('Audit Replay Service: Redis enabled for event history');
@@ -73,14 +76,14 @@ export class AuditReplayService {
     this.eventHistory.set(sessionId, history);
 
     // Redis Persistierung (wenn aktiviert)
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       try {
         // Nutze Redis Streams für Event-History
         await this.redis.xadd(
           `events:history:${sessionId}`,
           '*',
           'event',
-          JSON.stringify(event),
+          safeJsonStringify(event, { strict: true }),
         );
         
         // TTL setzen (30 Tage)
@@ -110,18 +113,19 @@ export class AuditReplayService {
     let history: Event[] = [];
 
     // Versuche zuerst aus Redis zu laden (wenn aktiviert)
-    if (this.useRedis) {
+    if (this.useRedis && this.redis) {
       try {
         const streamKey = `events:history:${sessionId}`;
         const streamData = await this.redis.xrange(streamKey, '-', '+', 'COUNT', 10000);
         
-        history = streamData.map(([id, fields]) => {
+        history = (streamData as unknown as Array<[string, Array<[string, string]>]>).map((item) => {
+          const [_id, fields] = item;
           const eventField = fields.find(([key]) => key === 'event');
           if (eventField) {
-            return JSON.parse(eventField[1]) as Event;
+            return safeJsonParse<Event>(eventField[1], { strict: true });
           }
           return null;
-        }).filter((e): e is Event => e !== null);
+        }).filter((e: Event | null): e is Event => e !== null);
         
         this.logger.debug(`Loaded ${history.length} events from Redis for session: ${sessionId}`);
       } catch (error: unknown) {
@@ -230,6 +234,8 @@ export class AuditReplayService {
     // Events sequenziell emittieren (mit Zeit-Delay)
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
+      if (!event) continue;
+      
       const nextEvent = events[i + 1];
 
       // Emit Event

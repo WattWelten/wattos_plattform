@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
+import axios from 'axios';
 import { AvatarRepoClient } from './avatar-repo.client';
 import { GLBProcessorService } from './glb-processor.service';
 import { AvaturnAdapterService } from './avaturn-adapter.service';
@@ -16,7 +16,6 @@ export class AvatarService {
   private readonly config: AvatarConfig;
 
   constructor(
-    private readonly httpService: HttpService,
     private readonly avatarRepo: AvatarRepoClient,
     // @ts-expect-error - Unused but required by DI
     private readonly _glbProcessor: GLBProcessorService,
@@ -66,7 +65,7 @@ export class AvatarService {
       let finalGlbUrl = avatarResult.glbUrl;
       if (this.config.avatarRepoUrl) {
         try {
-          const glbResponse = await this.httpService.axiosRef.get(avatarResult.glbUrl, {
+          const glbResponse = await axios.get(avatarResult.glbUrl, {
             responseType: 'arraybuffer',
           });
           const glbBuffer = Buffer.from(glbResponse.data);

@@ -45,9 +45,9 @@ describe('DMSService', () => {
 
   describe('getDocument', () => {
     it('should throw error when DMS API is not implemented', async () => {
-      await expect(
-        dmsService.getDocument('tenant-1', 'doc-123'),
-      ).rejects.toThrow('DMS document fetch not yet implemented');
+      await expect(dmsService.getDocument('tenant-1', 'doc-123')).rejects.toThrow(
+        'DMS document fetch not yet implemented'
+      );
     });
 
     it('should include document ID in error message', async () => {
@@ -63,7 +63,7 @@ describe('DMSService', () => {
   describe('getDocumentContent', () => {
     it('should throw error when DMS API is not implemented', async () => {
       await expect(dmsService.getDocumentContent('doc-123')).rejects.toThrow(
-        'DMS document content fetch not yet implemented',
+        'DMS document content fetch not yet implemented'
       );
     });
 
@@ -175,11 +175,6 @@ describe('DMSService', () => {
     });
   });
 });
-
-
-
-
-
 
 
 

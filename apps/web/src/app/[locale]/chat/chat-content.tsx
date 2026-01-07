@@ -142,9 +142,55 @@ export default function ChatPageContent() {
         />
       )}
 
-      {/* Main Chat Area */}
+      {/* Main Chat Area with 9:16 Layout */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
+        {/* Avatar Section (oben) - 9:16 Aspect Ratio */}
+        <div
+          className="relative w-full"
+          style={{
+            aspectRatio: '9/16',
+            maxHeight: '56.25vh', // 9/16 = 56.25%
+          }}
+          role="region"
+          aria-label="Avatar Anzeige"
+        >
+          {/* CSS-Mask-Fade: Sanfter Übergang zum Chat */}
+          <div
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+            }}
+            aria-hidden="true"
+          />
+          
+          {/* Avatar Scene Placeholder */}
+          <div className="w-full h-full bg-gradient-to-b from-blue-50 to-gray-50 flex items-center justify-center">
+            <div className="text-center text-gray-400">
+              <MessageSquare className="w-16 h-16 mx-auto mb-2" />
+              <p className="text-sm">Avatar wird geladen...</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Section (unten) */}
+        <div
+          className="flex-1 flex flex-col min-h-0 overflow-hidden relative"
+          role="region"
+          aria-label="Chat Bereich"
+        >
+          {/* CSS-Mask-Fade: Sanfter Übergang vom Avatar */}
+          <div
+            className="absolute top-0 left-0 right-0 h-8 pointer-events-none z-10"
+            style={{
+              maskImage: 'linear-gradient(to bottom, transparent 0%, black 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 100%)',
+              background: 'linear-gradient(to bottom, rgba(249, 250, 251, 0) 0%, rgba(249, 250, 251, 1) 100%)',
+            }}
+            aria-hidden="true"
+          />
+          
+          {/* Header */}
         <header className="border-b p-4 bg-white">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -210,9 +256,10 @@ export default function ChatPageContent() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="border-t p-4 bg-white">
-          <ChatInput onSend={handleSendMessage} disabled={!isConnected} />
+          {/* Input */}
+          <div className="border-t p-4 bg-white">
+            <ChatInput onSend={handleSendMessage} disabled={!isConnected} />
+          </div>
         </div>
       </div>
 

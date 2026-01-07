@@ -1,4 +1,4 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 
 /**
  * Market Types
@@ -40,6 +40,7 @@ export const ComplianceConfigSchema = z.object({
   aiAct: z.boolean(),
   disclosure: z.boolean(),
   retentionDays: z.number().min(1).max(3650), // 1 Tag bis 10 Jahre
+  piiRedaction: z.boolean().optional(),
 });
 
 export type ComplianceConfig = z.infer<typeof ComplianceConfigSchema>;
@@ -58,6 +59,13 @@ export const FeatureFlagsSchema = z.object({
   whatsapp: z.boolean(),
   telegram: z.boolean().optional(),
   sms: z.boolean().optional(),
+  ragEnabled: z.boolean().optional(),
+  defaultKnowledgeSpaceId: z.string().optional(),
+  defaultModel: z.string().optional(),
+  defaultProvider: z.string().optional(),
+  temperature: z.number().optional(),
+  maxTokens: z.number().optional(),
+  defaultCharacterRole: z.string().optional(), // z.B. 'kaya' für Kaya Character
 });
 
 export type FeatureFlags = z.infer<typeof FeatureFlagsSchema>;

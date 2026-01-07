@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import axios, { AxiosInstance } from 'axios';
 import * as fs from 'fs';
 import { AvatarConfig, defaultAvatarConfig } from './config';
 import { GLBProcessorService } from './glb-processor.service';
@@ -14,13 +13,22 @@ import { GLBProcessorService } from './glb-processor.service';
 export class AvaturnAdapterService {
   private readonly logger = new Logger(AvaturnAdapterService.name);
   private readonly config: AvatarConfig;
+  private readonly httpClient: AxiosInstance;
 
   constructor(
-    private readonly httpService: HttpService,
     private readonly glbProcessor: GLBProcessorService,
     config?: Partial<AvatarConfig>,
   ) {
     this.config = { ...defaultAvatarConfig, ...config };
+    const headers: Record<string, string> = {};
+    if (this.config.avaturnApiKey) {
+      headers['Authorization'] = `Bearer ${this.config.avaturnApiKey}`;
+    }
+    this.httpClient = axios.create({
+      baseURL: this.config.avaturnApiUrl || '',
+      timeout: 60000,
+      headers,
+    });
   }
 
   /**
@@ -66,14 +74,11 @@ export class AvaturnAdapterService {
       formData.append('enableMorphs', String(options?.enableMorphs !== false));
       formData.append('enableRigs', String(options?.enableRigs !== false));
 
-      const response = await firstValueFrom(
-        this.httpService.post(`${this.config.avaturnApiUrl}/api/v1/avatars/create`, formData, {
-          headers: {
-            'Authorization': `Bearer ${this.config.avaturnApiKey}`,
-            ...formData.getHeaders(), // Wichtig: Headers von FormData verwenden
-          },
-        }),
-      );
+      const response = await this.httpClient.post('/api/v1/avatars/create', formData, {
+        headers: {
+          ...formData.getHeaders(), // Wichtig: Headers von FormData verwenden
+        },
+      });
 
       const avatarId = response.data.avatarId;
       const glbUrl = response.data.glbUrl;
@@ -114,9 +119,7 @@ export class AvaturnAdapterService {
   private async optimizeAvatarGLB(glbUrl: string, avatarId: string): Promise<string> {
     try {
       // GLB herunterladen
-      const glbResponse = await firstValueFrom(
-        this.httpService.get(glbUrl, { responseType: 'arraybuffer' }),
-      );
+      const glbResponse = await axios.get(glbUrl, { responseType: 'arraybuffer' });
       const glbBuffer = Buffer.from(glbResponse.data);
 
       // Temporäre Dateien
@@ -170,9 +173,7 @@ export class AvaturnAdapterService {
 
     try {
       // GLB herunterladen
-      const glbResponse = await firstValueFrom(
-        this.httpService.get(glbUrl, { responseType: 'arraybuffer' }),
-      );
+      const glbResponse = await axios.get(glbUrl, { responseType: 'arraybuffer' });
       const glbBuffer = Buffer.from(glbResponse.data);
 
       // Temporäre Datei

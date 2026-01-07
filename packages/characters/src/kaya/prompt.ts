@@ -34,6 +34,3 @@ Deine Kernkompetenzen:
 - Ratsinformationen und Sitzungen
 
 Du hilfst Bürgern dabei, schnell die richtigen Informationen zu finden und die richtigen Ansprechpartner zu kontaktieren.`;
-
-
-
