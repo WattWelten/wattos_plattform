@@ -9,9 +9,9 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "dev:mvp": "turbo run dev --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service",
+    "dev:mvp": "turbo run dev --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service --filter=@wattweiser/admin-service --filter=@wattweiser/tool-service --filter=@wattweiser/llm-gateway",
     "build": "turbo run build",
-    "build:mvp": "turbo run build --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service",
+    "build:mvp": "turbo run build --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service --filter=@wattweiser/admin-service --filter=@wattweiser/tool-service --filter=@wattweiser/llm-gateway",
     "test": "turbo run test",
     "test:unit": "turbo run test:unit",
     "test:integration": "turbo run test:integration",
