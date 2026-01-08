@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 
 // Optional: MetricsService from @wattweiser/shared (if available)
 type MetricsService = {
-  recordDbQuery: (action: string, duration: number, success: boolean) => void;
+  recordDbQuery: (operation: string, duration: number, success: boolean) => void;
 };
 
 /**
@@ -37,17 +37,27 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     });
     
     // Prisma Middleware für automatische Metrics-Collection
+    this.setupQueryLogging();
+  }
+
+  /**
+   * Setup Query Logging Middleware
+   * Wird separat aufgerufen um zirkuläre Dependencies zu vermeiden
+   */
+  private setupQueryLogging(): void {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - $use wird nach Prisma-Generierung verfügbar sein
     (this.client as any).$use(async (params: any, next: any) => {
       const start = Date.now();
+      const operation = `${params.model || 'unknown'}.${params.action || 'unknown'}`;
+      
       try {
         const result = await next(params);
         const duration = Date.now() - start;
         
         // Metrics Tracking
         if (this.metricsService) {
-          this.metricsService.recordDbQuery(params.action, duration, true);
+          this.metricsService.recordDbQuery(operation, duration, true);
         }
         
         return result;
@@ -56,7 +66,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
         
         // Metrics Tracking für Fehler
         if (this.metricsService) {
-          this.metricsService.recordDbQuery(params.action, duration, false);
+          this.metricsService.recordDbQuery(operation, duration, false);
         }
         
         throw error;

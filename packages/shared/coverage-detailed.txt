@@ -1,0 +1,292 @@
+﻿
+> @wattweiser/shared@0.1.0 test:coverage C:\cursor.ai\WattOS_Plattform\packages\shared
+> vitest run --coverage
+
+
+ RUN  v4.0.16 C:/cursor.ai/WattOS_Plattform/packages/shared
+      Coverage enabled with v8
+
+ Ô£ô src/utils/__tests__/tool-serializer.extended.test.ts (23 tests | 3 skipped) 17ms
+ Ô£ô src/__tests__/utils.test.ts (24 tests | 1 skipped) 129ms
+ Ô£ô src/utils/__tests__/index.test.ts (8 tests) 229ms
+ Ô£ô src/utils/__tests__/tool-serializer.test.ts (10 tests) 15ms
+[Nest] 45704  - 08.01.2026, 10:03:47    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: Connection refused
+[Nest] 38388  - 08.01.2026, 10:03:47     LOG [FeatureFlagService] Feature Flag Service connected to Redis
+[Nest] 38388  - 08.01.2026, 10:03:47     LOG [FeatureFlagService] Loaded 2 feature flags from Redis
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+node.exe : [Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature 
+flags: Connection failed
+In C:\Users\henni\AppData\Roaming\npm\pnpm.ps1:24 Zeichen:5
++     & "node$exe"  "$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([Nest] 38388  -...nnection failed:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 41976  - 08.01.2026, 10:03:47    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: fail
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 41976  - 08.01.2026, 10:03:47     LOG [RetryService] Operation succeeded after 2 attempts
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 41976  - 08.01.2026, 10:03:47    WARN [RetryService] Operation failed (attempt 1/2), retrying in 100ms: persistent failure
+[Nest] 41976  - 08.01.2026, 10:03:47   ERROR [RetryService] Operation failed after 2 attempts: persistent failure
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 41976  - 08.01.2026, 10:03:47    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: Unknown error
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] REDIS_URL not set, feature flags will use in-memory storage
+[Nest] 41976  - 08.01.2026, 10:03:47     LOG [RetryService] Operation succeeded after 2 attempts
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] GET /api/test - 400 - Invalid input
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] Object(6) {
+  requestId: 'req-1767863027830-mpucoqlbi',
+  statusCode: 400,
+  path: '/api/test',
+  method: 'GET',
+  userAgent: undefined,
+  ip: '127.0.0.1'
+}
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to get feature flag error-flag: Redis error
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to get feature flag invalid-flag: Unexpected 
+token 'i', "invalid-json" is not valid JSON
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] GET /api/test - 404 - Resource not found
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] Object(6) {
+  requestId: 'req-1767863027837-fccrw4uj6',
+  statusCode: 404,
+  path: '/api/test',
+  method: 'GET',
+  userAgent: undefined,
+  ip: '127.0.0.1'
+}
+[Nest] 38388  - 08.01.2026, 10:03:47     LOG [FeatureFlagService] Feature flag redis-flag updated
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to set feature flag error-flag: Redis error
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to set feature flag delete-flag: Redis error
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 38388  - 08.01.2026, 10:03:47     LOG [FeatureFlagService] Feature flag delete-flag deleted
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] GET /api/test - 400 - Error message
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] Object(6) {
+  requestId: 'req-1767863027839-xt0wt39hl',
+  statusCode: 400,
+  path: '/api/test',
+  method: 'GET',
+  userAgent: undefined,
+  ip: '127.0.0.1'
+}
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to set feature flag error-delete-flag: Redis 
+error
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to delete feature flag error-delete-flag: 
+Redis error
+[Nest] 38388  - 08.01.2026, 10:03:47   ERROR [FeatureFlagService] Failed to connect to Redis for feature flags: 
+Connection failed
+[Nest] 38388  - 08.01.2026, 10:03:47    WARN [FeatureFlagService] Feature flags will use in-memory storage
+[Nest] 41224  - 08.01.2026, 10:03:47   ERROR [HttpExceptionFilter] Unhandled error: Generic error
+[Nest] 41224  - 08.01.2026, 10:03:47   ERROR [HttpExceptionFilter] Error: Generic error
+    at C:/cursor.ai/WattOS_Plattform/packages/shared/src/filters/__tests__/http-exception.filter.test.ts:58:25
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/vitest/dist/chunks/traces.U4xDYhzZ.js:115:27)
+    at trace 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1653:12)
+[Nest] 41224  - 08.01.2026, 10:03:47   ERROR [HttpExceptionFilter] Object(3) {
+  requestId: 'req-1767863027839-mgjw33yc2',
+  path: '/api/test',
+  method: 'GET'
+}
+[Nest] 41224  - 08.01.2026, 10:03:47   ERROR [HttpExceptionFilter] GET /api/test - 500 - Generic error
+[Nest] 41224  - 08.01.2026, 10:03:47   ERROR [HttpExceptionFilter] Error: Generic error
+    at C:/cursor.ai/WattOS_Plattform/packages/shared/src/filters/__tests__/http-exception.filter.test.ts:58:25
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/vitest/dist/chunks/traces.U4xDYhzZ.js:115:27)
+    at trace 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest 
+(file:///C:/cursor.ai/WattOS_Plattform/packages/shared/node_modules/@vitest/runner/dist/index.js:1653:12)
+[Nest] 41224  - 08.01.2026, 10:03:47   ERROR [HttpExceptionFilter] Object(6) {
+  requestId: 'req-1767863027839-mgjw33yc2',
+  statusCode: 500,
+  path: '/api/test',
+  method: 'GET',
+  userAgent: undefined,
+  ip: '127.0.0.1'
+}
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] GET /api/test - 400 - Error
+[Nest] 41224  - 08.01.2026, 10:03:47    WARN [HttpExceptionFilter] Object(6) {
+  requestId: 'test-request-id-123',
+  statusCode: 400,
+  path: '/api/test',
+  method: 'GET',
+  userAgent: undefined,
+  ip: '127.0.0.1'
+}
+[Nest] 45704  - 08.01.2026, 10:03:47     LOG [RetryService] Operation succeeded after 2 attempts
+[Nest] 45704  - 08.01.2026, 10:03:47    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: Timeout
+ Ô£ô src/resilience/__tests__/retry.service.test.ts (5 tests) 43ms
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+ Ô£ô src/feature-flags/__tests__/feature-flag.service.extended.test.ts (22 tests | 2 skipped) 40ms
+ Ô£ô src/filters/__tests__/http-exception.filter.test.ts (5 tests) 23ms
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47     LOG [CacheService] Redis cache connected
+[Nest] 37912  - 08.01.2026, 10:03:47    WARN [CacheService] Cache set error for key key1: Redis unavailable
+[Nest] 37912  - 08.01.2026, 10:03:47    WARN [CacheService] Cache clear error: this.redisClient.flushDb is not a function
+[Nest] 37912  - 08.01.2026, 10:03:47    WARN [CacheService] Cache get error for key key1: Redis unavailable
+ Ô£ô src/observability/__tests__/health.service.extended.test.ts (17 tests) 23ms
+ Ô£ô src/observability/__tests__/logger.service.test.ts (7 tests) 34ms
+ Ô£ô src/cache/__tests__/cache.service.test.ts (12 tests) 32ms
+ Ô£ô src/observability/__tests__/metrics.service.test.ts (13 tests) 14ms
+[Nest] 33904  - 08.01.2026, 10:03:47    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:47    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:47    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:47    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 45704  - 08.01.2026, 10:03:47     LOG [RetryService] Operation succeeded after 2 attempts
+[Nest] 45704  - 08.01.2026, 10:03:47    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: Server error
+[Nest] 33904  - 08.01.2026, 10:03:47    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:47    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:48    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:48    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:48    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 33904  - 08.01.2026, 10:03:48    WARN [CacheService] Redis URL not configured, using in-memory cache only
+[Nest] 25924  - 08.01.2026, 10:03:48    WARN [FeatureFlagService] All feature flags disabled via emergency kill switch
+ Ô£ô src/cache/__tests__/cache.service.extended.test.ts (9 tests) 37ms
+ Ô£ô src/feature-flags/__tests__/feature-flag.service.test.ts (13 tests) 17ms
+ Ô£ô src/utils/__tests__/safe-json.test.ts (9 tests) 15ms
+[Nest] 45704  - 08.01.2026, 10:03:48     LOG [RetryService] Operation succeeded after 2 attempts
+[Nest] 45704  - 08.01.2026, 10:03:48   DEBUG [RetryService] Error is not retryable: Bad request
+ Ô£ô src/utils/__tests__/sanitize.test.ts (15 tests) 10ms
+[Nest] 45704  - 08.01.2026, 10:03:48   DEBUG [RetryService] Error is not retryable: Non-retryable error
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: Custom retryable error
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 5 failures
+[Nest] 42560  - 08.01.2026, 10:03:48    WARN [CircuitBreakerService] Circuit test-circuit is OPEN, rejecting request
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 42560  - 08.01.2026, 10:03:48    WARN [CircuitBreakerService] Circuit test-circuit is OPEN, rejecting request
+[Nest] 42560  - 08.01.2026, 10:03:48    WARN [CircuitBreakerService] Circuit test-circuit is OPEN, rejecting request
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit transitioning to HALF_OPEN
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit transitioning to HALF_OPEN
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit test-circuit closed after successful recovery
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit transitioning to HALF_OPEN
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit test-circuit closed after successful recovery
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit transitioning to HALF_OPEN
+[Nest] 42560  - 08.01.2026, 10:03:49     LOG [CircuitBreakerService] Circuit test-circuit closed after successful recovery
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 5 failures
+[Nest] 42560  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Circuit test-circuit reset
+[Nest] 42560  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 5 failures
+[Nest] 42560  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Circuit test-circuit reset
+[Nest] 45704  - 08.01.2026, 10:03:48     LOG [RetryService] Operation succeeded after 2 attempts
+[Nest] 45704  - 08.01.2026, 10:03:48   DEBUG [RetryService] Error is not retryable: Non-retryable
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 1/5), retrying in 100ms: Retryable
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 2/5), retrying in 200ms: Retryable
+[Nest] 45704  - 08.01.2026, 10:03:48     LOG [RetryService] Operation succeeded after 3 attempts
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 1/5), retrying in 100ms: Retryable
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 2/5), retrying in 200ms: Retryable
+ Ô£ô src/resilience/__tests__/circuit-breaker.service.test.ts (10 tests) 31ms
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 3/5), retrying in 400ms: Retryable
+[Nest] 29964  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 29964  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 29964  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Circuit test-circuit reset
+[Nest] 29964  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Cleaned up unused circuit: old-circuit
+[Nest] 29964  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 29964  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 4/5), retrying in 800ms: Retryable
+[Nest] 45704  - 08.01.2026, 10:03:48     LOG [RetryService] Operation succeeded after 5 attempts
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 1/2), retrying in 100ms: Retryable
+ Ôåô src/observability/__tests__/logger.service.extended.test.ts (0 test)
+[Nest] 45704  - 08.01.2026, 10:03:48   ERROR [RetryService] Operation failed after 2 attempts: Retryable
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 1/3), retrying in 100ms: Retryable
+[Nest] 29964  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Circuit transitioning to HALF_OPEN
+[Nest] 29964  - 08.01.2026, 10:03:48   ERROR [CircuitBreakerService] Circuit test-circuit opened after 3 failures
+[Nest] 45704  - 08.01.2026, 10:03:48    WARN [RetryService] Operation failed (attempt 2/3), retrying in 200ms: Retryable
+[Nest] 29964  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Circuit transitioning to HALF_OPEN
+[Nest] 29964  - 08.01.2026, 10:03:48     LOG [CircuitBreakerService] Circuit test-circuit closed after successful recovery
+ Ô£ô src/resilience/__tests__/circuit-breaker.service.extended.test.ts (7 tests) 334ms
+ Ô£ô src/observability/__tests__/health.controller.test.ts (7 tests) 8ms
+[Nest] 45704  - 08.01.2026, 10:03:48     LOG [RetryService] Operation succeeded after 3 attempts
+[Nest] 45704  - 08.01.2026, 10:03:48   DEBUG [RetryService] Error is not retryable: Unknown error
+[Nest] 45704  - 08.01.2026, 10:03:48   DEBUG [RetryService] Error is not retryable: Unknown error
+ Ô£ô src/observability/__tests__/request-id.middleware.test.ts (3 tests) 11ms
+ Ô£ô src/resilience/__tests__/retry.service.extended.test.ts (15 tests) 956ms
+       Ô£ô should use config values when options not provided  309ms
+ Ô£ô src/service-discovery/__tests__/service-discovery.service.test.ts (12 tests) 11ms
+ Ô£ô src/__tests__/base.exception.test.ts (15 tests) 9ms
+ Ô£ô src/observability/__tests__/request-logging.middleware.test.ts (3 tests) 8ms
+
+ Test Files  23 passed | 1 skipped (24)
+      Tests  258 passed | 6 skipped (264)
+   Start at  10:03:45
+   Duration  2.95s (transform 4.26s, setup 0ms, import 17.89s, tests 2.05s, environment 6ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    84.9 |    72.62 |   89.67 |   85.05 |                   
+ cache             |   70.58 |     62.9 |   73.91 |   70.39 |                   
+  cache.service.ts |   70.58 |     62.9 |   73.91 |   70.39 | ...52,359,370-371 
+ exceptions        |     100 |      100 |     100 |     100 |                   
+  ....exception.ts |     100 |      100 |     100 |     100 |                   
+ feature-flags     |   97.59 |    92.85 |     100 |   98.75 |                   
+  ...ag.service.ts |   97.59 |    92.85 |     100 |   98.75 | 58                
+ filters           |   85.71 |    58.53 |     100 |   85.36 |                   
+  ...ion.filter.ts |   85.71 |    58.53 |     100 |   85.36 | 61-66             
+ observability     |   85.76 |    64.02 |   88.13 |   86.71 |                   
+  ...controller.ts |     100 |      100 |     100 |     100 |                   
+  ...th.service.ts |   88.37 |       85 |   83.33 |   88.09 | ...51-152,199-200 
+  ...er.service.ts |   69.56 |    41.93 |   85.71 |   68.88 | ...95-103,151-156 
+  ...cs.service.ts |   86.53 |     61.7 |   86.36 |   90.32 | ...63,270,277-278 
+  ...middleware.ts |   72.72 |       50 |     100 |      70 | 25-27             
+  ...middleware.ts |     100 |    54.54 |     100 |     100 | 23-53             
+ resilience        |   93.63 |    82.08 |     100 |   93.33 |                   
+  ...er.service.ts |   91.89 |    77.77 |     100 |   91.66 | 53-54,147,202-204 
+  retry.service.ts |   97.22 |    87.09 |     100 |   96.96 | 84                
+ service-discovery |    85.1 |    89.47 |   57.14 |   84.78 |                   
+  ...ry.service.ts |    85.1 |    89.47 |   57.14 |   84.78 | ...23,131,142-149 
+ utils             |   83.23 |    74.37 |     100 |   82.92 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  safe-json.ts     |   82.14 |    71.42 |     100 |   82.14 | 56,107-113        
+  sanitize.ts      |   72.72 |    71.42 |     100 |   72.72 | 13-17             
+  ...serializer.ts |   79.79 |    73.04 |     100 |   79.79 | ...57,276,290,294 
+-------------------|---------|----------|---------|---------|-------------------

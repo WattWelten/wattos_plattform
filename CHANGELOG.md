@@ -5,6 +5,55 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 ## [Unreleased]
 
 
+### Sprint 4: Database Query Optimization (2026-01-08)
+
+#### ✅ PrismaService Query-Tracking
+- ✅ **Automatisches Query-Tracking** über Prisma Middleware
+  - Query-Dauer wird gemessen
+  - Erfolg/Fehler wird getrackt
+  - Metriken werden an MetricsService gesendet
+- ✅ **PrismaService Integration** mit MetricsService
+  - Optional Injection von MetricsService
+  - Automatische Metriken-Collection für alle Queries
+
+#### ✅ Index-Optimierung
+- ✅ **Composite Indizes hinzugefügt** für häufige Query-Patterns
+  - LLMUsage: 	enantId + createdAt (DESC), 	enantId + provider + createdAt (DESC)
+  - ConversationMessage: conversationId + createdAt (ASC)
+  - Feedback: userId + createdAt (DESC), userId + type
+  - AgentRun: gentId + status + createdAt (DESC), userId + status + createdAt (DESC)
+  - CustomerAnalysis: 	enantId + status + createdAt (DESC)
+  - KBArticle: 	enantId + status + publishedAt (DESC)
+- ✅ **Migration erstellt** (20260108000000_add_query_optimization_indexes.sql)
+
+#### ✅ Query-Caching
+- ✅ **Cache-Strategien dokumentiert**
+  - Read-Through, Write-Through, Write-Back, Refresh-Ahead
+  - Cache-TTL-Empfehlungen für verschiedene Datentypen
+- ✅ **Bestehende Cache-Implementierung** analysiert und dokumentiert
+
+#### ✅ Database-Metriken
+- ✅ **Automatische Metriken-Collection** über Prisma Middleware
+  - db_queries_total: Anzahl aller Queries
+  - db_query_duration_ms: Query-Dauer (Histogram)
+  - db_query_duration_ms_avg: Durchschnittliche Query-Dauer
+
+#### ✅ Dokumentation
+- ✅ **Database-Optimierungs-Guide** (docs/DATABASE_OPTIMIZATION.md)
+  - Index-Optimierung
+  - Query-Performance-Analyse
+  - Query-Caching-Strategien
+  - Best Practices
+  - Troubleshooting
+
+#### 📊 Status
+- **Query-Tracking**: Automatisch aktiviert wenn MetricsService verfügbar
+- **Indizes**: 9 neue Composite Indizes hinzugefügt
+- **Migration**: Bereit für Deployment
+- **Dokumentation**: Vollständig
+
+
+
 ### Sprint 3: Prometheus Production Setup (2026-01-08)
 
 #### ✅ Prometheus Server Konfiguration
@@ -206,6 +255,55 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - Automatisierte CI/CD
 
 ## [Unreleased]
+
+
+### Sprint 4: Database Query Optimization (2026-01-08)
+
+#### ✅ PrismaService Query-Tracking
+- ✅ **Automatisches Query-Tracking** über Prisma Middleware
+  - Query-Dauer wird gemessen
+  - Erfolg/Fehler wird getrackt
+  - Metriken werden an MetricsService gesendet
+- ✅ **PrismaService Integration** mit MetricsService
+  - Optional Injection von MetricsService
+  - Automatische Metriken-Collection für alle Queries
+
+#### ✅ Index-Optimierung
+- ✅ **Composite Indizes hinzugefügt** für häufige Query-Patterns
+  - LLMUsage: 	enantId + createdAt (DESC), 	enantId + provider + createdAt (DESC)
+  - ConversationMessage: conversationId + createdAt (ASC)
+  - Feedback: userId + createdAt (DESC), userId + type
+  - AgentRun: gentId + status + createdAt (DESC), userId + status + createdAt (DESC)
+  - CustomerAnalysis: 	enantId + status + createdAt (DESC)
+  - KBArticle: 	enantId + status + publishedAt (DESC)
+- ✅ **Migration erstellt** (20260108000000_add_query_optimization_indexes.sql)
+
+#### ✅ Query-Caching
+- ✅ **Cache-Strategien dokumentiert**
+  - Read-Through, Write-Through, Write-Back, Refresh-Ahead
+  - Cache-TTL-Empfehlungen für verschiedene Datentypen
+- ✅ **Bestehende Cache-Implementierung** analysiert und dokumentiert
+
+#### ✅ Database-Metriken
+- ✅ **Automatische Metriken-Collection** über Prisma Middleware
+  - db_queries_total: Anzahl aller Queries
+  - db_query_duration_ms: Query-Dauer (Histogram)
+  - db_query_duration_ms_avg: Durchschnittliche Query-Dauer
+
+#### ✅ Dokumentation
+- ✅ **Database-Optimierungs-Guide** (docs/DATABASE_OPTIMIZATION.md)
+  - Index-Optimierung
+  - Query-Performance-Analyse
+  - Query-Caching-Strategien
+  - Best Practices
+  - Troubleshooting
+
+#### 📊 Status
+- **Query-Tracking**: Automatisch aktiviert wenn MetricsService verfügbar
+- **Indizes**: 9 neue Composite Indizes hinzugefügt
+- **Migration**: Bereit für Deployment
+- **Dokumentation**: Vollständig
+
 
 
 ### Sprint 3: Prometheus Production Setup (2026-01-08)
