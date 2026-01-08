@@ -313,10 +313,9 @@ export class DMSService {
           `Failed to upload document to Ingestion Service: ${error.message}`,
           error.stack,
         );
-        // Fallback: Return placeholder ID if ingestion fails
-        const documentId = `dms-${document.id}`;
-        this.logger.warn(`Using fallback document ID: ${documentId}`);
-        return documentId;
+        // Re-throw error instead of returning fallback ID
+        // Caller should handle the error appropriately
+        throw new Error(`Document ingestion failed: ${error.message}`);
       }
     } catch (error: any) {
       this.logger.error(`Failed to import document ${document.id}: ${error.message}`, error.stack);

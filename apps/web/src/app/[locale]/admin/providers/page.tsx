@@ -30,13 +30,7 @@ export default function AdminProvidersPage() {
         return await response.json();
       } catch (error) {
         console.error('Providers fetch error:', error);
-        // Fallback zu Mock-Daten
-        return [
-          { id: 'openai', name: 'OpenAI', type: 'openai', status: 'active', hasApiKey: true },
-          { id: 'anthropic', name: 'Anthropic', type: 'anthropic', status: 'inactive', hasApiKey: false },
-          { id: 'azure', name: 'Azure OpenAI', type: 'azure', status: 'active', hasApiKey: true },
-          { id: 'ollama', name: 'Ollama', type: 'ollama', status: 'active', hasApiKey: false },
-        ];
+        throw error; // Lassen React Query das Error-Handling übernehmen
       }
     },
   });

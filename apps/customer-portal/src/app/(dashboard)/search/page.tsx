@@ -2,11 +2,29 @@
 
 import { AppleCard } from '@wattweiser/ui';
 
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { AppleCard } from '@wattweiser/ui';
+
 export default function SearchPage() {
-  // Mock data - should come from API
-  const mrrAtK = 0.85;
-  const recall = 0.92;
-  const topSources = 12;
+  const { data: searchMetrics, isLoading } = useQuery({
+    queryKey: ['search-metrics'],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/rag/metrics`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch search metrics');
+      }
+      return await response.json();
+    },
+  });
+
+  const mrrAtK = searchMetrics?.mrrAtK ?? 0;
+  const recall = searchMetrics?.recall ?? 0;
+  const topSources = searchMetrics?.topSources ?? 0;
 
   return (
     <div className="space-y-6">

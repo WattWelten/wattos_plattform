@@ -61,10 +61,27 @@ export default function LabPage() {
   };
 
   // Test Audio laden
-  const handleTestAudio = () => {
-    // Placeholder: In Production würde hier eine echte Audio-URL verwendet
-    setAudioUrl('/audio/test-tts.mp3');
-    setIsPlaying(true);
+  const handleTestAudio = async () => {
+    try {
+      // In Production: Audio von TTS-Service laden
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/voice/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'Test audio for lab environment', voice: 'default' }),
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        setIsPlaying(true);
+      } else {
+        console.error('Failed to load test audio');
+      }
+    } catch (error) {
+      console.error('Error loading test audio:', error);
+    }
   };
 
   return (

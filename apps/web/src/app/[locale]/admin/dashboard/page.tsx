@@ -27,43 +27,8 @@ export default function AdminDashboardPage() {
         }
         return await response.json();
       } catch (error) {
-        // Fallback zu Mock-Daten bei Fehler
         console.error('Dashboard fetch error:', error);
-        return {
-          stats: {
-            activeUsers: 1234,
-            chatsToday: 567,
-            llmCalls: 12345,
-            totalCost: 1234.56,
-            growth: {
-              users: 12,
-              chats: 8,
-              calls: 15,
-              cost: -5,
-            },
-          },
-          usageData: [
-            { date: 'Mo', chats: 120, agents: 45, rag: 89 },
-            { date: 'Di', chats: 145, agents: 52, rag: 102 },
-            { date: 'Mi', chats: 132, agents: 48, rag: 95 },
-            { date: 'Do', chats: 167, agents: 61, rag: 118 },
-            { date: 'Fr', chats: 189, agents: 73, rag: 134 },
-            { date: 'Sa', chats: 98, agents: 32, rag: 67 },
-            { date: 'So', chats: 76, agents: 28, rag: 54 },
-          ],
-          providerData: [
-            { provider: 'OpenAI', usage: 45, cost: 567.89 },
-            { provider: 'Azure', usage: 30, cost: 345.12 },
-            { provider: 'Anthropic', usage: 20, cost: 234.56 },
-            { provider: 'Ollama', usage: 5, cost: 0 },
-          ],
-          costDistribution: [
-            { name: 'Chat', value: 45 },
-            { name: 'RAG', value: 30 },
-            { name: 'Agents', value: 20 },
-            { name: 'Embeddings', value: 5 },
-          ],
-        };
+        throw error; // Lassen React Query das Error-Handling übernehmen
       }
     },
     refetchInterval: autoRefresh ? 30000 : false, // Alle 30 Sekunden aktualisieren
