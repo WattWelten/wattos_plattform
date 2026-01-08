@@ -239,12 +239,12 @@ export class AnalyticsService {
     });
 
     const total = feedback.length;
-    const positive = feedback.filter((f) => f.rating === 'positive').length;
-    const negative = feedback.filter((f) => f.rating === 'negative').length;
+    const positive = feedback.filter((f) => f.rating && f.rating >= 4).length;
+    const negative = feedback.filter((f) => f.rating && f.rating <= 2).length;
     const reasons = feedback
-      .filter((f) => f.reason)
+      .filter((f) => f.metadata && typeof f.metadata === 'object' && 'reason' in f.metadata)
       .reduce((acc, f) => {
-        const reason = f.reason || 'unknown';
+        const reason = (f.metadata as any).reason || 'unknown';
         acc[reason] = (acc[reason] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);

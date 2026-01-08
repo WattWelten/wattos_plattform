@@ -48,11 +48,14 @@ export class FeedbackController {
     const created = await this.prisma.feedback.create({
       data: {
         userId,
-        messageId,
-        conversationId,
-        rating: feedback.rating,
-        reason: feedback.reason,
-        comment: feedback.comment,
+        type: 'rating',
+        rating: feedback.rating === 'positive' ? 5 : 1,
+        content: feedback.comment || feedback.reason || undefined,
+        metadata: {
+          messageId,
+          conversationId,
+          reason: feedback.reason,
+        },
       },
     });
 
