@@ -1,14 +1,17 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { HealthController as SharedHealthController, HealthService, MetricsService } from '@wattweiser/shared';
 
+/**
+ * Health Check Controller
+ * Verwendet den standardisierten HealthController aus @wattweiser/shared
+ */
 @Controller('health')
-export class HealthController {
-  @Get()
-  getHealth() {
-    return {
-      status: 'ok',
-      service: 'voice-service',
-      timestamp: new Date().toISOString(),
-    };
+export class HealthController extends SharedHealthController {
+  constructor(
+    healthService: HealthService,
+    metricsService?: MetricsService,
+  ) {
+    super(healthService, metricsService);
   }
 }
 
