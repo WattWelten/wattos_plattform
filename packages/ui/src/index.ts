@@ -62,6 +62,9 @@ export type { CommandKProps, CommandKItemProps } from './components/CommandK';
 export { AppShell } from './components/AppShell';
 export type { AppShellProps } from './components/AppShell';
 
+export { Toast, ToastTitle, ToastDescription } from './components/Toast';
+export type { ToastProps } from './components/Toast';
+
 // Utils
 export { cn } from './lib/utils';
 
