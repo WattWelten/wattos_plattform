@@ -4,6 +4,24 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Sprint 1: Health Check Migration (2026-01-06)
+
+#### ✅ MVP Services migriert
+- ✅ **chat-service:** Bereits migriert (verwendet HealthController direkt)
+- ✅ **agent-service:** Bereits migriert (verwendet HealthController direkt)
+- ✅ **rag-service:** Bereits migriert (verwendet HealthController direkt)
+- ✅ **admin-service:** Bereits migriert (verwendet HealthController direkt)
+- ✅ **tool-service:** Migriert - ObservabilityModule und HealthController hinzugefügt
+
+#### ✅ Weitere Services migriert
+- ✅ **summary-service:** Migriert - ObservabilityModule und HealthController hinzugefügt
+- ✅ **dashboard-service:** Migriert - ObservabilityModule, ServiceDiscoveryModule und HealthController hinzugefügt
+- ✅ **metaverse-service:** Migriert - ObservabilityModule und HealthController hinzugefügt
+
+#### 📊 Fortschritt
+- **Migriert:** 13/25 Services (52%)
+- **Verbleibend:** 12 Services (davon einige mit leeren app.module.ts - möglicherweise nicht vollständig implementiert)
+
 ### Nächste Schritte Implementiert (2026-01-06)
 
 #### ✅ Health Check Migration für alle Services
