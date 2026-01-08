@@ -284,7 +284,12 @@ export function validateToolSerialization(tools: any[]): boolean {
  */
 export function validateRequestWithTools(requestBody: any): boolean {
   try {
-    if (requestBody.tools && Array.isArray(requestBody.tools)) {
+    if (requestBody.tools) {
+      // Wenn tools vorhanden ist, muss es ein Array sein
+      if (!Array.isArray(requestBody.tools)) {
+        return false;
+      }
+      // Validiere die Tools
       if (!validateToolSerialization(requestBody.tools)) {
         return false;
       }

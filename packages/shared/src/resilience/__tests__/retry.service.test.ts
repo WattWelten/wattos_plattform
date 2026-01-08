@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { RetryService } from '../retry.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -60,12 +60,18 @@ describe('RetryService', () => {
         maxAttempts: 2,
         initialDelay: 100,
         retryableErrors: () => true,
-      });
+      }).catch(err => err);
+
+      // Wait for the promise to settle
+
+      // Ensure the promise rejection is handled
 
       // Fast-forward time for all retries
       await vi.advanceTimersByTimeAsync(300);
 
-      await expect(resultPromise).rejects.toThrow('persistent failure');
+      const result = await resultPromise;
+      expect(result).toBeInstanceOf(Error);
+      expect((result as Error).message).toBe('persistent failure');
       expect(operation).toHaveBeenCalledTimes(2);
     });
 

@@ -83,8 +83,13 @@ export class FeatureFlagService implements OnModuleInit {
     }
 
     // Check user segments
-    if (flag.userSegments && userId && !flag.userSegments.includes(userId)) {
-      return false;
+    if (flag.userSegments) {
+      if (!userId) {
+        return false; // Can't match user segments without userId
+      }
+      if (!flag.userSegments.includes(userId)) {
+        return false;
+      }
     }
 
     // Check percentage rollout

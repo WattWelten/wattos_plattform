@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HealthService } from '../health.service';
 import { ConfigService } from '@nestjs/common';
 
@@ -25,7 +25,7 @@ describe('HealthService - Extended Tests', () => {
     vi.clearAllMocks();
     mockConfigService = {
       get: vi.fn((key: string, defaultValue?: any) => {
-        if (key === 'REDIS_URL') return undefined;
+        if (key === 'REDIS_URL') return 'redis://localhost:6379';
         if (key === 'LLM_GATEWAY_URL') return 'http://localhost:3009';
         if (key === 'RAG_SERVICE_URL') return 'http://localhost:3007';
         return defaultValue;
@@ -33,7 +33,7 @@ describe('HealthService - Extended Tests', () => {
     };
 
     mockPrisma = {
-      '': vi.fn().mockResolvedValue([{ '?column?': 1 }]),
+      $queryRaw: vi.fn().mockResolvedValue([{ '?column?': 1 }]),
     };
   });
 
@@ -60,7 +60,7 @@ describe('HealthService - Extended Tests', () => {
     });
 
     it('should return down when database query fails', async () => {
-      mockPrisma[''] = vi.fn().mockRejectedValue(new Error('Database connection failed'));
+      mockPrisma.$queryRaw = vi.fn().mockRejectedValue(new Error('Database connection failed'));
       healthService = new HealthService(mockConfigService as ConfigService, mockPrisma);
       const result = await healthService.checkDatabase();
       expect(result.status).toBe('down');
@@ -69,7 +69,7 @@ describe('HealthService - Extended Tests', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockPrisma[''] = vi.fn().mockRejectedValue('String error');
+      mockPrisma.$queryRaw = vi.fn().mockRejectedValue('String error');
       healthService = new HealthService(mockConfigService as ConfigService, mockPrisma);
       const result = await healthService.checkDatabase();
       expect(result.status).toBe('down');
@@ -172,7 +172,7 @@ describe('HealthService - Extended Tests', () => {
     });
 
     it('should return unhealthy when database is down', async () => {
-      mockPrisma[''] = vi.fn().mockRejectedValue(new Error('DB error'));
+      mockPrisma.$queryRaw = vi.fn().mockRejectedValue(new Error('DB error'));
       (global.fetch as any) = vi.fn().mockResolvedValue({ ok: true, status: 200 });
       healthService = new HealthService(mockConfigService as ConfigService, mockPrisma);
       
@@ -201,7 +201,7 @@ describe('HealthService - Extended Tests', () => {
     });
 
     it('should return not_ready when database is down', async () => {
-      mockPrisma[''] = vi.fn().mockRejectedValue(new Error('DB error'));
+      mockPrisma.$queryRaw = vi.fn().mockRejectedValue(new Error('DB error'));
       healthService = new HealthService(mockConfigService as ConfigService, mockPrisma);
       const result = await healthService.readiness();
       expect(result.status).toBe('not_ready');

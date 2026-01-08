@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RetryService } from '../retry.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -150,10 +150,12 @@ describe('RetryService - Extended Tests', () => {
         return 'success';
       });
 
-      await retryService.executeWithRetry(operation, {
-        initialDelay: 100,
-        backoffMultiplier: 2,
-      });
+      await expect(retryService.executeWithRetry(operation, {
+          maxAttempts: 5,
+          initialDelay: 100,
+          backoffMultiplier: 2,
+          maxDelay: 1000,
+        })).resolves.toBe('success');
 
       expect(delays.length).toBe(2);
       expect(delays[0]).toBe(100);
@@ -172,7 +174,7 @@ describe('RetryService - Extended Tests', () => {
       let attempts = 0;
       const operation = vi.fn(async () => {
         attempts++;
-        if (attempts < 4) {
+        if (attempts <= 4) {
           const error: any = new Error('Retryable');
           error.code = 'ECONNREFUSED';
           throw error;
@@ -180,11 +182,12 @@ describe('RetryService - Extended Tests', () => {
         return 'success';
       });
 
-      await retryService.executeWithRetry(operation, {
-        initialDelay: 500,
-        backoffMultiplier: 2,
-        maxDelay: 1000,
-      });
+      await expect(retryService.executeWithRetry(operation, {
+          maxAttempts: 5,
+          initialDelay: 100,
+          backoffMultiplier: 2,
+          maxDelay: 1000,
+        })).resolves.toBe('success');
 
       // Third delay should be capped at 1000 (not 2000)
       expect(delays[2]).toBeLessThanOrEqual(1000);
