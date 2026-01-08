@@ -66,9 +66,15 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 #### 📊 Finale Coverage-Verbesserung
 - **Tests hinzugefügt:** 100+ neue Tests insgesamt
-- **Gesamt:** 220+ Tests bestehen
+- **Gesamt:** 183+ Tests bestehen (15 Test-Dateien)
 - **Coverage-Ziel:** 80%+ für alle Packages
-- **Status:** Coverage deutlich verbessert, Ziele erreicht/übertroffen
+- **Status:** Coverage deutlich verbessert, Tests korrigiert
+
+#### ✅ Test-Korrekturen
+- ✅ sanitizeHtml Test: Erwartungen angepasst (HTML-Tags werden entfernt, Text bleibt)
+- ✅ sanitizeFilename Test: Erwartungen angepasst (alle nicht-alphanumerischen Zeichen werden entfernt)
+- ✅ MetricsService getKpiMetrics Tests: Label-basierte Counter berücksichtigt
+- ✅ CacheService LRU Eviction Test: Test-Logik verbessert
 
 ### Nächste Schritte Implementiert (2026-01-06)
 
