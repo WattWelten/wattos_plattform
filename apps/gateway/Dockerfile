@@ -1,64 +1,59 @@
-# Multi-Stage Build für API Gateway
+# Multi-stage build für Gateway
 FROM node:20-alpine AS base
 
-# Installiere pnpm
-RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
-# Dependencies Stage
-FROM base AS dependencies
-
-# Kopiere Package Files
+# Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/shared/package.json ./packages/shared/
-COPY packages/db/package.json ./packages/db/
-COPY apps/gateway/package.json ./apps/gateway/
+COPY packages ./packages
+COPY apps/gateway ./apps/gateway
 
-# Installiere Dependencies
-RUN pnpm install --frozen-lockfile
+# Dependencies stage
+FROM base AS deps
+RUN pnpm install --frozen-lockfile --prod=false
 
-# Build Stage
-FROM base AS build
-
-# Kopiere alle Source Files
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/packages ./packages
-COPY --from=dependencies /app/apps/gateway/node_modules ./apps/gateway/node_modules
-
-COPY . .
-
-# Build
+# Builder stage
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
 RUN pnpm --filter @wattweiser/gateway build
 
-# Production Stage
-FROM node:20-alpine AS production
+# Runner stage
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Kopiere nur Production Dependencies
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY --from=dependencies /app/packages/db/node_modules ./packages/db/node_modules
+ENV NODE_ENV=production
+ENV PORT=3001
 
-# Kopiere Build Output
-COPY --from=build /app/apps/gateway/dist ./apps/gateway/dist
-COPY --from=build /app/packages/shared/dist ./packages/shared/dist
-COPY --from=build /app/packages/db/dist ./packages/db/dist
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nodejs
 
-# Kopiere Package Files für Runtime
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/shared/package.json ./packages/shared/
-COPY packages/db/package.json ./packages/db/
-COPY apps/gateway/package.json ./apps/gateway/
+# Copy built application
+COPY --from=builder --chown=nodejs:nodejs /app/apps/gateway/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/apps/gateway/package.json ./package.json
 
-# Health Check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health/liveness', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Copy only production dependencies
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
+
+# Copy root package.json for workspace resolution
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+
+USER nodejs
 
 EXPOSE 3001
 
-CMD ["node", "apps/gateway/dist/main"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/api/health/liveness', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+CMD ["node", "dist/main.js"]
 
 
 

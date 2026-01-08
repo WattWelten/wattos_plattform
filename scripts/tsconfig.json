@@ -1,4 +1,5 @@
 {
+  "extends": "../packages/config/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
@@ -8,7 +9,18 @@
     "skipLibCheck": true,
     "strict": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": "..",
+    "paths": {
+      "@wattweiser/db": ["packages/db/src"],
+      "@wattweiser/db/*": ["packages/db/src/*"],
+      "@wattweiser/shared": ["packages/shared/src"],
+      "@wattweiser/shared/*": ["packages/shared/src/*"],
+      "@wattweiser/config": ["packages/config/src"],
+      "@wattweiser/config/*": ["packages/config/src/*"],
+      "@wattweiser/document-processor": ["packages/document-processor/src"],
+      "@wattweiser/document-processor/*": ["packages/document-processor/src/*"]
+    }
   },
   "include": ["*.ts", "*.js"],
   "exclude": ["node_modules"]

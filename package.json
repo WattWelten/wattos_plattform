@@ -12,7 +12,7 @@
     "dev": "turbo run dev",
     "dev:stack": "docker compose -f docker-compose.dev.yml up -d",
     "dev:mvp": "turbo run dev --filter=./apps/web --filter=./apps/gateway --filter=./apps/services/chat-service --filter=./apps/services/agent-service --filter=./apps/services/rag-service --filter=./apps/services/avatar-service --filter=./apps/services/voice-service --filter=./apps/services/crawler-service --filter=./apps/services/admin-service --filter=./apps/services/tool-service --filter=./apps/services/llm-gateway",
-    "seed:dev": "tsx scripts/seed.ts",
+    "seed:dev": "node --import tsx scripts/seed.ts",
     "build": "turbo run build",
     "build:mvp": "turbo run build --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service --filter=@wattweiser/admin-service --filter=@wattweiser/tool-service --filter=@wattweiser/llm-gateway",
     "test": "turbo run test",
@@ -70,6 +70,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node-fetch": "^2.6.13",
+    "@vitest/coverage-v8": "^2.1.9",
     "autocannon": "^8.0.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
@@ -80,12 +81,12 @@
     "node-fetch": "^3.3.2",
     "prettier": "^3.7.4",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "turbo": "^2.7.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.52.0",
-    "vitest": "^2.1.9",
-    "@vitest/coverage-v8": "^2.1.9"
+    "vitest": "^2.1.9"
   },
   "engines": {
     "node": ">=20.9.0",

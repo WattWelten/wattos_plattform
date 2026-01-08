@@ -13,7 +13,7 @@ export interface ModalContentProps extends React.HTMLAttributes<HTMLDivElement> 
 
 const ModalContext = React.createContext<{
   open: boolean;
-  onOpenChange?: (open: boolean) => void;
+  onOpenChange?: ((open: boolean) => void) | undefined;
 }>({ open: false });
 
 const Modal = ({ open = false, onOpenChange, children }: ModalProps) => {
@@ -33,7 +33,7 @@ const Modal = ({ open = false, onOpenChange, children }: ModalProps) => {
   }
 
   return (
-    <ModalContext.Provider value={{ open, onOpenChange }}>
+    <ModalContext.Provider value={{ open, onOpenChange: onOpenChange || undefined }}>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {children}
       </div>
@@ -64,7 +64,6 @@ ModalOverlay.displayName = 'ModalOverlay';
 
 const ModalContent = React.forwardRef<HTMLDivElement, ModalContentProps>(
   ({ className, children, onClose, ...props }, ref) => {
-    const context = React.useContext(ModalContext);
 
     return (
       <>

@@ -7,6 +7,7 @@ import { AuditModule } from './audit/audit.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { DbModule } from './db/db.module';
 import { KnowledgeSpacesModule } from './knowledge-spaces/knowledge-spaces.module';
+import { AgentsModule } from './agents/agents.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { MvpModule } from './mvp/mvp.module';
 import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@wattweiser/shared';
@@ -32,6 +33,7 @@ import configuration from './config/configuration';
     MetricsModule,
     DbModule,
     KnowledgeSpacesModule,
+    AgentsModule,
     FeatureFlagsModule,
     MvpModule,
   ],

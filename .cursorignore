@@ -270,6 +270,9 @@ docker-compose.yaml
 compose.yml
 *.dockerfile
 Dockerfile*
+# Dockerfiles in apps/ erlauben (werden für CI/CD benötigt)
+!apps/**/Dockerfile
+!apps/**/Dockerfile.*
 
 # Docker Build-Artefakte und temporäre Dateien
 .docker/

@@ -13,7 +13,7 @@ export interface CommandKItemProps extends React.HTMLAttributes<HTMLDivElement> 
 
 const CommandKContext = React.createContext<{
   open: boolean;
-  onOpenChange?: (open: boolean) => void;
+  onOpenChange?: ((open: boolean) => void) | undefined;
 }>({ open: false });
 
 const CommandK = ({ open = false, onOpenChange, children }: CommandKProps) => {
@@ -37,7 +37,7 @@ const CommandK = ({ open = false, onOpenChange, children }: CommandKProps) => {
   }
 
   return (
-    <CommandKContext.Provider value={{ open, onOpenChange }}>
+    <CommandKContext.Provider value={{ open, onOpenChange: onOpenChange || undefined }}>
       <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
         <div className="pointer-events-none fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onOpenChange?.(false)} />
         <div className="relative z-50 w-full max-w-2xl">{children}</div>

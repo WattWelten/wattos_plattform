@@ -4,7 +4,8 @@
  * Erstellt Demo-Users, Rollen, Knowledge Spaces und Sample-Content für Top-5-Demos
  */
 
-import { PrismaClient } from '@wattweiser/db';
+// Direct import from Prisma Client (workspace packages not needed for seed script)
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

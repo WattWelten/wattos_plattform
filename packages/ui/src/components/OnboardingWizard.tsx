@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from './Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './Card';
+import { Button } from './Button';
 import { cn } from '../lib/utils';
 
 export interface OnboardingStep {
@@ -44,11 +45,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     onSkip?.();
   };
 
-  if (isCompleted) {
+  if (isCompleted || steps.length === 0) {
     return null;
   }
 
   const currentStepData = steps[currentStep];
+  if (!currentStepData) {
+    return null;
+  }
+
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
