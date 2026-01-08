@@ -1,4 +1,4 @@
-# Prometheus Alerting Rules für WattWeiser Plattform
+﻿# Prometheus Alerting Rules fÃ¼r WattWeiser Plattform
 
 groups:
   - name: wattweiser_service_alerts
@@ -12,7 +12,7 @@ groups:
           component: service
         annotations:
           summary: "Service {{ $labels.job }} ist down"
-          description: "Service {{ $labels.job }} ist seit {{ $for }} nicht erreichbar."
+          description: "Service {{ $labels.job }} ist nicht erreichbar."
 
       - alert: HighErrorRate
         expr: |
@@ -26,7 +26,7 @@ groups:
           component: http
         annotations:
           summary: "Hohe Error-Rate bei {{ $labels.job }}"
-          description: "Error-Rate von {{ $value | humanizePercentage }} ist höher als 5% für {{ $labels.job }}."
+          description: "Error-Rate ist hÃ¶her als 5% fÃ¼r {{ $labels.job }}."
 
       - alert: HighResponseTime
         expr: |
@@ -39,7 +39,7 @@ groups:
           component: performance
         annotations:
           summary: "Hohe Response-Zeit bei {{ $labels.job }}"
-          description: "95. Perzentil Response-Zeit ist {{ $value }}ms für {{ $labels.job }}."
+          description: "95. Perzentil Response-Zeit ist hÃ¶her als 1000ms fÃ¼r {{ $labels.job }}."
 
       - alert: HighLLMCost
         expr: |
@@ -50,7 +50,7 @@ groups:
           component: llm
         annotations:
           summary: "Hohe LLM-Kosten"
-          description: "LLM-Kosten in der letzten Stunde: ${{ $value }}."
+          description: "LLM-Kosten in der letzten Stunde sind hÃ¶her als 100 USD."
 
       - alert: LowCacheHitRate
         expr: |
@@ -65,4 +65,4 @@ groups:
           component: cache
         annotations:
           summary: "Niedrige Cache-Hit-Rate bei {{ $labels.job }}"
-          description: "Cache-Hit-Rate ist {{ $value | humanizePercentage }} für {{ $labels.job }}."
+          description: "Cache-Hit-Rate ist niedriger als 50% fÃ¼r {{ $labels.job }}."
