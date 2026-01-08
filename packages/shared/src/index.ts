@@ -2,6 +2,7 @@ export * from './types';
 export * from './constants';
 export * from './utils';
 export * from './filters/http-exception.filter';
+export * from './exceptions/base.exception';
 export * from './feature-flags/feature-flag.service';
 export * from './feature-flags/feature-flag.module';
 export * from './observability/logger.service';
