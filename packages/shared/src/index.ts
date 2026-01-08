@@ -14,6 +14,8 @@ export * from './observability/request-id.middleware';
 export * from './observability/request-logging.middleware';
 export * from './observability/opentelemetry.service';
 export * from './observability/sentry';
+export * from './feature-flags/feature-flags.service';
+export * from './feature-flags/feature-flags.module';
 export * from './resilience/circuit-breaker.service';
 export * from './resilience/retry.service';
 export * from './resilience/resilience.module';
