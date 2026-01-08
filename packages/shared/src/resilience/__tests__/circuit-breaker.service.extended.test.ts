@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CircuitBreakerService, CircuitState } from '../circuit-breaker.service';
 import { ConfigService } from '@nestjs/config';
 

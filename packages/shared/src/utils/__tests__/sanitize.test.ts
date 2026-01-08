@@ -1,11 +1,11 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { sanitizeHtml, sanitizeText, validateUrl, sanitizePath } from '../sanitize';
 
 describe('sanitizeHtml', () => {
   it('should sanitize HTML on server-side (no window)', () => {
     const html = '<script>alert(\"xss\")</script><p>Safe content</p>';
     const result = sanitizeHtml(html);
-    // Server-side entfernt alle HTML-Tags, aber behÃ¤lt Text-Inhalt
+    // Server-side entfernt alle HTML-Tags, aber behält Text-Inhalt
     expect(result).toContain('Safe content');
     expect(result).not.toContain('<script>');
     expect(result).not.toContain('<p>');

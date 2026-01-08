@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CacheService } from '../cache.service';
 import { ConfigService } from '@nestjs/config';
 

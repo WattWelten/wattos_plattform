@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { sleep, retry, formatBytes, sanitizeFilename, generateId, isValidEmail } from '../index';
 
 describe('sleep', () => {
@@ -45,7 +45,7 @@ describe('formatBytes', () => {
 
 describe('sanitizeFilename', () => {
   it('should sanitize filename', () => {
-    // sanitizeFilename entfernt alle nicht-alphanumerischen Zeichen auÃŸer Bindestrich
+    // sanitizeFilename entfernt alle nicht-alphanumerischen Zeichen außer Bindestrich
     // Der Punkt wird auch entfernt, daher wird .txt zu _txt
     expect(sanitizeFilename('test file.txt')).toContain('test');
     expect(sanitizeFilename('test file.txt')).toContain('file');

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { safeJsonParse, safeJsonStringify, safeJsonParseWithSchema } from '../safe-json';
 import { z } from 'zod';
 

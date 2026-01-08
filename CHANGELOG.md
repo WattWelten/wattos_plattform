@@ -4,6 +4,60 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+
+### Sprint 3: Prometheus Production Setup (2026-01-08)
+
+#### ✅ Prometheus Server Konfiguration
+- ✅ **Prometheus Konfiguration erstellt** (infra/prometheus/prometheus.yml)
+  - Scrape-Konfiguration für alle Services (Gateway, Chat, Agent, RAG, Avatar, Voice, Crawler, Admin, Tool, LLM Gateway, etc.)
+  - Scrape-Interval: 15 Sekunden
+  - Retention: 30 Tage
+  - Metrics-Path: /health/metrics für alle Services
+
+#### ✅ Alerting Rules
+- ✅ **Alerting Rules definiert** (infra/prometheus/alerts/wattweiser-alerts.yml)
+  - ServiceDown Alert (Critical)
+  - HighErrorRate Alert (Warning)
+  - HighResponseTime Alert (Warning)
+  - HighLLMCost Alert (Warning)
+  - LowCacheHitRate Alert (Info)
+
+#### ✅ Alertmanager Konfiguration
+- ✅ **Alertmanager Setup** (infra/alertmanager/alertmanager.yml)
+  - Routing nach Severity (Critical, Warning, Info)
+  - Grouping nach Alertname, Cluster, Service
+  - Webhook-Konfiguration für Benachrichtigungen
+
+#### ✅ Docker Compose Setup
+- ✅ **Monitoring Stack** (docker-compose.monitoring.yml)
+  - Prometheus Container (Port 9090)
+  - Grafana Container (Port 3000)
+  - Alertmanager Container (Port 9093)
+  - Persistent Volumes für Daten
+  - Health Checks für alle Services
+
+#### ✅ Grafana Provisioning
+- ✅ **Grafana Datasource** (infra/grafana/provisioning/datasources/prometheus.yml)
+  - Automatische Prometheus-Datasource-Konfiguration
+  - Proxy-Access zu Prometheus
+- ✅ **Grafana Dashboard Provisioning** (infra/grafana/provisioning/dashboards/dashboards.yml)
+  - Automatisches Laden von Dashboards aus /var/lib/grafana/dashboards
+
+#### ✅ Dokumentation
+- ✅ **Prometheus-Integration-Guide** (docs/PROMETHEUS_INTEGRATION.md)
+  - Setup-Anleitung
+  - Konfiguration
+  - Beispiel-Queries
+  - Troubleshooting
+  - Best Practices
+
+#### 📊 Status
+- **Prometheus**: Konfiguriert für alle Services
+- **Grafana**: Provisioning eingerichtet
+- **Alertmanager**: Routing und Benachrichtigungen konfiguriert
+- **Dokumentation**: Vollständig
+
+
 ### Sprint 1: Health Check Migration (2026-01-06)
 
 #### ✅ MVP Services migriert
@@ -152,6 +206,60 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - Automatisierte CI/CD
 
 ## [Unreleased]
+
+
+### Sprint 3: Prometheus Production Setup (2026-01-08)
+
+#### ✅ Prometheus Server Konfiguration
+- ✅ **Prometheus Konfiguration erstellt** (infra/prometheus/prometheus.yml)
+  - Scrape-Konfiguration für alle Services (Gateway, Chat, Agent, RAG, Avatar, Voice, Crawler, Admin, Tool, LLM Gateway, etc.)
+  - Scrape-Interval: 15 Sekunden
+  - Retention: 30 Tage
+  - Metrics-Path: /health/metrics für alle Services
+
+#### ✅ Alerting Rules
+- ✅ **Alerting Rules definiert** (infra/prometheus/alerts/wattweiser-alerts.yml)
+  - ServiceDown Alert (Critical)
+  - HighErrorRate Alert (Warning)
+  - HighResponseTime Alert (Warning)
+  - HighLLMCost Alert (Warning)
+  - LowCacheHitRate Alert (Info)
+
+#### ✅ Alertmanager Konfiguration
+- ✅ **Alertmanager Setup** (infra/alertmanager/alertmanager.yml)
+  - Routing nach Severity (Critical, Warning, Info)
+  - Grouping nach Alertname, Cluster, Service
+  - Webhook-Konfiguration für Benachrichtigungen
+
+#### ✅ Docker Compose Setup
+- ✅ **Monitoring Stack** (docker-compose.monitoring.yml)
+  - Prometheus Container (Port 9090)
+  - Grafana Container (Port 3000)
+  - Alertmanager Container (Port 9093)
+  - Persistent Volumes für Daten
+  - Health Checks für alle Services
+
+#### ✅ Grafana Provisioning
+- ✅ **Grafana Datasource** (infra/grafana/provisioning/datasources/prometheus.yml)
+  - Automatische Prometheus-Datasource-Konfiguration
+  - Proxy-Access zu Prometheus
+- ✅ **Grafana Dashboard Provisioning** (infra/grafana/provisioning/dashboards/dashboards.yml)
+  - Automatisches Laden von Dashboards aus /var/lib/grafana/dashboards
+
+#### ✅ Dokumentation
+- ✅ **Prometheus-Integration-Guide** (docs/PROMETHEUS_INTEGRATION.md)
+  - Setup-Anleitung
+  - Konfiguration
+  - Beispiel-Queries
+  - Troubleshooting
+  - Best Practices
+
+#### 📊 Status
+- **Prometheus**: Konfiguriert für alle Services
+- **Grafana**: Provisioning eingerichtet
+- **Alertmanager**: Routing und Benachrichtigungen konfiguriert
+- **Dokumentation**: Vollständig
+
 
 ### Quick Wins: Code-Qualität & Standardisierung (2026-01-06)
 

@@ -1,0 +1,68 @@
+﻿# Prometheus Alerting Rules fÃ¼r WattWeiser Plattform
+
+groups:
+  - name: wattweiser_service_alerts
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~".*-service|gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: service
+        annotations:
+          summary: "Service {{ $labels.job }} ist down"
+          description: "Service {{ $labels.job }} ist seit {{ $for }} nicht erreichbar."
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status_code=~"5.."}[5m])) by (service, job)
+          /
+          sum(rate(http_requests_total[5m])) by (service, job)
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: http
+        annotations:
+          summary: "Hohe Error-Rate bei {{ $labels.job }}"
+          description: "Error-Rate von {{ $value | humanizePercentage }} ist hÃ¶her als 5% fÃ¼r {{ $labels.job }}."
+
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_ms_bucket[5m])) by (le, service, job)
+          ) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Hohe Response-Zeit bei {{ $labels.job }}"
+          description: "95. Perzentil Response-Zeit ist {{ $value }}ms fÃ¼r {{ $labels.job }}."
+
+      - alert: HighLLMCost
+        expr: |
+          sum(increase(llm_cost_usd_sum[1h])) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: llm
+        annotations:
+          summary: "Hohe LLM-Kosten"
+          description: "LLM-Kosten in der letzten Stunde: ${{ $value }}."
+
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            sum(rate(cache_operations_total{operation="hit"}[5m])) by (service, job)
+            /
+            sum(rate(cache_operations_total[5m])) by (service, job)
+          ) < 0.5
+        for: 10m
+        labels:
+          severity: info
+          component: cache
+        annotations:
+          summary: "Niedrige Cache-Hit-Rate bei {{ $labels.job }}"
+          description: "Cache-Hit-Rate ist {{ $value | humanizePercentage }} fÃ¼r {{ $labels.job }}."

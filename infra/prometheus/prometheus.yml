@@ -1,0 +1,106 @@
+﻿# Prometheus Configuration fÃ¼r WattWeiser Plattform
+# Scrape-Konfiguration fÃ¼r alle Services
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'wattweiser-production'
+    environment: 'production'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - '/etc/prometheus/alerts/*.yml'
+
+scrape_configs:
+  - job_name: 'gateway'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['gateway:3001']
+        labels:
+          service: 'gateway'
+          type: 'api-gateway'
+
+  - job_name: 'chat-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['chat-service:3002']
+        labels:
+          service: 'chat-service'
+          type: 'backend-service'
+
+  - job_name: 'agent-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['agent-service:3003']
+        labels:
+          service: 'agent-service'
+          type: 'backend-service'
+
+  - job_name: 'rag-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['rag-service:3004']
+        labels:
+          service: 'rag-service'
+          type: 'backend-service'
+
+  - job_name: 'avatar-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['avatar-service:3005']
+        labels:
+          service: 'avatar-service'
+          type: 'backend-service'
+
+  - job_name: 'voice-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['voice-service:3006']
+        labels:
+          service: 'voice-service'
+          type: 'backend-service'
+
+  - job_name: 'crawler-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['crawler-service:3007']
+        labels:
+          service: 'crawler-service'
+          type: 'backend-service'
+
+  - job_name: 'admin-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['admin-service:3008']
+        labels:
+          service: 'admin-service'
+          type: 'backend-service'
+
+  - job_name: 'tool-service'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['tool-service:3009']
+        labels:
+          service: 'tool-service'
+          type: 'backend-service'
+
+  - job_name: 'llm-gateway'
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['llm-gateway:3010']
+        labels:
+          service: 'llm-gateway'
+          type: 'backend-service'
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          type: 'monitoring'
