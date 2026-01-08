@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SummaryModule } from './summary/summary.module';
-import { ServiceDiscoveryModule } from '@wattweiser/shared';
+import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@wattweiser/shared';
 import { PrismaModule } from '@wattweiser/db';
 import configuration from './config/configuration';
 
@@ -19,9 +19,11 @@ import configuration from './config/configuration';
       },
     ]),
     PrismaModule,
+    ObservabilityModule,
     ServiceDiscoveryModule,
     SummaryModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}
 
