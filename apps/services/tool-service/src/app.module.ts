@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ToolModule } from './tool/tool.module';
 import { RegistryModule } from './registry/registry.module';
-import { ServiceDiscoveryModule } from '@wattweiser/shared';
+import { ObservabilityModule, HealthController, ServiceDiscoveryModule } from '@wattweiser/shared';
 import configuration from './config/configuration';
 
 @Module({
@@ -19,10 +19,12 @@ import configuration from './config/configuration';
         limit: 100, // 100 requests per minute
       },
     ]),
+    ObservabilityModule,
     ServiceDiscoveryModule,
     ToolModule,
     RegistryModule,
   ],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,
