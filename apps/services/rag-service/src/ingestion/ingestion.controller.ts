@@ -10,7 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileIngestionService, FileIngestionRequest } from './file-ingestion.service';
 import { WebsiteIngestionService, WebsiteIngestionRequest } from './website-ingestion.service';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@wattweiser/gateway/src/auth/guards/jwt-auth.guard';
+// Auth wird über Gateway gehandhabt, kein direkter Guard nötig
 
 @ApiTags('ingestion')
 @Controller('ingestion')
