@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  gateway:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-wattweiser}/gateway:latest
+    container_name: wattos-gateway
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      RATE_LIMIT: ${RATE_LIMIT:-100r/m}
+      BODY_LIMIT: ${BODY_LIMIT:-2mb}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health/liveness', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - wattos-network
+
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-wattweiser}/web:latest
+    container_name: wattos-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_AUTH_ISSUER: ${NEXT_PUBLIC_AUTH_ISSUER}
+      NEXT_PUBLIC_AUTH_CLIENT_ID: ${NEXT_PUBLIC_AUTH_CLIENT_ID}
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - wattos-network
+
+networks:
+  wattos-network:
+    driver: bridge
