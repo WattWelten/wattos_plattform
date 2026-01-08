@@ -4,6 +4,32 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Quick Wins: Code-Qualität & Standardisierung (2026-01-06)
+
+#### Quick Win 11.1: Mock-Daten entfernt ✅
+- ✅ **Mock-Daten aus Frontend-Komponenten entfernt**
+  - Admin Dashboard: Mock-Daten-Fallbacks entfernt, Error-Handling über React Query
+  - Providers Page: Mock-Daten-Fallbacks entfernt
+  - Customer Portal Search: Mock-Daten durch API-Call ersetzt
+  - Lab Page: Placeholder-Kommentar entfernt, TTS API-Integration implementiert
+- ✅ **DMS Service: Placeholder-ID entfernt**
+  - Fallback-Platzhalter entfernt, Fehler werden jetzt korrekt geworfen
+- ✅ **Mock-API Script entfernt**
+  - `mock:start` Script aus package.json entfernt (Script existierte nicht)
+
+#### Quick Win 11.2: Placeholder-Kommentare dokumentiert ✅
+- ✅ **TODO-Dokumentation erstellt** (`docs/TODOS.md`)
+  - Alle TODO-Kommentare im Codebase dokumentiert
+  - Prioritäten kategorisiert (High/Medium/Low)
+  - Status und Beschreibungen hinzugefügt
+  - Notes und akzeptierte Praktiken dokumentiert
+
+#### Quick Win 11.3: Health Check Standardisierung ✅
+- ✅ **Health-Check-Standardisierungs-Guide erstellt** (`docs/HEALTH_CHECK_STANDARDIZATION.md`)
+  - Standardisierte Endpunkte dokumentiert
+  - Services identifiziert, die Migration benötigen
+  - Migrations-Richtlinien bereitgestellt
+
 ### Phase 4: Dokumentation & Deployment (2026-01-06)
 
 #### Phase 4.1: API-Dokumentation ✅
