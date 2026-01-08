@@ -30,6 +30,23 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - **Alle implementierten Services:** ✅ Vollständig migriert
 - **Verbleibend:** 7 Services (ingestion-service ist Python/FastAPI, andere möglicherweise nicht aktiv)
 
+### Sprint 2: Test-Coverage Verbesserung (2026-01-06)
+
+#### ✅ Coverage-Analyse
+- ✅ Coverage-Analyse-Dokumentation erstellt (`docs/COVERAGE_ANALYSIS.md`)
+- ✅ Aktuelle Test-Struktur analysiert
+- ✅ Prioritäten für Test-Implementierung definiert
+
+#### ✅ Unit-Tests erweitert
+- ✅ **@wattweiser/shared/exceptions:** Unit-Tests für alle Exception-Klassen (15 Tests)
+- ✅ **@wattweiser/shared/observability:** Unit-Tests für HealthService (8 Tests)
+- ✅ Bestehende Tests: utils (24), service-discovery (12), retry (5), cache (12)
+
+#### 📊 Fortschritt
+- **Tests hinzugefügt:** 23 neue Tests
+- **Coverage-Ziel:** 80%+ für alle Packages
+- **Nächste Schritte:** Weitere Tests für @wattweiser/shared, dann @wattweiser/config und @wattweiser/core
+
 ### Nächste Schritte Implementiert (2026-01-06)
 
 #### ✅ Health Check Migration für alle Services
