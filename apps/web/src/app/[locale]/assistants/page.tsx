@@ -1,25 +1,44 @@
 'use client';
 
 import { useState } from 'react';
-import { AppShell, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, EmptyState, Skeleton } from '@wattweiser/ui';
-import { Plus, Search, Bot, Settings, Trash2, Edit, Play, HelpCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useRouter, useParams } from 'next/navigation';
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent, 
+  Button, 
+  Input, 
+  EmptyState, 
+  Skeleton,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter
+} from '@wattweiser/ui';
+import { Plus, Search, Bot, Settings, Trash2, Edit, PlayCircle as Play, HelpCircle as HelpCircleIcon } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useGuidedTourContext } from '@/components/onboarding/GuidedTourProvider';
-
-interface Assistant {
-  id: string;
-  name: string;
-  description: string;
-  model: string;
-  status: 'active' | 'inactive' | 'draft';
-  createdAt: string;
-  updatedAt: string;
-}
+import { getAgents, createAgent, deleteAgent, type Agent, type CreateAgentRequest } from '@/lib/api/agents';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function AssistantsPage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string || 'de';
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [formData, setFormData] = useState<CreateAgentRequest>({
+    name: '',
+    role: '',
+    roleType: 'it-support',
+  });
   const { startTour } = useGuidedTourContext();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const assistantsTourSteps = [
     {
@@ -45,24 +64,73 @@ export default function AssistantsPage() {
     },
   ];
 
-  const { data: assistants, isLoading } = useQuery<Assistant[]>({
+  const { data: agents, isLoading } = useQuery<Agent[]>({
     queryKey: ['assistants'],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/agents`, {
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch assistants');
-      }
-      return response.json();
+      return await getAgents();
     },
   });
 
-  const filteredAssistants = assistants?.filter(
-    (assistant) =>
-      assistant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      assistant.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const createAgentMutation = useMutation({
+    mutationFn: (data: CreateAgentRequest) => createAgent(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assistants'] });
+      setIsCreateModalOpen(false);
+      setFormData({ name: '', role: '', roleType: 'it-support' });
+      toast({
+        title: 'Erfolgreich',
+        description: 'Assistant wurde erstellt.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Fehler',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const deleteAgentMutation = useMutation({
+    mutationFn: (id: string) => deleteAgent(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assistants'] });
+      toast({
+        title: 'Erfolgreich',
+        description: 'Assistant wurde gelöscht.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Fehler',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleCreateAgent = () => {
+    if (!formData.name || !formData.role) {
+      toast({
+        title: 'Fehler',
+        description: 'Bitte füllen Sie alle Pflichtfelder aus.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    createAgentMutation.mutate(formData);
+  };
+
+  const handleDeleteAgent = (id: string) => {
+    if (confirm('Möchten Sie diesen Assistant wirklich löschen?')) {
+      deleteAgentMutation.mutate(id);
+    }
+  };
+
+  const filteredAgents = agents?.filter(
+    (agent) =>
+      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -83,7 +151,7 @@ export default function AssistantsPage() {
               onClick={() => startTour(assistantsTourSteps)}
               className="gap-2"
             >
-              <HelpCircle className="h-5 w-5" />
+              <HelpCircleIcon className="h-5 w-5" />
               Tour starten
             </Button>
             <Button
@@ -123,10 +191,10 @@ export default function AssistantsPage() {
               </Card>
             ))}
           </div>
-        ) : filteredAssistants && filteredAssistants.length > 0 ? (
+        ) : filteredAgents && filteredAgents.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" data-tour="assistants-grid">
-            {filteredAssistants.map((assistant) => (
-              <Card key={assistant.id} variant="elevated" className="group hover:shadow-xl transition-shadow">
+            {filteredAgents.map((agent) => (
+              <Card key={agent.id} variant="elevated" className="group hover:shadow-xl transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -134,18 +202,10 @@ export default function AssistantsPage() {
                         <Bot className="h-6 w-6 text-primary-600" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">{assistant.name}</CardTitle>
+                        <CardTitle className="text-xl">{agent.name}</CardTitle>
                         <div className="mt-1 flex items-center gap-2">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              assistant.status === 'active'
-                                ? 'bg-success-100 text-success-800'
-                                : assistant.status === 'inactive'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-warning-100 text-warning-800'
-                            }`}
-                          >
-                            {assistant.status === 'active' ? 'Aktiv' : assistant.status === 'inactive' ? 'Inaktiv' : 'Entwurf'}
+                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary-100 text-primary-800">
+                            {agent.roleType}
                           </span>
                         </div>
                       </div>
@@ -154,26 +214,44 @@ export default function AssistantsPage() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="mb-4 line-clamp-2">
-                    {assistant.description}
+                    {agent.role}
                   </CardDescription>
                   <div className="mb-4 text-sm text-gray-600">
-                    <p className="font-medium">Model: {assistant.model}</p>
+                    <p className="font-medium">Rolle: {agent.role}</p>
                     <p className="text-xs text-gray-500">
-                      Erstellt: {new Date(assistant.createdAt).toLocaleDateString('de-DE')}
+                      Erstellt: {new Date(agent.createdAt).toLocaleDateString('de-DE')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="flex-1 gap-2">
-                      <Play className="h-4 w-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="flex-1 gap-2"
+                      onClick={() => router.push(`/${locale}/test-console?agentId=${agent.id}`)}
+                    >
+                      <PlayCircle className="h-4 w-4" />
                       Testen
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => router.push(`/${locale}/assistants/${agent.id}/edit`)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => router.push(`/${locale}/assistants/${agent.id}/settings`)}
+                    >
                       <Settings className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleDeleteAgent(agent.id)}
+                      disabled={deleteAgentMutation.status === 'pending'}
+                    >
                       <Trash2 className="h-4 w-4 text-error-600" />
                     </Button>
                   </div>
@@ -200,6 +278,77 @@ export default function AssistantsPage() {
             }
           />
         )}
+
+        {/* Create Modal */}
+        <Modal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <ModalContent onClose={() => setIsCreateModalOpen(false)}>
+            <ModalHeader>
+              <ModalTitle>Neuer Assistant</ModalTitle>
+              <ModalDescription>
+                Erstellen Sie einen neuen KI-Assistenten
+              </ModalDescription>
+            </ModalHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
+                </label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="z.B. Kunden-Support Bot"
+                />
+              </div>
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                  Rolle/Beschreibung *
+                </label>
+                <Input
+                  id="role"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  placeholder="Kurze Beschreibung der Rolle"
+                />
+              </div>
+              <div>
+                <label htmlFor="roleType" className="block text-sm font-medium text-gray-700 mb-1">
+                  Typ
+                </label>
+                <select
+                  id="roleType"
+                  value={formData.roleType}
+                  onChange={(e) => setFormData({ ...formData, roleType: e.target.value })}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="it-support">IT-Support</option>
+                  <option value="sales">Sales</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="legal">Legal</option>
+                  <option value="meeting">Meeting</option>
+                </select>
+              </div>
+            </div>
+            <ModalFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsCreateModalOpen(false);
+                  setFormData({ name: '', role: '', roleType: 'it-support' });
+                }}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                onClick={handleCreateAgent} 
+                disabled={createAgentMutation.status === 'pending'}
+              >
+                {createAgentMutation.status === 'pending' ? 'Erstelle...' : 'Erstellen'}
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </div>
     </div>
   );

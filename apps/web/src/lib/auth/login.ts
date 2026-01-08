@@ -95,7 +95,7 @@ export async function handleAuthCallback(code: string, state: string): Promise<{
     localStorage.setItem('token_expires_at', String(Date.now() + tokenData.expires_in * 1000));
     
     // Setze Cookie für Middleware (Server-seitige Validierung)
-    document.cookie = `wattweiser_auth_token=${tokenData.access_token}; path=/; max-age=${tokenData.expires_in}; SameSite=Lax; Secure=${window.location.protocol === 'https:'}`;
+    document.cookie = `access_token=${tokenData.access_token}; path=/; max-age=${tokenData.expires_in}; SameSite=Lax; Secure=${window.location.protocol === 'https:'}`;
   }
 
   // Entferne PKCE-Werte

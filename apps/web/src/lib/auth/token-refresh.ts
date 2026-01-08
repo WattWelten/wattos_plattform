@@ -56,7 +56,7 @@ export async function refreshAccessToken(): Promise<{
   localStorage.setItem('token_expires_at', String(Date.now() + tokenData.expires_in * 1000));
   
   // Aktualisiere Cookie
-  document.cookie = `wattweiser_auth_token=${tokenData.access_token}; path=/; max-age=${tokenData.expires_in}; SameSite=Lax; Secure=${window.location.protocol === 'https:'}`;
+  document.cookie = `access_token=${tokenData.access_token}; path=/; max-age=${tokenData.expires_in}; SameSite=Lax; Secure=${window.location.protocol === 'https:'}`;
 
   return {
     accessToken: tokenData.access_token,
@@ -91,4 +91,18 @@ export async function getValidAccessToken(): Promise<string | null> {
   }
 
   return accessToken;
+}
+
+/**
+ * Prüft ob Token abgelaufen ist
+ */
+export function isTokenExpired(): boolean {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+  const expiresAt = localStorage.getItem('token_expires_at');
+  if (!expiresAt) {
+    return true;
+  }
+  return Date.now() >= parseInt(expiresAt, 10);
 }
