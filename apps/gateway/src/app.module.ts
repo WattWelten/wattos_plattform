@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProxyModule } from './proxy/proxy.module';
 import { AuditModule } from './audit/audit.module';
 import { HealthModule } from './health/health.module';
+import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { PrismaModule } from '@wattweiser/db';
 import {
   ObservabilityModule,
