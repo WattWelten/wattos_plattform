@@ -20,6 +20,9 @@ const envSchema = z.object({
   // API Gateway
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
+  RATE_LIMIT: z.string().default('100r/m'),
+  BODY_LIMIT: z.string().default('2mb'),
   ENABLE_SWAGGER: z
     .string()
     .transform((val) => val === 'true')
@@ -32,6 +35,13 @@ const envSchema = z.object({
   OIDC_CLIENT_ID: z.string().optional(),
   OIDC_CLIENT_SECRET: z.string().optional(),
   OIDC_CALLBACK_URL: z.string().url().optional(),
+  KEYCLOAK_ISSUER: z.string().url().optional(),
+  KEYCLOAK_JWKS_URL: z.string().url().optional(),
+  KEYCLOAK_AUDIENCE: z.string().optional(),
+  KEYCLOAK_URL: z.string().url().optional(),
+  KEYCLOAK_REALM: z.string().optional(),
+  KEYCLOAK_CLIENT_ID: z.string().optional(),
+  KEYCLOAK_CLIENT_SECRET: z.string().optional(),
   
   // Cache
   CACHE_ENABLED: z

@@ -43,11 +43,24 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  // CORS
-  const corsOrigins = configService.get<string>('CORS_ORIGINS', 'http://localhost:3000').split(',');
+  // CORS mit Allowlist
+  const allowedOrigins = configService.get<string>('ALLOWED_ORIGINS', 'http://localhost:3000').split(',');
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      // Erlaube Requests ohne Origin (z.B. Postman, mobile Apps)
+      if (!origin) {
+        return callback(null, true);
+      }
+      // Prüfe ob Origin in Allowlist ist
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
   });
 
   // Validation

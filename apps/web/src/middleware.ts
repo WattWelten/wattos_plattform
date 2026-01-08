@@ -71,8 +71,13 @@ export default async function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some((route) => pathWithoutLocale.startsWith(route));
   const isAdminRoute = adminRoutes.some((route) => pathWithoutLocale.startsWith(route));
 
-  // Get auth token from cookies
+  // Get auth token from cookies (Keycloak oder Legacy)
   const authToken = request.cookies.get('wattweiser_auth_token')?.value;
+
+  // Skip auth check für Auth-Callback
+  if (pathWithoutLocale.startsWith('/auth/callback')) {
+    return response;
+  }
 
   // Redirect to login if accessing protected route without auth
   if (isProtectedRoute && !authToken) {

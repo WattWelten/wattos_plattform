@@ -19,6 +19,7 @@
     "@nestjs/platform-express": "^11.1.9",
     "@nestjs/throttler": "^6.5.0",
     "@wattweiser/db": "workspace:*",
+    "@wattweiser/document-processor": "workspace:*",
     "@wattweiser/shared": "workspace:*",
     "@wattweiser/vector-store": "workspace:*",
     "axios": "^1.13.2",

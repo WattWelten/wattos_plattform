@@ -6,6 +6,7 @@ import { PrismaModule } from '@wattweiser/db';
 import { SearchModule } from './search/search.module';
 import { ContextModule } from './context/context.module';
 import { CitationsModule } from './citations/citations.module';
+import { IngestionModule } from './ingestion/ingestion.module';
 import { ObservabilityModule, HealthController, CacheModule, ServiceDiscoveryModule } from '@wattweiser/shared';
 import configuration from './config/configuration';
 
@@ -28,6 +29,7 @@ import configuration from './config/configuration';
     SearchModule,
     ContextModule,
     CitationsModule,
+    IngestionModule,
   ],
   controllers: [HealthController],
   providers: [

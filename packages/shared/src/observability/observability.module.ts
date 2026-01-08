@@ -6,6 +6,7 @@ import { HealthService } from './health.service';
 import { RequestIdMiddleware } from './request-id.middleware';
 import { RequestLoggingMiddleware } from './request-logging.middleware';
 import { OpenTelemetryService } from './opentelemetry.service';
+import { SentryService } from './sentry';
 
 /**
  * Observability Module
@@ -24,6 +25,7 @@ import { OpenTelemetryService } from './opentelemetry.service';
     RequestIdMiddleware,
     RequestLoggingMiddleware,
     OpenTelemetryService,
+    SentryService,
   ],
   exports: [
     StructuredLoggerService,
@@ -32,6 +34,7 @@ import { OpenTelemetryService } from './opentelemetry.service';
     RequestIdMiddleware,
     RequestLoggingMiddleware,
     OpenTelemetryService,
+    SentryService,
   ],
 })
 export class ObservabilityModule {}

@@ -8,6 +8,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { OidcStrategy } from './strategies/oidc.strategy';
 import { KeycloakService } from './keycloak.service';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { JwtVerifyService } from './jwt-verify';
+import { AuthMiddleware } from './auth.middleware';
 
 @Module({
   imports: [
@@ -23,7 +25,15 @@ import { TokenBlacklistService } from './token-blacklist.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, OidcStrategy, KeycloakService, TokenBlacklistService],
-  exports: [AuthService, TokenBlacklistService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    OidcStrategy,
+    KeycloakService,
+    TokenBlacklistService,
+    JwtVerifyService,
+    AuthMiddleware,
+  ],
+  exports: [AuthService, TokenBlacklistService, JwtVerifyService, AuthMiddleware],
 })
 export class AuthModule {}
