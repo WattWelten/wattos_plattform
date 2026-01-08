@@ -46,7 +46,7 @@ jobs:
     if: github.event.inputs.skip_validation != 'true'
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -80,7 +80,7 @@ jobs:
     if: always() && (needs.validate.result == 'success' || github.event.inputs.skip_validation == 'true')
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -112,7 +112,7 @@ jobs:
     if: always()
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -186,7 +186,7 @@ jobs:
       name: ${{ github.event.inputs.environment || 'production' }}
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Download Railway Configs
         uses: actions/download-artifact@v4
@@ -246,7 +246,7 @@ jobs:
     if: always()
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -281,7 +281,7 @@ jobs:
     if: always() && github.event.inputs.skip_health_check != 'true'
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -319,7 +319,7 @@ jobs:
     if: always()
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
