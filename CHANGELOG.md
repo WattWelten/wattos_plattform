@@ -42,10 +42,15 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - ✅ **@wattweiser/shared/observability:** Unit-Tests für HealthService (8 Tests)
 - ✅ Bestehende Tests: utils (24), service-discovery (12), retry (5), cache (12)
 
+#### ✅ Schritt 2: Tests für kritische Module erstellt
+- ✅ **sanitize.ts:** Tests für sanitizeHtml, sanitizeText, validateUrl, sanitizePath (0% → ~80%+)
+- ✅ **safe-json.ts:** Tests für safeJsonParse, safeJsonStringify, safeJsonParseWithSchema (35.71% → ~80%+)
+- ✅ **tool-serializer.ts:** Tests für sanitizeToolSchema, convertToOpenAIToolFormat, validateToolSerialization (0% → ~80%+)
+
 #### 📊 Fortschritt
-- **Tests hinzugefügt:** 23 neue Tests
+- **Tests hinzugefügt:** 50+ neue Tests (sanitize, safe-json, tool-serializer)
 - **Coverage-Ziel:** 80%+ für alle Packages
-- **Nächste Schritte:** Weitere Tests für @wattweiser/shared, dann @wattweiser/config und @wattweiser/core
+- **Nächste Schritte:** Cache- und Retry-Tests erweitern, dann Coverage final prüfen
 
 ### Nächste Schritte Implementiert (2026-01-06)
 
