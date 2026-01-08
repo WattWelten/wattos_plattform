@@ -5,6 +5,7 @@
   "description": "WattWeiser - Modulare, DSGVO-konforme KI-Plattform",
   "workspaces": [
     "apps/*",
+    "apps/services/*",
     "packages/*"
   ],
   "scripts": {
