@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { AppShell, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, EmptyState, Skeleton } from '@wattweiser/ui';
-import { Plus, Search, Bot, Settings, Trash2, Edit, Play } from 'lucide-react';
+import { Plus, Search, Bot, Settings, Trash2, Edit, Play, HelpCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useGuidedTourContext } from '@/components/onboarding/GuidedTourProvider';
 
 interface Assistant {
   id: string;
@@ -18,6 +19,31 @@ interface Assistant {
 export default function AssistantsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { startTour } = useGuidedTourContext();
+
+  const assistantsTourSteps = [
+    {
+      id: 'assistants-header',
+      target: '[data-tour="assistants-header"]',
+      title: 'Assistants Übersicht',
+      description: 'Hier sehen Sie alle Ihre erstellten Assistants. Klicken Sie auf "Neuer Assistant" um einen neuen zu erstellen.',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'assistants-search',
+      target: '[data-tour="assistants-search"]',
+      title: 'Assistants durchsuchen',
+      description: 'Verwenden Sie die Suche, um schnell bestimmte Assistants zu finden.',
+      position: 'bottom' as const,
+    },
+    {
+      id: 'assistants-grid',
+      target: '[data-tour="assistants-grid"]',
+      title: 'Assistant-Karten',
+      description: 'Jede Karte zeigt einen Assistant mit Status, Beschreibung und Aktionen.',
+      position: 'top' as const,
+    },
+  ];
 
   const { data: assistants, isLoading } = useQuery<Assistant[]>({
     queryKey: ['assistants'],
@@ -43,25 +69,36 @@ export default function AssistantsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between" data-tour="assistants-header">
           <div>
             <h1 className="text-4xl font-bold text-gray-900">Assistants</h1>
             <p className="mt-2 text-lg text-gray-600">
               Verwalten Sie Ihre KI-Assistenten und Agenten
             </p>
           </div>
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            size="lg"
-            className="gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            Neuer Assistant
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => startTour(assistantsTourSteps)}
+              className="gap-2"
+            >
+              <HelpCircle className="h-5 w-5" />
+              Tour starten
+            </Button>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              size="lg"
+              className="gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              Neuer Assistant
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
-        <div className="mb-6">
+        <div className="mb-6" data-tour="assistants-search">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <Input
@@ -87,7 +124,7 @@ export default function AssistantsPage() {
             ))}
           </div>
         ) : filteredAssistants && filteredAssistants.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" data-tour="assistants-grid">
             {filteredAssistants.map((assistant) => (
               <Card key={assistant.id} variant="elevated" className="group hover:shadow-xl transition-shadow">
                 <CardHeader>

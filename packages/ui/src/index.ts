@@ -65,6 +65,12 @@ export type { AppShellProps } from './components/AppShell';
 export { Toast, ToastTitle, ToastDescription } from './components/Toast';
 export type { ToastProps } from './components/Toast';
 
+export { OnboardingWizard } from './components/OnboardingWizard';
+export type { OnboardingWizardProps, OnboardingStep } from './components/OnboardingWizard';
+
+export { GuidedTour, useGuidedTour } from './components/GuidedTour';
+export type { GuidedTourProps, TourStep } from './components/GuidedTour';
+
 // Utils
 export { cn } from './lib/utils';
 
