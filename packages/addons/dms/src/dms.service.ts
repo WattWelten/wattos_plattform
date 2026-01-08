@@ -65,8 +65,10 @@ export class DMSService {
         },
       });
       return response.data as DMSDocument[];
-    } catch (error: any) {
-      this.logger.error(`Failed to fetch documents: ${error.message}`, error.stack);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to fetch documents: ${errorMessage}`, errorStack);
       throw error;
     }
   }
@@ -86,11 +88,13 @@ export class DMSService {
       // DMS API Call implementiert
       const response = await this.dmsClient.get(`/documents/${documentId}`);
       return response.data as DMSDocument;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof DMSApiError) {
         this.logger.error(`DMS API error: ${error.statusCode}`, error.response);
       } else {
-        this.logger.error(`Failed to fetch document: ${error.message}`, error.stack);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        this.logger.error(`Failed to fetch document: ${errorMessage}`, errorStack);
       }
       throw error;
     }
@@ -113,8 +117,10 @@ export class DMSService {
         responseType: 'arraybuffer',
       });
       return Buffer.from(response.data);
-    } catch (error: any) {
-      this.logger.error(`Failed to fetch document content: ${error.message}`, error.stack);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to fetch document content: ${errorMessage}`, errorStack);
       throw error;
     }
   }
@@ -309,16 +315,20 @@ export class DMSService {
 
         return documentId;
       } catch (error: any) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
         this.logger.error(
-          `Failed to upload document to Ingestion Service: ${error.message}`,
-          error.stack,
+          `Failed to upload document to Ingestion Service: ${errorMessage}`,
+          errorStack,
         );
         // Re-throw error instead of returning fallback ID
         // Caller should handle the error appropriately
-        throw new Error(`Document ingestion failed: ${error.message}`);
+        throw new Error(`Document ingestion failed: ${errorMessage}`);
       }
-    } catch (error: any) {
-      this.logger.error(`Failed to import document ${document.id}: ${error.message}`, error.stack);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to import document ${document.id}: ${errorMessage}`, errorStack);
       throw error;
     }
   }

@@ -43,11 +43,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
-        const responseObj = exceptionResponse as any;
-        message = responseObj.message || message;
-        code = responseObj.code || exception.code;
-        error = responseObj.error;
-        details = { ...responseObj };
+        const responseObj = exceptionResponse as Record<string, unknown>;
+        message = (responseObj.message as string) || message;
+        code = (responseObj.code as string) || exception.code;
+        error = responseObj.error as string | undefined;
+        details = { ...responseObj } as Record<string, any>;
         delete details.message;
         delete details.code;
         delete details.error;
@@ -59,11 +59,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
       } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
-        const responseObj = exceptionResponse as any;
-        message = responseObj.message || message;
-        error = responseObj.error;
-        code = responseObj.code;
-        details = responseObj.details;
+        const responseObj = exceptionResponse as Record<string, unknown>;
+        message = (responseObj.message as string) || message;
+        error = responseObj.error as string | undefined;
+        code = responseObj.code as string | undefined;
+        details = responseObj.details as Record<string, any> | undefined;
       }
     } else if (exception instanceof Error) {
       message = exception.message;
@@ -74,7 +74,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
-    const errorResponse: any = {
+    const errorResponse: {
+      statusCode: number;
+      timestamp: string;
+      path: string;
+      method: string;
+      message: string;
+      requestId: string;
+      code?: string;
+      error?: string;
+      details?: Record<string, any>;
+      stack?: string;
+    } = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
