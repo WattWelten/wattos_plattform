@@ -7,6 +7,7 @@ const intlMiddleware = createMiddleware(routing);
 
 /**
  * Verify user has admin role via API
+ * Returns false on any error to allow graceful degradation
  */
 async function verifyAdminRole(token: string): Promise<boolean> {
   try {
@@ -17,6 +18,7 @@ async function verifyAdminRole(token: string): Promise<boolean> {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      signal: AbortSignal.timeout(3000),
     });
 
     if (!response.ok) {
@@ -24,7 +26,6 @@ async function verifyAdminRole(token: string): Promise<boolean> {
     }
 
     const userData = await response.json();
-    // Prüfe ob User admin role hat (verschiedene mögliche Formate)
     const roles = userData.roles || [];
     return roles.some(
       (role: string) =>
@@ -33,24 +34,42 @@ async function verifyAdminRole(token: string): Promise<boolean> {
         role === 'ADMIN',
     );
   } catch (error) {
-    console.error('Admin role verification failed:', error);
     return false;
   }
 }
 
-// Protected routes that require authentication
+// Protected routes (without locale prefix)
 const protectedRoutes = ['/chat', '/admin', '/onboarding'];
 const adminRoutes = ['/admin'];
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
+  // First, let next-intl handle the request
+  const response = await intlMiddleware(request);
+  
+  // If it's a redirect, return it immediately
+  if (response.status === 307 || response.status === 308) {
+    return response;
+  }
+
   const { pathname } = request.nextUrl;
-  const locale = pathname.split('/')[1] || routing.defaultLocale;
-  const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/';
+  
+  // Extract locale from pathname
+  const segments = pathname.split('/').filter(Boolean);
+  const locale = segments[0];
+  
+  // Only proceed with auth checks if we have a valid locale
+  if (!locale || !routing.locales.includes(locale as any)) {
+    return response;
+  }
+  
+  // Get path without locale
+  const pathWithoutLocale = segments.length > 1 
+    ? '/' + segments.slice(1).join('/') 
+    : '/';
 
   // Check if route is protected
   const isProtectedRoute = protectedRoutes.some((route) => pathWithoutLocale.startsWith(route));
   const isAdminRoute = adminRoutes.some((route) => pathWithoutLocale.startsWith(route));
-  // const isPublicRoute = publicRoutes.some((route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route));
 
   // Get auth token from cookies
   const authToken = request.cookies.get('wattweiser_auth_token')?.value;
@@ -71,8 +90,7 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
-  // Apply i18n middleware
-  return intlMiddleware(request);
+  return response;
 }
 
 export const config = {
@@ -83,4 +101,3 @@ export const config = {
     '/((?!api|_next|_vercel|.*\\..*).*)',
   ],
 };
-
