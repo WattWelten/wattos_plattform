@@ -336,7 +336,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "auth-cookie",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "ALTERNATIVE",
           "priority": 10,
           "userSetupAllowed": false,
@@ -344,7 +344,7 @@
         },
         {
           "authenticator": "auth-spnego",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -352,7 +352,7 @@
         },
         {
           "authenticator": "identity-provider-redirector",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "ALTERNATIVE",
           "priority": 25,
           "userSetupAllowed": false,
@@ -376,7 +376,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "registration-user-creation",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -384,7 +384,7 @@
         },
         {
           "authenticator": "registration-profile-action",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -392,7 +392,7 @@
         },
         {
           "authenticator": "registration-password-action",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 30,
           "userSetupAllowed": false,
@@ -400,7 +400,7 @@
         },
         {
           "authenticator": "registration-recaptcha-action",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 40,
           "userSetupAllowed": false,
@@ -424,7 +424,7 @@
         },
         {
           "authenticator": "idp-review-profile",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -448,7 +448,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "reset-credentials-choose-user",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -456,7 +456,7 @@
         },
         {
           "authenticator": "reset-credential-email",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -464,7 +464,7 @@
         },
         {
           "authenticator": "reset-password",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 30,
           "userSetupAllowed": false,
@@ -472,7 +472,7 @@
         },
         {
           "authenticator": "reset-otp",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 40,
           "userSetupAllowed": false,
@@ -497,7 +497,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "auth-username-password-form",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -505,7 +505,7 @@
         },
         {
           "authenticator": "auth-otp-form",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -530,7 +530,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "registration-user-creation",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -538,7 +538,7 @@
         },
         {
           "authenticator": "registration-profile-action",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -546,7 +546,7 @@
         },
         {
           "authenticator": "registration-password-action",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 30,
           "userSetupAllowed": false,
@@ -554,7 +554,7 @@
         },
         {
           "authenticator": "registration-recaptcha-action",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "DISABLED",
           "priority": 40,
           "userSetupAllowed": false,
@@ -571,7 +571,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "conditional-user-configured",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -579,7 +579,7 @@
         },
         {
           "authenticator": "auth-otp-form",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 20,
           "userSetupAllowed": false,
@@ -596,7 +596,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "direct-grant-validate-otp",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -613,7 +613,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "idp-review-profile",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
@@ -630,7 +630,7 @@
       "authenticationExecutions": [
         {
           "authenticator": "idp-create-user-if-unique",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "ALTERNATIVE",
           "priority": 10,
           "userSetupAllowed": false,
@@ -638,7 +638,7 @@
         },
         {
           "authenticator": "idp-auto-link",
-          "authenticationFlow": null,
+          "authenticatorFlow": false,
           "requirement": "ALTERNATIVE",
           "priority": 20,
           "userSetupAllowed": false,
