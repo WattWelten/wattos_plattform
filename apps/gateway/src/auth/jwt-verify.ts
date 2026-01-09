@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createRemoteJWKSet, jwtVerify, JWTPayload, JWK } from 'jose';
+import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose';
 
 export interface VerifiedToken extends JWTPayload {
   sub: string;
