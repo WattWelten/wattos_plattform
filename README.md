@@ -5,12 +5,14 @@ Eine moderne, skalierbare KI-Plattform für intelligente Assistants und Knowledg
 ## 🚀 Features
 
 - **Multi-Tenant Architecture**: Vollständige Tenant-Isolation
-- **Keycloak Integration**: Enterprise-grade Authentication & Authorization
-- **RAG (Retrieval-Augmented Generation)**: Intelligente Wissensdatenbanken
-- **Apple 2026 Design System**: Moderne, zugängliche UI
+- **Keycloak Integration**: Enterprise-grade Authentication & Authorization mit JWKS-Verification
+- **RAG (Retrieval-Augmented Generation)**: Intelligente Wissensdatenbanken mit pgvector
+- **Apple 2026 Design System**: Moderne, zugängliche UI mit Bento-Dashboard
 - **Analytics & Monitoring**: Detaillierte Einblicke in Nutzung und Performance
 - **Feature Flags**: Flexible Feature-Verwaltung
 - **CI/CD Pipeline**: Automatisiertes Testing und Deployment
+- **E2E Testing**: Playwright-basierte End-to-End Tests
+- **Onboarding & Guided Tours**: Benutzerfreundliche Einführung
 
 ## 📋 Voraussetzungen
 
@@ -70,6 +72,12 @@ pnpm prisma migrate deploy
 pnpm seed:dev
 ```
 
+Dies erstellt:
+- Demo-Tenant mit Rollen (admin, editor, viewer)
+- Demo-Users
+- 5 Knowledge Spaces mit Sample-Content
+- Chunks für Vektor-Suche (Embeddings können später über RAG-Service generiert werden)
+
 ### 7. Anwendung starten
 
 ```bash
@@ -85,6 +93,7 @@ Dies startet:
 
 - [Environment Variables Reference](./docs/ENV_REFERENCE.md) - Vollständige ENV-Variablen-Referenz
 - [E2E Testing Guide](./docs/HOWTO_E2E.md) - Playwright E2E Testing Anleitung
+- [Coolify Deployment Guide](./docs/COOLIFY_DEPLOYMENT.md) - Deployment auf Hetzner via Coolify
 - [Vector Index Strategy](./packages/db/docs/VECTOR_INDEX_STRATEGY.md) - pgvector Index-Strategie
 
 ## 🧪 Testing

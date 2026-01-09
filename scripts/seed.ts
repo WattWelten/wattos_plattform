@@ -350,6 +350,7 @@ async function main() {
 
     // 5. Erstelle Sample-Documents für jeden Knowledge Space
     console.log('📄 Creating sample documents...');
+    let totalDocuments = 0;
     for (const knowledgeSpace of knowledgeSpaces) {
       for (const sample of knowledgeSpace.demo.sampleContent) {
         const document = await prisma.document.create({
@@ -365,10 +366,48 @@ async function main() {
             },
           },
         });
-        console.log(`  ✅ Document created: ${sample.fileName} in ${knowledgeSpace.demo.name}`);
+        
+        // Erstelle einfache Chunks ohne Embeddings (können später über RAG-Service verarbeitet werden)
+        // Chunking: Einfache Aufteilung nach Absätzen
+        const paragraphs = sample.content.split('\n\n').filter(p => p.trim().length > 0);
+        let chunkIndex = 0;
+        for (const paragraph of paragraphs) {
+          if (paragraph.trim().length > 50) { // Nur Absätze mit mindestens 50 Zeichen
+            const chunkId = `${document.id}-chunk-${chunkIndex}`;
+            await prisma.chunk.create({
+              data: {
+                id: chunkId,
+                documentId: document.id,
+                content: paragraph.trim(),
+                chunkIndex: chunkIndex++,
+                metadata: {
+                  demo: true,
+                  source: 'seed-script',
+                  fileName: sample.fileName,
+                },
+                // Embedding wird später über RAG-Service generiert
+                embedding: null,
+              },
+            });
+          }
+        }
+        
+        console.log(`  ✅ Document created: ${sample.fileName} in ${knowledgeSpace.demo.name} (${chunkIndex} chunks)`);
+        totalDocuments++;
       }
     }
     console.log('');
+
+    // 6. Zähle Chunks
+    const totalChunks = await prisma.chunk.count({
+      where: {
+        document: {
+          knowledgeSpace: {
+            tenantId: tenant.id,
+          },
+        },
+      },
+    });
 
     console.log('✅ Seed script completed successfully!');
     console.log('\n📊 Summary:');
@@ -376,9 +415,9 @@ async function main() {
     console.log(`  - ${roles.length} Roles`);
     console.log(`  - ${users.length} Users`);
     console.log(`  - ${knowledgeSpaces.length} Knowledge Spaces`);
-    console.log(
-      `  - ${knowledgeSpaces.reduce((sum, ks) => sum + ks.demo.sampleContent.length, 0)} Documents`
-    );
+    console.log(`  - ${totalDocuments} Documents`);
+    console.log(`  - ${totalChunks} Chunks (ohne Embeddings - können später über RAG-Service verarbeitet werden)`);
+    console.log('\n💡 Tip: Um Embeddings zu generieren, verwenden Sie den RAG-Service Ingestion-Endpoint.');
   } catch (error) {
     console.error('❌ Seed script failed:', error);
     throw error;

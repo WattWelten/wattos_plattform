@@ -52,8 +52,11 @@ export class HealthController {
 
     return {
       ok: allUp,
+      db: allUp && checks.database?.status === 'up',
+      redis: checks.redis?.status === 'up',
       status: allUp ? 'ready' : 'not ready',
       checks,
+      uptime: process.uptime(),
       timestamp: new Date().toISOString(),
     };
   }

@@ -1,0 +1,79 @@
+# Coolify Production Docker Compose
+# Wird von Coolify verwendet für Service-Orchestrierung
+
+version: '3.8'
+
+services:
+  gateway:
+    image: ${GATEWAY_IMAGE:-ghcr.io/wattwelten/wattos_plattform-gateway:latest}
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - KEYCLOAK_JWKS_URL=${KEYCLOAK_JWKS_URL}
+      - KEYCLOAK_AUDIENCE=${KEYCLOAK_AUDIENCE}
+      - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health/liveness', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  web:
+    image: ${WEB_IMAGE:-ghcr.io/wattwelten/wattos_plattform-web:latest}
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      - NEXT_PUBLIC_AUTH_ISSUER=${NEXT_PUBLIC_AUTH_ISSUER}
+      - NEXT_PUBLIC_AUTH_CLIENT_ID=${NEXT_PUBLIC_AUTH_CLIENT_ID}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - gateway
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-wattos}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-wattos_plattform}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wattos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

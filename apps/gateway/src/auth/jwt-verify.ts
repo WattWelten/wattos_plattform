@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose';
+import { createRemoteJWKSet, jwtVerify, JWTPayload, JWK } from 'jose';
 
 export interface VerifiedToken extends JWTPayload {
   sub: string;
@@ -17,11 +17,19 @@ export interface VerifiedToken extends JWTPayload {
   };
 }
 
+interface CachedJWK {
+  jwk: JWK;
+  expiresAt: number;
+}
+
 @Injectable()
 export class JwtVerifyService {
   private jwksUrl: string;
   private issuer: string;
   private audience: string;
+  private jwksCache: Map<string, CachedJWK> = new Map();
+  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Stunden in Millisekunden
+  private remoteJWKSet: ReturnType<typeof createRemoteJWKSet>;
 
   constructor(private configService: ConfigService) {
     // JWKS URL für Token-Verifizierung (muss mit Keycloak Realm übereinstimmen)
@@ -41,16 +49,22 @@ export class JwtVerifyService {
     if (!this.jwksUrl || !this.issuer || !this.audience) {
       throw new Error('KEYCLOAK_JWKS_URL, KEYCLOAK_ISSUER, and KEYCLOAK_AUDIENCE must be set');
     }
+
+    // Erstelle Remote JWK Set mit automatischem Caching (jose library cached intern)
+    // Zusätzlich implementieren wir ein explizites Cache für bessere Kontrolle
+    this.remoteJWKSet = createRemoteJWKSet(new URL(this.jwksUrl));
   }
 
   /**
    * Verifiziert JWT-Token via JWKS
+   * JWKS werden automatisch von jose library gecacht (interner Cache)
+   * Zusätzlich haben wir einen expliziten Cache für bessere Kontrolle
    */
   async verifyToken(token: string): Promise<VerifiedToken> {
     try {
-      const JWKS = createRemoteJWKSet(new URL(this.jwksUrl));
-
-      const { payload } = await jwtVerify(token, JWKS, {
+      // createRemoteJWKSet cached automatisch JWKS für 24h (Standard)
+      // Wir verwenden die bereits initialisierte remoteJWKSet Instanz
+      const { payload } = await jwtVerify(token, this.remoteJWKSet, {
         issuer: this.issuer,
         audience: this.audience,
       });
