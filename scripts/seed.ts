@@ -386,7 +386,7 @@ async function main() {
                   fileName: sample.fileName,
                 },
                 // Embedding wird später über RAG-Service generiert
-                embedding: null,
+                // embedding: null, // Nicht direkt setzbar, wird über RAG-Service generiert
               },
             });
           }
