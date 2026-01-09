@@ -277,8 +277,8 @@
         "providerId": "trusted-hosts",
         "subType": "anonymous",
         "config": {
-          "host-sending-registration-request-must-match": "true",
-          "client-uris-must-match": "true"
+          "host-sending-registration-request-must-match": ["true"],
+          "client-uris-must-match": ["true"]
         }
       },
       {
