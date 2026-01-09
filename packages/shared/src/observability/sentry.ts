@@ -30,7 +30,8 @@ export class SentryService implements OnModuleInit {
 
     try {
       // Sentry wird dynamisch geladen, falls verfügbar
-      const Sentry = await import('@sentry/node');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const Sentry = require('@sentry/node');
       
       Sentry.init({
         dsn,
@@ -49,7 +50,7 @@ export class SentryService implements OnModuleInit {
           new Sentry.Integrations.Http({ tracing: true }),
           new Sentry.Integrations.Express({ app: undefined }), // Wird in main.ts konfiguriert
         ],
-        beforeSend(event, hint) {
+        beforeSend(event: any, hint: any) {
           // Filtere sensitive Daten
           if (event.request) {
             // Entferne Passwörter aus Request Body

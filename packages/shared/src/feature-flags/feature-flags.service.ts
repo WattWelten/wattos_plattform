@@ -77,7 +77,7 @@ export class FeatureFlagsService implements OnModuleInit {
   }
 
   /**
-   * Get feature flag value
+   * Get feature flag value (boolean)
    */
   async getFlag(key: string): Promise<boolean> {
     if (!this.enabled) {
@@ -105,6 +105,37 @@ export class FeatureFlagsService implements OnModuleInit {
     } catch (error: unknown) {
       this.logger.error(`Error getting feature flag ${key}: ${error}`);
       return false;
+    }
+  }
+
+  /**
+   * Get feature flag object (full FeatureFlag)
+   */
+  async getFlagObject(key: string): Promise<FeatureFlag | null> {
+    if (!this.enabled) {
+      return null;
+    }
+
+    try {
+      // Try Redis first
+      if (this.redisClient) {
+        const cached = await this.redisClient.get(`${this.prefix}${key}`);
+        if (cached !== null) {
+          return JSON.parse(cached) as FeatureFlag;
+        }
+      }
+
+      // Fallback to in-memory
+      const inMemoryFlag = this.inMemoryFlags.get(key);
+      if (inMemoryFlag) {
+        return inMemoryFlag;
+      }
+
+      // Default: null
+      return null;
+    } catch (error: unknown) {
+      this.logger.error(`Error getting feature flag object ${key}: ${error}`);
+      return null;
     }
   }
 

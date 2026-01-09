@@ -4,6 +4,7 @@ import { Suspense, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import { AvatarV2 } from './AvatarV2';
+import { AvatarErrorBoundary } from './AvatarErrorBoundary';
 import { AvatarSceneProps } from './types';
 import { getCappedDPR } from '@/lib/performance';
 
@@ -103,13 +104,15 @@ export function AvatarScene({
           )}
 
           {/* Avatar */}
-          <AvatarV2
-            config={sceneConfig}
-            {...(visemes !== undefined && { visemes })}
-            {...(audioUrl !== undefined && { audioUrl })}
-            {...(onAnimationComplete && { onAnimationComplete })}
-            {...(onError && { onError })}
-          />
+          <AvatarErrorBoundary onError={onError}>
+            <AvatarV2
+              config={sceneConfig}
+              {...(visemes !== undefined && { visemes })}
+              {...(audioUrl !== undefined && { audioUrl })}
+              {...(onAnimationComplete && { onAnimationComplete })}
+              {...(onError && { onError })}
+            />
+          </AvatarErrorBoundary>
 
           {/* Controls */}
           {enableControls && (

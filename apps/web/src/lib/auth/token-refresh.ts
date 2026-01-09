@@ -106,3 +106,37 @@ export function isTokenExpired(): boolean {
   }
   return Date.now() >= parseInt(expiresAt, 10);
 }
+
+/**
+ * Silent-Refresh: Aktualisiert Token automatisch ohne User-Interaktion
+ * Wird 2 Minuten vor Ablauf aufgerufen
+ */
+export async function refreshAccessTokenSilently(): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+} | null> {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const expiresAt = localStorage.getItem('token_expires_at');
+  if (!expiresAt) {
+    return null;
+  }
+
+  const expiresIn = parseInt(expiresAt, 10) - Date.now();
+  const twoMinutes = 2 * 60 * 1000;
+
+  // Nur refreshen wenn Token in weniger als 2 Minuten abläuft
+  if (expiresIn > twoMinutes) {
+    return null;
+  }
+
+  try {
+    return await refreshAccessToken();
+  } catch (error) {
+    console.warn('Silent token refresh failed:', error);
+    return null;
+  }
+}

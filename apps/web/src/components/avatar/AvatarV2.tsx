@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
@@ -35,10 +35,9 @@ export function AvatarV2({
   const morphDictRef = useRef<Map<string, { mesh: THREE.SkinnedMesh; idx: number }[]>>(new Map());
 
   // GLTF-Modell laden (falls vorhanden)
-  const { scene: gltfScene, animations: gltfAnimations } = useGLTF(
-    config.model.url || '/models/default-avatar.gltf',
-    true,
-  );
+  // Fehler werden vom AvatarErrorBoundary in AvatarScene abgefangen
+  const modelUrl = config.model.url || '/models/default-avatar.gltf';
+  const { scene: gltfScene, animations: gltfAnimations } = useGLTF(modelUrl, true);
 
   // Morph-Tracks aus Animationen filtern
   const filteredAnimations = useMemo(() => {
@@ -207,11 +206,11 @@ export function AvatarV2({
   return (
     // @ts-ignore - Three.js JSX elements from @react-three/fiber
     <group ref={groupRef}>
-      {config.model.url ? (
+      {gltfScene ? (
         // @ts-ignore
         <primitive object={gltfScene} />
       ) : (
-        // Fallback: Box-Primitive
+        // Fallback: Box-Primitive (falls Modell nicht geladen werden konnte)
         // @ts-ignore
         <mesh>
           {/* @ts-ignore */}

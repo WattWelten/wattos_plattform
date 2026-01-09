@@ -6,7 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { GuidedTourProvider } from '@/components/onboarding/GuidedTourProvider';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
-import { getValidAccessToken, isTokenExpired } from '@/lib/auth/token-refresh';
+import { getValidAccessToken, isTokenExpired, refreshAccessTokenSilently } from '@/lib/auth/token-refresh';
 
 export function Providers({
   children,
@@ -29,11 +29,18 @@ export function Providers({
       }),
   );
 
-  // Automatischer Token-Refresh
+  // Automatischer Token-Refresh mit Silent-Refresh
   useEffect(() => {
     const checkToken = async () => {
       if (typeof window === 'undefined') return;
       
+      // Versuche Silent-Refresh (2min vor Ablauf)
+      const refreshed = await refreshAccessTokenSilently();
+      if (refreshed) {
+        return; // Token wurde erfolgreich aktualisiert
+      }
+
+      // Falls Silent-Refresh nicht möglich war, prüfe ob Token abgelaufen ist
       if (isTokenExpired()) {
         try {
           await getValidAccessToken();
@@ -49,8 +56,8 @@ export function Providers({
     // Sofort prüfen
     checkToken();
 
-    // Dann alle 5 Minuten
-    const interval = setInterval(checkToken, 5 * 60 * 1000);
+    // Dann alle 2 Minuten (für Silent-Refresh)
+    const interval = setInterval(checkToken, 2 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);

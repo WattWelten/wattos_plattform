@@ -7,13 +7,56 @@ import { StructuredLoggerService } from '@wattweiser/shared';
 import compression from 'compression';
 import helmet from 'helmet';
 import { Request, Response } from 'express';
+import express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: false, // Disable default logger, use StructuredLoggerService
-  });
-  const configService = app.get(ConfigService);
-  const logger = app.get(StructuredLoggerService).setContext('Gateway');
+  let app;
+  try {
+    app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn', 'log'], // Enable basic logging for startup
+    });
+  } catch (error) {
+    // Fallback logging wenn AppModule nicht erstellt werden kann
+    console.error('❌ Failed to create AppModule:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    process.exit(1);
+  }
+
+  let configService: ConfigService;
+  let logger: StructuredLoggerService;
+  
+  try {
+    configService = app.get(ConfigService);
+    
+    try {
+      // StructuredLoggerService ist TRANSIENT-scoped, verwende resolve() statt get()
+      logger = await app.resolve(StructuredLoggerService);
+      logger.setContext('Gateway');
+    } catch (loggerError) {
+      // Fallback logger - erfüllt LoggerService Interface
+      const fallbackLogger = {
+        log: (message: string) => console.log(message),
+        error: (message: string, trace?: string) => console.error(message, trace),
+        warn: (message: string) => console.warn(message),
+        debug: (message: string) => console.debug(message),
+        verbose: (message: string) => console.log(message),
+        setContext: () => fallbackLogger,
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logger = fallbackLogger as any as StructuredLoggerService;
+      logger.warn('⚠️ StructuredLoggerService not available, using console logger');
+    }
+  } catch (error) {
+    console.error('❌ Failed to get services:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    process.exit(1);
+  }
 
   // Security Headers (Helmet)
   app.use(
@@ -23,6 +66,26 @@ async function bootstrap() {
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     })
   );
+
+  // Body Size Limit (parseSize ähnlich wie in BodyLimitMiddleware)
+  const bodyLimit = (configService.get<string>('BODY_LIMIT') || '2mb') as string;
+  const parseSize = (size: string): number => {
+    const units: Record<string, number> = {
+      b: 1,
+      kb: 1024,
+      mb: 1024 * 1024,
+      gb: 1024 * 1024 * 1024,
+    };
+    const match = size.toLowerCase().match(/^(\d+)([a-z]+)$/);
+    if (!match) {
+      return 2 * 1024 * 1024; // Default 2MB
+    }
+    const value = parseInt(match[1]!, 10);
+    const unit = match[2] || 'mb';
+    return value * (units[unit] || 1);
+  };
+  app.use(express.json({ limit: parseSize(bodyLimit) }));
+  app.use(express.urlencoded({ extended: true, limit: parseSize(bodyLimit) }));
 
   // Response Compression
   app.use(
@@ -44,9 +107,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // CORS mit Allowlist
-  const allowedOrigins = configService.get<string>('ALLOWED_ORIGINS', 'http://localhost:3000').split(',');
+  const allowedOrigins = (configService.get<string>('ALLOWED_ORIGINS') || 'http://localhost:3000').split(',');
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Erlaube Requests ohne Origin (z.B. Postman, mobile Apps)
       if (!origin) {
         return callback(null, true);
@@ -125,9 +188,21 @@ async function bootstrap() {
   }
 
   const port = configService.get<number>('PORT', 3001);
-  await app.listen(port);
-
-  logger.log(`🚀 API Gateway running on: http://localhost:${port}`);
+  
+  try {
+    await app.listen(port);
+    logger.log(`🚀 API Gateway running on: http://localhost:${port}`);
+  } catch (error) {
+    logger.error(`Failed to start Gateway on port ${port}`, error instanceof Error ? error.stack : String(error));
+    if (error instanceof Error) {
+      logger.error(`Error message: ${error.message}`);
+      logger.error(`Error stack: ${error.stack}`);
+    }
+    process.exit(1);
+  }
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Failed to start Gateway:', error);
+  process.exit(1);
+});

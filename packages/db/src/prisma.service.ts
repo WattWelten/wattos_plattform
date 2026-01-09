@@ -43,35 +43,48 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   /**
    * Setup Query Logging Middleware
    * Wird separat aufgerufen um zirkuläre Dependencies zu vermeiden
+   * 
+   * Hinweis: $use ist in neueren Prisma-Versionen veraltet, wird optional verwendet
    */
   private setupQueryLogging(): void {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - $use wird nach Prisma-Generierung verfügbar sein
-    (this.client as any).$use(async (params: any, next: any) => {
-      const start = Date.now();
-      const operation = `${params.model || 'unknown'}.${params.action || 'unknown'}`;
-      
-      try {
-        const result = await next(params);
-        const duration = Date.now() - start;
-        
-        // Metrics Tracking
-        if (this.metricsService) {
-          this.metricsService.recordDbQuery(operation, duration, true);
-        }
-        
-        return result;
-      } catch (error) {
-        const duration = Date.now() - start;
-        
-        // Metrics Tracking für Fehler
-        if (this.metricsService) {
-          this.metricsService.recordDbQuery(operation, duration, false);
-        }
-        
-        throw error;
+    try {
+      // Prüfe ob $use existiert (veraltet in neueren Prisma-Versionen)
+      if (typeof (this.client as any).$use === 'function') {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - $use wird nach Prisma-Generierung verfügbar sein (falls unterstützt)
+        (this.client as any).$use(async (params: any, next: any) => {
+          const start = Date.now();
+          const operation = `${params.model || 'unknown'}.${params.action || 'unknown'}`;
+          
+          try {
+            const result = await next(params);
+            const duration = Date.now() - start;
+            
+            // Metrics Tracking
+            if (this.metricsService) {
+              this.metricsService.recordDbQuery(operation, duration, true);
+            }
+            
+            return result;
+          } catch (error) {
+            const duration = Date.now() - start;
+            
+            // Metrics Tracking für Fehler
+            if (this.metricsService) {
+              this.metricsService.recordDbQuery(operation, duration, false);
+            }
+            
+            throw error;
+          }
+        });
+      } else {
+        // $use nicht verfügbar (neue Prisma-Version) - Logging wird übersprungen
+        this.logger.debug('Prisma $use middleware not available (using newer Prisma version)');
       }
-    });
+    } catch (error) {
+      // Fehler beim Setup ignorieren - Prisma funktioniert auch ohne Middleware
+      this.logger.warn(`Failed to setup Prisma query logging: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async onModuleInit() {

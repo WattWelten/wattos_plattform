@@ -6,7 +6,7 @@ import { JwtVerifyService } from './jwt-verify';
 export class AuthMiddleware implements NestMiddleware {
   constructor(private jwtVerifyService: JwtVerifyService) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: Request, _res: Response, next: NextFunction) {
     // Skip auth für Health-Checks und öffentliche Endpoints
     if (
       req.path.startsWith('/api/health') ||
@@ -30,12 +30,15 @@ export class AuthMiddleware implements NestMiddleware {
       const verifiedToken = await this.jwtVerifyService.verifyToken(token);
 
       // Füge Benutzer-Informationen zum Request hinzu
-      req.user = {
+      const user: Express.User = {
         id: verifiedToken.sub,
-        email: verifiedToken.email,
         roles: verifiedToken.roles || [],
         keycloakId: verifiedToken.sub,
       };
+      if (verifiedToken.email) {
+        user.email = verifiedToken.email;
+      }
+      req.user = user;
 
       next();
     } catch (error) {

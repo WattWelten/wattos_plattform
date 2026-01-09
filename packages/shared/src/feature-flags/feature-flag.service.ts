@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 // Redis types (optional dependency)
 type RedisClientType = any;
 
-export interface FeatureFlag {
+export interface FeatureFlagConfig {
   key: string;
   enabled: boolean;
   percentage?: number; // 0-100 for gradual rollout
@@ -18,7 +18,7 @@ export interface FeatureFlag {
 export class FeatureFlagService implements OnModuleInit {
   private readonly logger = new Logger(FeatureFlagService.name);
   private redisClient: RedisClientType | null = null;
-  private flags: Map<string, FeatureFlag> = new Map();
+  private flags: Map<string, FeatureFlagConfig> = new Map();
 
   constructor(private configService: ConfigService) {}
 
@@ -108,7 +108,7 @@ export class FeatureFlagService implements OnModuleInit {
   /**
    * Get feature flag value
    */
-  async getFlag(flagKey: string): Promise<FeatureFlag | null> {
+  async getFlag(flagKey: string): Promise<FeatureFlagConfig | null> {
     // Check cache first
     if (this.flags.has(flagKey)) {
       return this.flags.get(flagKey)!;
@@ -134,7 +134,7 @@ export class FeatureFlagService implements OnModuleInit {
   /**
    * Set feature flag
    */
-  async setFlag(flag: FeatureFlag): Promise<void> {
+  async setFlag(flag: FeatureFlagConfig): Promise<void> {
     this.flags.set(flag.key, flag);
 
     if (this.redisClient) {
@@ -169,7 +169,7 @@ export class FeatureFlagService implements OnModuleInit {
   /**
    * Get all feature flags
    */
-  async getAllFlags(): Promise<FeatureFlag[]> {
+  async getAllFlags(): Promise<FeatureFlagConfig[]> {
     return Array.from(this.flags.values());
   }
 

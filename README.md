@@ -83,10 +83,9 @@ Dies startet:
 
 ## 📚 Dokumentation
 
-- [Environment Variables Reference](./docs/ENV_REFERENCE.md)
-- [Keycloak Setup Guide](./docs/KEYCLOAK_SETUP.md)
-- [Design System](./docs/DESIGN_SYSTEM.md)
-- [E2E Testing Guide](./docs/HOWTO_E2E.md)
+- [Environment Variables Reference](./docs/ENV_REFERENCE.md) - Vollständige ENV-Variablen-Referenz
+- [E2E Testing Guide](./docs/HOWTO_E2E.md) - Playwright E2E Testing Anleitung
+- [Vector Index Strategy](./packages/db/docs/VECTOR_INDEX_STRATEGY.md) - pgvector Index-Strategie
 
 ## 🧪 Testing
 

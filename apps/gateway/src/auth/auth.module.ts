@@ -5,7 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { OidcStrategy } from './strategies/oidc.strategy';
+// OidcStrategy wird nicht verwendet - wir verwenden Keycloak mit JWKS
+// import { OidcStrategy } from './strategies/oidc.strategy';
 import { KeycloakService } from './keycloak.service';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { JwtVerifyService } from './jwt-verify';
@@ -28,7 +29,7 @@ import { AuthMiddleware } from './auth.middleware';
   providers: [
     AuthService,
     JwtStrategy,
-    OidcStrategy,
+    // OidcStrategy entfernt - wird nicht benötigt (Keycloak mit JWKS)
     KeycloakService,
     TokenBlacklistService,
     JwtVerifyService,

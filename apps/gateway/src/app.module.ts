@@ -1,6 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { ProxyModule } from './proxy/proxy.module';
 import { AuditModule } from './audit/audit.module';
@@ -41,7 +42,7 @@ try {
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const rateLimit = config.get<string>('RATE_LIMIT', '100r/m');
+        const rateLimit = (config.get<string>('RATE_LIMIT') || '100r/m') as string;
         const match = rateLimit.match(/^(\d+)r\/([smhd])$/);
         if (!match) {
           return [
@@ -51,8 +52,8 @@ try {
             },
           ];
         }
-        const limit = parseInt(match[1], 10);
-        const unit = match[2];
+        const limit = parseInt(match[1]!, 10);
+        const unit = match[2] || 'm';
         const ttlMap: Record<string, number> = {
           s: 1000, // seconds
           m: 60000, // minutes
@@ -72,38 +73,42 @@ try {
     ResilienceModule,
     CacheModule,
     ServiceDiscoveryModule,
-        AuthModule,
-        FeatureFlagsModule,
-        AnalyticsModule,
-        FeedbackModule,
+    HealthModule, // Health muss VOR ProxyModule sein, damit Routen nicht abgefangen werden
+    AuthModule,
+    FeatureFlagsModule,
+    AnalyticsModule,
+    FeedbackModule,
     ProxyModule,
     AuditModule,
-    HealthModule,
   ],
-  providers: [BodyLimitMiddleware],
+  providers: [
+    BodyLimitMiddleware,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
-  constructor(
-    private authMiddleware: AuthMiddleware,
-    private bodyLimitMiddleware: BodyLimitMiddleware,
-  ) {}
+  constructor() {}
 
   configure(consumer: MiddlewareConsumer) {
     // Request-ID Middleware sollte zuerst ausgeführt werden
     consumer.apply(RequestIdMiddleware).forRoutes('*');
     // Body Limit Middleware (vor Body-Parsing)
-    consumer.apply(this.bodyLimitMiddleware).forRoutes('*');
+    consumer.apply(BodyLimitMiddleware).forRoutes('*');
     // Request Logging Middleware danach
     consumer.apply(RequestLoggingMiddleware).forRoutes('*');
     // Auth Middleware für geschützte Routes (außer Health und Docs)
     consumer
-      .apply(this.authMiddleware)
+      .apply(AuthMiddleware)
       .exclude(
-        { path: 'api/health', method: RequestMethod.ALL },
-        { path: 'api/docs', method: RequestMethod.ALL },
-        { path: 'api/docs/(.*)', method: RequestMethod.ALL },
-        { path: 'api/auth/login', method: RequestMethod.POST },
-        { path: 'api/auth/register', method: RequestMethod.POST },
+        { path: 'health', method: RequestMethod.ALL },
+        { path: 'health/*', method: RequestMethod.ALL },
+        { path: 'docs', method: RequestMethod.ALL },
+        { path: 'docs/*', method: RequestMethod.ALL },
+        { path: 'auth/login', method: RequestMethod.POST },
+        { path: 'auth/register', method: RequestMethod.POST },
       )
       .forRoutes('*');
   }

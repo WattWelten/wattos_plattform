@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Query, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { Request } from 'express';
 
@@ -11,7 +11,6 @@ export class AnalyticsController {
 
   @Get()
   @ApiOperation({ summary: 'Get analytics overview' })
-  @ApiQuery({ name: 'timeRange', enum: ['24h', '7d', '30d', '90d'], required: false, default: '7d' })
   async getAnalytics(@Query('timeRange') timeRange: string = '7d', @Req() req: Request) {
     const tenantId = (req as any).user?.tenantId;
 
@@ -36,7 +35,6 @@ export class AnalyticsController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get analytics stats' })
-  @ApiQuery({ name: 'timeRange', enum: ['24h', '7d', '30d', '90d'], required: false, default: '7d' })
   async getStats(@Query('timeRange') timeRange: string = '7d', @Req() req: Request) {
     const tenantId = (req as any).user?.tenantId;
     return this.analyticsService.getStats(timeRange, tenantId);
@@ -44,7 +42,6 @@ export class AnalyticsController {
 
   @Get('usage')
   @ApiOperation({ summary: 'Get usage data over time' })
-  @ApiQuery({ name: 'timeRange', enum: ['24h', '7d', '30d', '90d'], required: false, default: '7d' })
   async getUsageData(@Query('timeRange') timeRange: string = '7d', @Req() req: Request) {
     const tenantId = (req as any).user?.tenantId;
     return this.analyticsService.getUsageData(timeRange, tenantId);
@@ -52,7 +49,6 @@ export class AnalyticsController {
 
   @Get('providers')
   @ApiOperation({ summary: 'Get provider distribution' })
-  @ApiQuery({ name: 'timeRange', enum: ['24h', '7d', '30d', '90d'], required: false, default: '7d' })
   async getProviderData(@Query('timeRange') timeRange: string = '7d', @Req() req: Request) {
     const tenantId = (req as any).user?.tenantId;
     return this.analyticsService.getProviderData(timeRange, tenantId);
@@ -60,7 +56,6 @@ export class AnalyticsController {
 
   @Get('costs')
   @ApiOperation({ summary: 'Get cost distribution' })
-  @ApiQuery({ name: 'timeRange', enum: ['24h', '7d', '30d', '90d'], required: false, default: '7d' })
   async getCostDistribution(@Query('timeRange') timeRange: string = '7d', @Req() req: Request) {
     const tenantId = (req as any).user?.tenantId;
     return this.analyticsService.getCostDistribution(timeRange, tenantId);
@@ -68,7 +63,6 @@ export class AnalyticsController {
 
   @Get('feedback')
   @ApiOperation({ summary: 'Get feedback statistics' })
-  @ApiQuery({ name: 'timeRange', enum: ['24h', '7d', '30d', '90d'], required: false, default: '7d' })
   async getFeedbackStats(@Query('timeRange') timeRange: string = '7d', @Req() req: Request) {
     const tenantId = (req as any).user?.tenantId;
     return this.analyticsService.getFeedbackStats(timeRange, tenantId);

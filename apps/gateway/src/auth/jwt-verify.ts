@@ -6,6 +6,7 @@ export interface VerifiedToken extends JWTPayload {
   sub: string;
   email?: string;
   roles?: string[];
+  tenantId?: string;
   realm_access?: {
     roles?: string[];
   };
@@ -23,13 +24,23 @@ export class JwtVerifyService {
   private audience: string;
 
   constructor(private configService: ConfigService) {
+    // JWKS URL für Token-Verifizierung (muss mit Keycloak Realm übereinstimmen)
     this.jwksUrl =
       this.configService.get<string>('KEYCLOAK_JWKS_URL') ||
       'http://localhost:8080/realms/wattos/protocol/openid-connect/certs';
+    
+    // Issuer muss exakt mit Keycloak Realm Issuer übereinstimmen
     this.issuer =
       this.configService.get<string>('KEYCLOAK_ISSUER') ||
       'http://localhost:8080/realms/wattos';
+    
+    // Audience muss mit Keycloak Client übereinstimmen
     this.audience = this.configService.get<string>('KEYCLOAK_AUDIENCE') || 'gateway';
+    
+    // Validiere, dass alle erforderlichen Werte gesetzt sind
+    if (!this.jwksUrl || !this.issuer || !this.audience) {
+      throw new Error('KEYCLOAK_JWKS_URL, KEYCLOAK_ISSUER, and KEYCLOAK_AUDIENCE must be set');
+    }
   }
 
   /**
@@ -48,27 +59,32 @@ export class JwtVerifyService {
       const roles: string[] = [];
       
       // Realm-Rollen
-      if (payload.realm_access?.roles) {
-        roles.push(...payload.realm_access.roles);
+      if ((payload as any).realm_access?.roles) {
+        roles.push(...(payload as any).realm_access.roles);
       }
 
       // Client-spezifische Rollen
-      if (payload.resource_access) {
-        for (const clientRoles of Object.values(payload.resource_access)) {
-          if (clientRoles.roles) {
-            roles.push(...clientRoles.roles);
+      if ((payload as any).resource_access) {
+        for (const clientRoles of Object.values((payload as any).resource_access)) {
+          if ((clientRoles as any).roles) {
+            roles.push(...(clientRoles as any).roles);
           }
         }
       }
 
       // Direkte roles Claim (falls vorhanden)
-      if (payload.roles && Array.isArray(payload.roles)) {
-        roles.push(...payload.roles);
+      if ((payload as any).roles && Array.isArray((payload as any).roles)) {
+        roles.push(...(payload as any).roles);
       }
+
+      // Extrahiere tenantId falls vorhanden (aus custom claims oder email domain)
+      const tenantId: string | undefined = (payload as any).tenantId || 
+                       (typeof payload.email === 'string' ? payload.email.split('@')[1]?.split('.')[0] : undefined);
 
       return {
         ...payload,
         roles: [...new Set(roles)], // Entferne Duplikate
+        tenantId, // Füge tenantId hinzu
       } as VerifiedToken;
     } catch (error) {
       if (error instanceof Error) {

@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { FeatureFlagsService } from '@wattweiser/shared';
-import { FeatureFlag } from '@wattweiser/shared';
+import { FeatureFlagsService, FeatureFlag } from '@wattweiser/shared';
 
 @ApiBearerAuth()
 @ApiTags('feature-flags')
@@ -32,13 +31,13 @@ export class FeatureFlagsController {
   @Put(':key')
   @ApiOperation({ summary: 'Update feature flag' })
   async updateFlag(@Param('key') key: string, @Body() flag: Partial<FeatureFlag>): Promise<FeatureFlag> {
-    const currentFlag = await this.featureFlagsService.getFlag(key);
+    const currentFlag = await this.featureFlagsService.getFlagObject(key);
     const updatedFlag: FeatureFlag = {
       key,
-      enabled: flag.enabled ?? currentFlag,
-      description: flag.description,
-      metadata: flag.metadata,
-      ttl: flag.ttl,
+      enabled: flag.enabled ?? currentFlag?.enabled ?? false,
+      ...(flag.description !== undefined && { description: flag.description }),
+      ...(flag.metadata !== undefined && { metadata: flag.metadata }),
+      ...(flag.ttl !== undefined && { ttl: flag.ttl }),
     };
     await this.featureFlagsService.setFlag(updatedFlag);
     return updatedFlag;

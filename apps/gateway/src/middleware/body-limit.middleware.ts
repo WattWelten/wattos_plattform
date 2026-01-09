@@ -11,7 +11,7 @@ export class BodyLimitMiddleware implements NestMiddleware {
   private maxSize: number;
 
   constructor(private configService: ConfigService) {
-    const bodyLimit = this.configService.get<string>('BODY_LIMIT', '2mb');
+    const bodyLimit = (this.configService.get<string>('BODY_LIMIT') || '2mb') as string;
     this.maxSize = this.parseSize(bodyLimit);
   }
 
@@ -31,14 +31,15 @@ export class BodyLimitMiddleware implements NestMiddleware {
     let receivedSize = 0;
     const originalOn = req.on.bind(req);
     
+    const self = this;
     req.on = function (event: string, listener: any) {
       if (event === 'data') {
         return originalOn(event, (chunk: Buffer) => {
           receivedSize += chunk.length;
-          if (receivedSize > this.maxSize) {
+          if (receivedSize > self.maxSize) {
             res.status(413).json({
               statusCode: 413,
-              message: `Request body too large. Maximum size is ${this.formatSize(this.maxSize)}`,
+              message: `Request body too large. Maximum size is ${self.formatSize(self.maxSize)}`,
             });
             return;
           }
@@ -46,7 +47,7 @@ export class BodyLimitMiddleware implements NestMiddleware {
         });
       }
       return originalOn(event, listener);
-    }.bind(this);
+    };
 
     next();
   }
@@ -64,8 +65,8 @@ export class BodyLimitMiddleware implements NestMiddleware {
       return 2 * 1024 * 1024; // Default 2MB
     }
 
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
+    const value = parseInt(match[1]!, 10);
+    const unit = match[2] || 'mb';
     return value * (units[unit] || 1);
   }
 

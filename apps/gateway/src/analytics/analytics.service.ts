@@ -1,6 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@wattweiser/db';
-import { ConfigService } from '@nestjs/config';
 
 export interface AnalyticsStats {
   totalCalls: number;
@@ -32,11 +31,8 @@ export interface CostDistribution {
 
 @Injectable()
 export class AnalyticsService {
-  private readonly logger = new Logger(AnalyticsService.name);
-
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -54,7 +50,7 @@ export class AnalyticsService {
     };
 
     // Get LLM usage data
-    const llmUsage = await this.prisma.lLMUsage.findMany({
+    const llmUsage = await (this.prisma.client as any).llMUsage.findMany({
       where,
       select: {
         tokensUsed: true,
@@ -66,27 +62,29 @@ export class AnalyticsService {
     });
 
     const totalCalls = llmUsage.length;
-    const totalCost = llmUsage.reduce((sum, usage) => sum + (usage.cost || 0), 0);
+    const totalCost = llmUsage.reduce((sum: number, usage: any) => sum + (usage.cost || 0), 0);
     const avgLatency =
       llmUsage.length > 0
-        ? llmUsage.reduce((sum, usage) => sum + (usage.latencyMs || 0), 0) / llmUsage.length
+        ? llmUsage.reduce((sum: number, usage: any) => sum + (usage.latencyMs || 0), 0) / llmUsage.length
         : 0;
-    const errorCount = llmUsage.filter((usage) => usage.error).length;
+    const errorCount = llmUsage.filter((usage: any) => usage.error).length;
     const errorRate = totalCalls > 0 ? (errorCount / totalCalls) * 100 : 0;
 
     // Get active users
-    const activeUsers = await this.prisma.user.count({
-      where: {
-        tenantId: tenantId || undefined,
-        chats: {
-          some: {
-            createdAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
+    const userWhere: any = {};
+    if (tenantId) {
+      userWhere.tenantId = tenantId;
+    }
+    userWhere.chats = {
+      some: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
         },
       },
+    };
+    const activeUsers = await this.prisma.client.user.count({
+      where: userWhere,
     });
 
     return {
@@ -112,7 +110,7 @@ export class AnalyticsService {
       ...(tenantId && { tenantId }),
     };
 
-    const llmUsage = await this.prisma.lLMUsage.findMany({
+    const llmUsage = await (this.prisma.client as any).llMUsage.findMany({
       where,
       select: {
         createdAt: true,
@@ -129,7 +127,7 @@ export class AnalyticsService {
     // Group by time interval
     const grouped = new Map<string, UsageDataPoint>();
 
-    llmUsage.forEach((usage) => {
+    llmUsage.forEach((usage: any) => {
       const dateKey = this.getDateKey(usage.createdAt, interval);
       const existing = grouped.get(dateKey) || {
         date: dateKey,
@@ -170,7 +168,7 @@ export class AnalyticsService {
       ...(tenantId && { tenantId }),
     };
 
-    const llmUsage = await this.prisma.lLMUsage.findMany({
+    const llmUsage = await (this.prisma.client as any).llMUsage.findMany({
       where,
       select: {
         provider: true,
@@ -181,7 +179,7 @@ export class AnalyticsService {
 
     const grouped = new Map<string, ProviderData>();
 
-    llmUsage.forEach((usage) => {
+    llmUsage.forEach((usage: any) => {
       const provider = usage.provider || 'unknown';
       const existing = grouped.get(provider) || {
         provider,
@@ -230,7 +228,7 @@ export class AnalyticsService {
       }),
     };
 
-    const feedback = await this.prisma.feedback.findMany({
+    const feedback = await (this.prisma.client as any).feedback.findMany({
       where,
       select: {
         rating: true,
@@ -239,11 +237,11 @@ export class AnalyticsService {
     });
 
     const total = feedback.length;
-    const positive = feedback.filter((f) => f.rating && f.rating >= 4).length;
-    const negative = feedback.filter((f) => f.rating && f.rating <= 2).length;
+    const positive = feedback.filter((f: any) => f.rating && f.rating >= 4).length;
+    const negative = feedback.filter((f: any) => f.rating && f.rating <= 2).length;
     const reasons = feedback
-      .filter((f) => f.metadata && typeof f.metadata === 'object' && 'reason' in f.metadata)
-      .reduce((acc, f) => {
+      .filter((f: any) => f.metadata && typeof f.metadata === 'object' && 'reason' in f.metadata)
+      .reduce((acc: any, f: any) => {
         const reason = (f.metadata as any).reason || 'unknown';
         acc[reason] = (acc[reason] || 0) + 1;
         return acc;
@@ -317,7 +315,7 @@ export class AnalyticsService {
         weekStart.setDate(d.getDate() - d.getDay());
         return `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
       default:
-        return d.toISOString().split('T')[0];
+        return d.toISOString().split('T')[0] || '';
     }
   }
 }

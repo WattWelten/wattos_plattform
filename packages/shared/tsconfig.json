@@ -11,6 +11,7 @@
     "incremental": true,
     "sourceMap": false,
     "declarationMap": false,
+    "skipLibCheck": true,
     "typeRoots": ["../../node_modules/@types", "node_modules/@types"]
   },
   "include": ["src/**/*.ts", "src/types/**/*.d.ts"],

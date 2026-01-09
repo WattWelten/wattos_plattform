@@ -21,7 +21,8 @@ import { SentryService } from './sentry';
   providers: [
     StructuredLoggerService,
     MetricsService,
-    HealthService,
+    // HealthService wird nicht hier registriert, da es PrismaService benötigt
+    // Es sollte in den einzelnen Services registriert werden (z.B. HealthModule)
     RequestIdMiddleware,
     RequestLoggingMiddleware,
     OpenTelemetryService,
@@ -30,7 +31,7 @@ import { SentryService } from './sentry';
   exports: [
     StructuredLoggerService,
     MetricsService,
-    HealthService,
+    // HealthService wird nicht exportiert
     RequestIdMiddleware,
     RequestLoggingMiddleware,
     OpenTelemetryService,
