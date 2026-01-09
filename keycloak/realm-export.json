@@ -310,8 +310,8 @@
         "providerId": "allowed-client-scopes",
         "subType": "anonymous",
         "config": {
-          "default-default-client-scopes": "[\"web-origins\",\"role_list\",\"profile\",\"roles\",\"email\"]",
-          "default-optional-client-scopes": "[\"address\",\"phone\",\"offline_access\",\"microprofile-jwt\"]"
+          "default-default-client-scopes": ["web-origins", "role_list", "profile", "roles", "email"],
+          "default-optional-client-scopes": ["address", "phone", "offline_access", "microprofile-jwt"]
         }
       },
       {
