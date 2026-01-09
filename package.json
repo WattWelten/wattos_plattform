@@ -64,20 +64,20 @@
     "build:wsl:package": "powershell -ExecutionPolicy Bypass -File scripts/build-wsl.ps1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.3.0",
-    "@commitlint/config-conventional": "^20.3.0",
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
     "@eslint/js": "^9.39.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node-fetch": "^2.6.13",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/coverage-v8": "^4.0.16",
     "autocannon": "^8.0.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "esbuild": "^0.27.2",
-    "express": "^4.22.1",
+    "express": "^5.2.1",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
+    "lint-staged": "^16.2.7",
     "node-fetch": "^3.3.2",
     "prettier": "^3.7.4",
     "ts-node": "^10.9.2",
@@ -86,7 +86,7 @@
     "turbo": "^2.7.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.52.0",
-    "vitest": "^2.1.9"
+    "vitest": "^4.0.16"
   },
   "engines": {
     "node": ">=20.9.0",
@@ -103,8 +103,8 @@
   },
   "dependencies": {
     "@next/env": "^16.1.1",
-    "baseline-browser-mapping": "^2.9.11",
+    "baseline-browser-mapping": "^2.9.14",
     "browserslist": "^4.28.1",
-    "caniuse-lite": "^1.0.30001762"
+    "caniuse-lite": "^1.0.30001763"
   }
 }

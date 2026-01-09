@@ -217,12 +217,15 @@ docs/
 **/docs/
 !docs/LOCAL_SETUP.md
 
-# E2E Screenshots und Test-Artefakte
+# E2E Screenshots und Test-Artefakte (aber Test-Dateien erlauben)
 **/e2e-screens/
 **/screenshots/
 **/test-results/
 **/playwright-report/
 **/test-results.json
+# E2E Test-Dateien erlauben (wichtig für Code-Indexierung)
+!**/e2e/**/*.spec.ts
+!**/e2e/**/*.test.ts
 
 # Turbo Cache und Build-Info
 .turbo/
