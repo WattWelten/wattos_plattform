@@ -11,11 +11,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.9",
+    "@nestjs/common": "^11.1.11",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.9",
+    "@nestjs/core": "^11.1.11",
     "@nestjs/mapped-types": "^2.1.0",
-    "@nestjs/platform-express": "^11.1.9",
+    "@nestjs/platform-express": "^11.1.11",
     "@prisma/client": "^7.2.0",
     "@wattweiser/db": "workspace:*",
     "@wattweiser/shared": "workspace:*",
