@@ -301,7 +301,7 @@
         "providerId": "max-clients",
         "subType": "anonymous",
         "config": {
-          "max-clients": "200"
+          "max-clients": ["200"]
         }
       },
       {
