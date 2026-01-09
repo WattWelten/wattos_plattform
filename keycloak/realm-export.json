@@ -289,13 +289,6 @@
         "config": {}
       },
       {
-        "id": "full-scope-allowed",
-        "name": "Full Scope Allowed",
-        "providerId": "full-scope-allowed",
-        "subType": "anonymous",
-        "config": {}
-      },
-      {
         "id": "max-clients",
         "name": "Max Clients",
         "providerId": "max-clients",
