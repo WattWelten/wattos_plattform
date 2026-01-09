@@ -17,18 +17,20 @@ export interface VerifiedToken extends JWTPayload {
   };
 }
 
-interface CachedJWK {
-  jwk: JWK;
-  expiresAt: number;
-}
+// CachedJWK interface nicht mehr benötigt, da jose library intern cached
+// interface CachedJWK {
+//   jwk: JWK;
+//   expiresAt: number;
+// }
 
 @Injectable()
 export class JwtVerifyService {
   private jwksUrl: string;
   private issuer: string;
   private audience: string;
-  private jwksCache: Map<string, CachedJWK> = new Map();
-  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Stunden in Millisekunden
+  // jwksCache und CACHE_TTL werden nicht verwendet, da jose library intern cached
+  // private jwksCache: Map<string, CachedJWK> = new Map();
+  // private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Stunden in Millisekunden
   private remoteJWKSet: ReturnType<typeof createRemoteJWKSet>;
 
   constructor(private configService: ConfigService) {
