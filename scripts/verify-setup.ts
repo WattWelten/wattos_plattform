@@ -13,12 +13,8 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const prisma = new PrismaClient({
-  adapter: {
-    provider: 'postgres',
-    url: databaseUrl,
-  },
-});
+// Prisma 7.2.0+: URL wird aus DATABASE_URL oder prisma.config.js gelesen
+const prisma = new PrismaClient();
 
 async function verifySetup() {
   console.log('🔍 Verifiziere Multi-Tenant Setup...\n');

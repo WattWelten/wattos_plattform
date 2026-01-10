@@ -12,12 +12,8 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-const prisma = new PrismaClient({
-  adapter: {
-    provider: 'postgres',
-    url: databaseUrl,
-  },
-});
+// Prisma 7.2.0+: URL wird aus DATABASE_URL oder prisma.config.js gelesen
+const prisma = new PrismaClient();
 
 async function testKpiPerformance() {
   console.log('🚀 Starte KPI Performance-Test...\n');

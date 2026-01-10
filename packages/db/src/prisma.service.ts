@@ -30,20 +30,11 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     this.metricsService = metricsService;
     
     // PrismaClient-Instanz erstellen
-    // Prisma 7.2.0+: Connection URL wird aus prisma.config.ts gelesen
-    // Für direkte DB-Verbindung: adapter mit provider und url
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL environment variable is required');
-    }
-    
+    // Prisma 7.2.0+: Connection URL wird aus prisma.config.js oder DATABASE_URL gelesen
+    // PrismaClient liest die URL automatisch aus der Umgebung oder prisma.config.js
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
     this.client = new PrismaClient({
-      adapter: {
-        provider: 'postgres',
-        url: databaseUrl,
-      },
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
     
