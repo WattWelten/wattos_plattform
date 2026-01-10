@@ -12,7 +12,9 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-// Prisma 7.2.0+: URL wird aus DATABASE_URL oder prisma.config.js gelesen
+// Prisma 7.2.0+: PrismaClient liest DATABASE_URL automatisch aus process.env
+// Stelle sicher, dass DATABASE_URL gesetzt ist
+process.env.DATABASE_URL = databaseUrl;
 const prisma = new PrismaClient();
 
 async function testKpiPerformance() {
