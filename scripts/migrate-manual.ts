@@ -10,6 +10,8 @@
 import 'dotenv/config';
 
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -19,10 +21,10 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is required. Bitte .env Datei prüfen.');
 }
 
-// Prisma 7.2.0+: PrismaClient liest DATABASE_URL automatisch aus process.env
-// dotenv/config hat bereits die .env Datei geladen
-// prisma.config.js wird von Prisma Migrate verwendet
-const prisma = new PrismaClient();
+// Prisma 7.2.0+: Erfordert Driver Adapter für PostgreSQL
+const pool = new Pool({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function runMigration() {
   console.log('🚀 Starte manuelle Migration...\n');
