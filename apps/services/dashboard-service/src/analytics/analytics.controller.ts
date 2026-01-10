@@ -7,6 +7,8 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly kpiService: KpiService,
+    private readonly kpiMetricsService: KpiMetricsService,
+    private readonly kpiAlertsService: KpiAlertsService,
   ) {}
 
   @Get(':tenantId')

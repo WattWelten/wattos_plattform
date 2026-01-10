@@ -16,6 +16,8 @@
     "seed:tenants": "node --import tsx scripts/seed-tenants.ts",
     "migrate:manual": "node --import tsx scripts/migrate-manual.ts",
     "setup:multi-tenant": "pnpm migrate:manual && pnpm seed:tenants",
+    "setup:multi-tenant:ps1": "powershell -ExecutionPolicy Bypass -File scripts/setup-multi-tenant.ps1",
+    "setup:multi-tenant:sh": "bash scripts/setup-multi-tenant.sh",
     "test:kpi": "vitest run apps/services/dashboard-service/src/analytics/kpi.service.spec.ts",
     "test:tenant": "vitest run apps/gateway/src/middleware/tenant.middleware.spec.ts",
     "test:rbac": "vitest run apps/gateway/src/auth/guards/rbac.guard.spec.ts",

@@ -22,6 +22,7 @@ import { validateEnv } from '@wattweiser/config';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { BodyLimitMiddleware } from './middleware/body-limit.middleware';
 import { TenantMiddleware } from './middleware/tenant.middleware';
+import { TenantsController } from './tenants/tenants.controller';
 
 // Validate environment variables on module load
 try {
