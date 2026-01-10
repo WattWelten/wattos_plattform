@@ -30,14 +30,10 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is required. Bitte .env Datei prüfen.');
 }
 
-// Prisma 7.2.0+: Erfordert 'adapter' oder 'accelerateUrl' im Constructor
-// Verwende adapter für direkte Datenbankverbindung
-const prisma = new PrismaClient({
-  adapter: {
-    provider: 'postgresql',
-    url: databaseUrl,
-  },
-});
+// Prisma 7.2.0+: PrismaClient liest DATABASE_URL automatisch aus process.env
+// dotenv/config hat bereits die .env Datei geladen
+// prisma.config.js wird von Prisma Migrate verwendet
+const prisma = new PrismaClient();
 
 /**
  * Lade YAML-Datei

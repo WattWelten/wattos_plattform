@@ -180,6 +180,9 @@ weights/
 !**/*.test.js
 !**/*.spec.js
 !**/e2e/**/*.js
+# Prisma Config für Prisma 7.2.0+ erlauben
+!packages/db/prisma.config.js
+!**/prisma.config.js
 
 **/*.jsx
 !src/**/*.jsx
