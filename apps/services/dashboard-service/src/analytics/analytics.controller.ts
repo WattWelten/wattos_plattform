@@ -1,6 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { KpiService, KpiRange } from './kpi.service';
+import { KpiMetricsService } from './kpi-metrics.service';
+import { KpiAlertsService } from './kpi-alerts.service';
 
 @Controller('analytics')
 export class AnalyticsController {

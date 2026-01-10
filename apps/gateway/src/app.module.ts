@@ -83,6 +83,7 @@ try {
     ProxyModule,
     AuditModule,
   ],
+  controllers: [TenantsController],
   providers: [
     BodyLimitMiddleware,
     TenantMiddleware,
