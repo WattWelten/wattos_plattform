@@ -17,9 +17,14 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-// Prisma 7.2.0+: PrismaClient liest DATABASE_URL automatisch aus process.env
-// dotenv/config hat bereits die .env Datei geladen
-const prisma = new PrismaClient();
+// Prisma 7.2.0+: Erfordert 'adapter' oder 'accelerateUrl' im Constructor
+// Verwende adapter für direkte Datenbankverbindung
+const prisma = new PrismaClient({
+  adapter: {
+    provider: 'postgresql',
+    url: databaseUrl,
+  },
+});
 
 async function verifySetup() {
   console.log('🔍 Verifiziere Multi-Tenant Setup...\n');
