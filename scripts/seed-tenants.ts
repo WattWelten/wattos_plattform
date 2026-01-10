@@ -22,7 +22,18 @@ import * as yaml from 'js-yaml';
 import { PrismaClient, RoleType } from '@prisma/client';
 
 // Prisma 7.2.0+: DATABASE_URL wird automatisch aus Umgebungsvariablen gelesen
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
+});
 
 /**
  * Lade YAML-Datei

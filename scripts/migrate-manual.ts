@@ -10,7 +10,19 @@ import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const prisma = new PrismaClient();
+// Prisma 7.2.0+: DATABASE_URL wird automatisch aus Umgebungsvariablen gelesen
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
+});
 
 async function runMigration() {
   console.log('🚀 Starte manuelle Migration...\n');
