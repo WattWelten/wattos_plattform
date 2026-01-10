@@ -7,6 +7,7 @@
 // Direct import from Prisma Client (workspace packages not needed for seed script)
 import { PrismaClient } from '@prisma/client';
 
+// Prisma 7.2.0: URL wird aus DATABASE_URL Umgebungsvariable oder schema.prisma gelesen
 const prisma = new PrismaClient();
 
 // Top-5-Demos basierend auf Plan

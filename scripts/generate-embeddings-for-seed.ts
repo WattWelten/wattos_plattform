@@ -8,6 +8,9 @@ import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// Prisma 7.2.0: Für Scripts muss die URL über Umgebungsvariable verfügbar sein
+// PrismaClient liest die URL automatisch aus DATABASE_URL oder schema.prisma
+// WICHTIG: DATABASE_URL muss gesetzt sein, bevor PrismaClient instanziiert wird
 const prisma = new PrismaClient();
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:3005';
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:3001';

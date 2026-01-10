@@ -6,6 +6,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
+// Prisma 7.2.0: URL wird aus DATABASE_URL Umgebungsvariable oder schema.prisma gelesen
 const prisma = new PrismaClient();
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || 'http://localhost:3005';
 
