@@ -30,6 +30,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     this.metricsService = metricsService;
     
     // PrismaClient-Instanz erstellen
+    // Prisma 7.2.0+: DATABASE_URL wird automatisch aus Umgebungsvariablen gelesen
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
     this.client = new PrismaClient({

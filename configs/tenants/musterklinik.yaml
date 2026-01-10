@@ -1,0 +1,14 @@
+tenant:
+  slug: musterklinik
+  name: Musterklinik 123
+  vertical: health
+branding:
+  primary: "#00D28F"
+  logo: "/logos/health.svg"
+officeHours: { open: 0, close: 24 }
+metrics:
+  avgHandleTimeMin: { default: 12 }
+ui:
+  labels:
+    assistants: "Assistenz"
+    knowledge: "Patienteninfo & Prozesse"

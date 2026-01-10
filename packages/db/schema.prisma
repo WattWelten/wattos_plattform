@@ -5,7 +5,44 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url moved to prisma.config.ts for Prisma 7.2.0+
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum RoleType {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum FeedbackType {
+  UP
+  DOWN
+  STAR1
+  STAR2
+  STAR3
+  STAR4
+  STAR5
+}
+
+enum SourceType {
+  FILE
+  WEBSITE
+  WEBDAV
+  SHAREPOINT
+  ONEDRIVE
+  GDRIVE
+  POSTGRES
+}
+
+enum Channel {
+  WEB
+  AVATAR
+  VIDEO
+  PHONE
 }
 
 // ============================================
@@ -43,6 +80,7 @@ model Tenant {
   alertRules       AlertRule[]
   alerts           Alert[]
   artifacts        Artifact[]
+  feedback         Feedback[]
 
   @@index([slug])
 }
@@ -100,13 +138,16 @@ model Role {
   id          String   @id @default(uuid())
   tenantId    String
   name        String
+  roleType    RoleType? // ADMIN | EDITOR | VIEWER
   permissions Json     @default("[]")
   createdAt   DateTime @default(now())
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userRoles UserRole[]
 
+  @@unique([tenantId, name])
   @@index([tenantId])
+  @@index([roleType])
 }
 
 model UserRole {
@@ -143,7 +184,9 @@ model KnowledgeSpace {
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   documents Document[]
+  sources   Source[]
 
+  @@unique([tenantId, name])
   @@index([tenantId])
 }
 
@@ -160,6 +203,7 @@ model Document {
 
   knowledgeSpace KnowledgeSpace @relation(fields: [knowledgeSpaceId], references: [id], onDelete: Cascade)
   chunks         Chunk[]
+  answerSources  AnswerSource[]
 
   @@index([knowledgeSpaceId])
   @@index([filePath])
@@ -175,6 +219,7 @@ model Chunk {
   createdAt  DateTime                     @default(now())
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  answerSources AnswerSource[]
   // Note: pgvector index created via migration
 
   @@index([documentId])
@@ -198,6 +243,12 @@ model Agent {
   toolsConfig    Json     @default("[]")
   policiesConfig Json     @default("{}")
   kpiConfig      Json     @default("{}")
+  // Multi-Tenant KPI Erweiterungen
+  status         String   @default("draft") // draft | published
+  model          String?  // z.B. "gpt-4.1-mini"
+  prompt         String?  @db.Text
+  toolsJson      Json?    // Tools als JSON (zusätzlich zu tools String[])
+  policy         Json?    // Policy-Konfiguration
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -206,11 +257,13 @@ model Agent {
   persona          Persona?          @relation(fields: [personaId], references: [id], onDelete: SetNull)
   agentRuns        AgentRun[]
   agentGenerations AgentGeneration[]
+  conversations    Conversation[]    // Relation zu Conversations
 
   @@index([tenantId])
   @@index([characterId])
   @@index([personaId])
   @@index([roleType])
+  @@index([status])
 }
 
 model AgentRun {
@@ -331,8 +384,10 @@ model Conversation {
   threadId    String   @unique @default(uuid())
   sessionId   String? // Session-ID für Tracking
   characterId String?
+  assistantId String? // Relation zu Agent (für Multi-Tenant KPI)
   userId      String?
   tenantId    String?
+  channel     Channel? // WEB | AVATAR | VIDEO | PHONE
   userAgent   String?  @db.Text
   startedAt   DateTime @default(now())
   metadata    Json     @default("{}")
@@ -340,14 +395,17 @@ model Conversation {
   updatedAt   DateTime @updatedAt
 
   character Character?            @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  assistant Agent?                @relation(fields: [assistantId], references: [id], onDelete: SetNull)
   messages  ConversationMessage[]
 
   @@index([characterId])
+  @@index([assistantId])
   @@index([userId])
   @@index([tenantId])
   @@index([threadId])
   @@index([sessionId])
   @@index([startedAt])
+  @@index([channel])
 }
 
 model ConversationMessage {
@@ -358,14 +416,25 @@ model ConversationMessage {
   citations      Json?
   latencyMs      Int? // Latenz in Millisekunden
   sourcesJsonb   Json? // Quellen als JSON Array
+  // Multi-Tenant KPI Erweiterungen
+  lang           String?  // Sprache der Nachricht
+  meta           Json?    // Zusätzliche Metadaten
+  tokensIn       Int?     // Input-Tokens
+  tokensOut      Int?     // Output-Tokens
+  costCents      Int?     // Kosten in Cent
+  solved         Boolean  @default(false) // Ob die Frage vollständig gelöst wurde
+  model          String?  // Verwendetes Modell
   metadata       Json     @default("{}")
   createdAt      DateTime @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  answerSources AnswerSource[] // Relation zu AnswerSource
+  feedback      Feedback[]     // Relation zu Feedback
 
   @@index([conversationId])
   @@index([createdAt])
   @@index([conversationId, createdAt(sort: Asc)]) // Composite index für Message-Sortierung
+  @@index([solved])
 }
 
 model Message {
@@ -440,20 +509,28 @@ model AuditLog {
 // ============================================
 
 model Feedback {
-  id        String   @id @default(uuid())
-  userId    String
-  type      String // rating | comment | improvement
-  content   String?  @db.Text
-  rating    Int? // 1-5 stars
-  metadata  Json     @default("{}")
-  createdAt DateTime @default(now())
+  id        String       @id @default(uuid())
+  userId    String?
+  tenantId  String       // Multi-Tenant Support
+  queryId   String?      // Relation zu ConversationMessage (für KPI)
+  type      FeedbackType // UP | DOWN | STAR1-STAR5
+  content   String?      @db.Text
+  rating    Int?         // 1-5 stars (Legacy, wird durch type ersetzt)
+  reason    String?      // Grund für Feedback
+  metadata  Json         @default("{}")
+  createdAt DateTime     @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tenant    Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  query     ConversationMessage? @relation(fields: [queryId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([tenantId])
   @@index([type])
-  @@index([userId, createdAt(sort: Desc)]) // Composite index für User-Feedback-Historie
-  @@index([userId, type]) // Composite index für Feedback-Typ-Filterung
+  @@index([queryId])
+  @@index([tenantId, createdAt(sort: Desc)]) // Composite index für Tenant-Feedback-Historie
+  @@index([tenantId, type]) // Composite index für Feedback-Typ-Filterung
+  @@index([createdAt])
 }
 
 // ============================================
@@ -641,22 +718,29 @@ model ChannelMessage {
 // ============================================
 
 model Source {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   tenantId  String
-  url       String   @db.Text
-  type      String // "domain" | "pattern" | "file"
-  enabled   Boolean  @default(true)
-  metadata  Json     @default("{}")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  spaceId   String?    // Relation zu KnowledgeSpace
+  url       String     @db.Text
+  type      SourceType // FILE | WEBSITE | WEBDAV | SHAREPOINT | ONEDRIVE | GDRIVE | POSTGRES
+  config    Json?      // Source-spezifische Konfiguration
+  status    String     @default("active") // active | paused | error
+  enabled   Boolean    @default(true)
+  metadata  Json       @default("{}")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  space     KnowledgeSpace? @relation(fields: [spaceId], references: [id], onDelete: SetNull)
   artifacts Artifact[]
   crawls    Crawl[]
 
   @@index([tenantId])
+  @@index([spaceId])
   @@index([url])
   @@index([enabled])
+  @@index([status])
+  @@index([type])
 }
 
 model Crawl {
@@ -689,8 +773,9 @@ model Event {
   tenantId       String
   conversationId String?
   sessionId      String?
-  type           String // "viseme" | "tts" | "error" | "kpi"
-  payloadJsonb   Json // Event-spezifische Daten
+  type           String // "viseme" | "tts" | "error" | "kpi" | "ingestion.started" | "ingestion.completed" | "chat.asked" | "chat.answered" | "feedback.given"
+  payloadJsonb   Json // Event-spezifische Daten (auch als payload verwendbar)
+  payload        Json?  // Alias für payloadJsonb (für Konsistenz)
   ts             DateTime @default(now())
   metadata       Json     @default("{}")
   createdAt      DateTime @default(now())
@@ -883,4 +968,26 @@ model Alert {
   @@index([severity])
   @@index([tenantId, status])
   @@index([createdAt(sort: Desc)])
+}
+
+// ============================================
+// ANSWER SOURCES (für KPI & Quellen-Tracking)
+// ============================================
+
+model AnswerSource {
+  id        String   @id @default(uuid())
+  answerId  String   // Relation zu ConversationMessage (Answer)
+  docId     String?  // Relation zu Document
+  chunkId   String?  // Relation zu Chunk
+  score     Float?   // Relevanz-Score
+  createdAt DateTime @default(now())
+
+  answer   ConversationMessage @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  document Document?            @relation(fields: [docId], references: [id], onDelete: SetNull)
+  chunk    Chunk?              @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+
+  @@index([answerId])
+  @@index([docId])
+  @@index([chunkId])
+  @@index([score])
 }

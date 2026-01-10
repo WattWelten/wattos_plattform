@@ -1,0 +1,4 @@
+- name: Patientenaufnahme
+  purpose: admission
+- name: Besuchszeiten & Stationen
+  purpose: info

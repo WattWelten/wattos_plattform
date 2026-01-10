@@ -1,0 +1,14 @@
+tenant:
+  slug: musterkmu
+  name: Muster KMU GmbH
+  vertical: kmu
+branding:
+  primary: "#00D28F"
+  logo: "/logos/kmu.svg"
+officeHours: { open: 9, close: 17 }
+metrics:
+  avgHandleTimeMin: { default: 7 }
+ui:
+  labels:
+    assistants: "Assistenten"
+    knowledge: "Wissensdatenbank"

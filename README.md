@@ -61,15 +61,25 @@ Dies startet:
 
 ### 5. Datenbank-Migrationen ausführen
 
+**Wichtig**: Prisma 7.2.0+ erfordert eine `prisma.config.ts` Datei (bereits vorhanden).
+
 ```bash
 cd packages/db
 pnpm prisma migrate deploy
 ```
 
+Dies erstellt:
+- Multi-Tenant Schema-Erweiterungen (Enums, Modelle, Constraints)
+- KPI Views für Performance-Optimierung
+
 ### 6. Demo-Daten seeden (optional)
 
 ```bash
+# Standard Seeds
 pnpm seed:dev
+
+# Multi-Tenant Demo-Tenants (4 Tenants: musterlandkreis, musterschule, musterkmu, musterklinik)
+pnpm seed:tenants
 ```
 
 Dies erstellt:
@@ -77,6 +87,7 @@ Dies erstellt:
 - Demo-Users
 - 5 Knowledge Spaces mit Sample-Content
 - Chunks für Vektor-Suche (Embeddings können später über RAG-Service generiert werden)
+- **Multi-Tenant**: 4 Demo-Tenants mit Configs, Users, Spaces, Sources, Documents
 
 ### 7. Anwendung starten
 
@@ -91,6 +102,7 @@ Dies startet:
 
 ## 📚 Dokumentation
 
+- [Multi-Tenant KPI System](./docs/MULTI_TENANT_KPI.md) - Multi-Tenant Analytics & KPI-System
 - [Environment Variables Reference](./docs/ENV_REFERENCE.md) - Vollständige ENV-Variablen-Referenz
 - [E2E Testing Guide](./docs/HOWTO_E2E.md) - Playwright E2E Testing Anleitung
 - [Coolify Deployment Guide](./docs/COOLIFY_DEPLOYMENT.md) - Deployment auf Hetzner via Coolify

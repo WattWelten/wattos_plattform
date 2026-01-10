@@ -13,6 +13,7 @@
     "dev:stack": "docker compose -f docker-compose.dev.yml up -d",
     "dev:mvp": "turbo run dev --filter=./apps/web --filter=./apps/gateway --filter=./apps/services/chat-service --filter=./apps/services/agent-service --filter=./apps/services/rag-service --filter=./apps/services/avatar-service --filter=./apps/services/voice-service --filter=./apps/services/crawler-service --filter=./apps/services/admin-service --filter=./apps/services/tool-service --filter=./apps/services/llm-gateway",
     "seed:dev": "node --import tsx scripts/seed.ts",
+    "seed:tenants": "node --import tsx scripts/seed-tenants.ts",
     "build": "turbo run build",
     "build:mvp": "turbo run build --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service --filter=@wattweiser/admin-service --filter=@wattweiser/tool-service --filter=@wattweiser/llm-gateway",
     "test": "turbo run test",

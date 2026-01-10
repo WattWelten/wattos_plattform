@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
+import { PrismaModule } from '@wattweiser/db';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -11,9 +12,11 @@ import { KeycloakService } from './keycloak.service';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { JwtVerifyService } from './jwt-verify';
 import { AuthMiddleware } from './auth.middleware';
+import { RbacGuard } from './guards/rbac.guard';
 
 @Module({
   imports: [
+    PrismaModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -34,7 +37,8 @@ import { AuthMiddleware } from './auth.middleware';
     TokenBlacklistService,
     JwtVerifyService,
     AuthMiddleware,
+    RbacGuard,
   ],
-  exports: [AuthService, TokenBlacklistService, JwtVerifyService, AuthMiddleware],
+  exports: [AuthService, TokenBlacklistService, JwtVerifyService, AuthMiddleware, RbacGuard],
 })
 export class AuthModule {}

@@ -1,0 +1,14 @@
+tenant:
+  slug: musterlandkreis
+  name: Musterlandkreis
+  vertical: public
+branding:
+  primary: "#00D28F"
+  logo: "/logos/public.svg"
+officeHours: { open: 8, close: 18 }
+metrics:
+  avgHandleTimeMin: { default: 10 }
+ui:
+  labels:
+    assistants: "Assistenten"
+    knowledge: "Wissensbasis"

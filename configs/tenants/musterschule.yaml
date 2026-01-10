@@ -1,0 +1,14 @@
+tenant:
+  slug: musterschule
+  name: Musterschule
+  vertical: public
+branding:
+  primary: "#00D28F"
+  logo: "/logos/school.svg"
+officeHours: { open: 8, close: 16 }
+metrics:
+  avgHandleTimeMin: { default: 8 }
+ui:
+  labels:
+    assistants: "Schul-Assistenten"
+    knowledge: "Schulwissen"

@@ -1,0 +1,9 @@
+- type: FILE
+  space: "<SPACE_NAME>"
+  config:
+    path: "./seeds/tenants/musterlandkreis/docs"
+- type: WEBSITE
+  space: "<SPACE_NAME>"
+  config:
+    url: "https://www.example.org/musterlandkreis/"
+    crawl: { sitemap: false, depth: 1 }

@@ -1,0 +1,19 @@
+// prisma/additions/schema.multi_tenant.prisma
+enum Role { ADMIN EDITOR VIEWER }
+enum SourceType { FILE WEBSITE WEBDAV SHAREPOINT ONEDRIVE GDRIVE POSTGRES }
+enum Channel { WEB AVATAR VIDEO PHONE }
+enum FeedbackType { UP DOWN STAR1 STAR2 STAR3 STAR4 STAR5 }
+model Tenant { id String @id @default(cuid()) slug String @unique name String vertical String settings Json? createdAt DateTime @default(now()) users Membership[] }
+model User { id String @id @default(cuid()) email String @unique name String? createdAt DateTime @default(now()) members Membership[] }
+model Membership { id String @id @default(cuid()) tenantId String userId String role Role tenant Tenant @relation(fields: [tenantId], references: [id]) user User @relation(fields: [userId], references: [id]) @@unique([tenantId, userId]) }
+model Assistant { id String @id @default(cuid()) tenantId String name String model String prompt String? tools Json? policy Json? status String tenant Tenant @relation(fields: [tenantId], references: [id]) createdAt DateTime @default(now()) }
+model KnowledgeSpace { id String @id @default(cuid()) tenantId String name String purpose String? tenant Tenant @relation(fields: [tenantId], references: [id]) createdAt DateTime @default(now()) }
+model Source { id String @id @default(cuid()) tenantId String spaceId String type SourceType config Json status String tenant Tenant @relation(fields: [tenantId], references: [id]) space KnowledgeSpace @relation(fields: [spaceId], references: [id]) createdAt DateTime @default(now()) }
+model Document { id String @id @default(cuid()) tenantId String spaceId String sourceId String? title String mime String? url String? sizeBytes Int? tenant Tenant @relation(fields: [tenantId], references: [id]) space KnowledgeSpace @relation(fields: [spaceId], references: [id]) source Source? @relation(fields: [sourceId], references: [id]) createdAt DateTime @default(now()) }
+model Chunk { id String @id @default(cuid()) tenantId String docId String content String embedding Json? doc Document @relation(fields: [docId], references: [id]) tenant Tenant @relation(fields: [tenantId], references: [id]) @@index([tenantId]) createdAt DateTime @default(now()) }
+model Interaction { id String @id @default(cuid()) tenantId String assistantId String channel Channel startedAt DateTime @default(now()) tenant Tenant @relation(fields: [tenantId], references: [id]) assistant Assistant @relation(fields: [assistantId], references: [id]) }
+model Query { id String @id @default(cuid()) interactionId String question String lang String? meta Json? createdAt DateTime @default(now()) interaction Interaction @relation(fields: [interactionId], references: [id]) }
+model Answer { id String @id @default(cuid()) interactionId String queryId String answer String latencyMs Int model String tokensIn Int? tokensOut Int? costCents Int? solved Boolean @default(false) createdAt DateTime @default(now()) interaction Interaction @relation(fields: [interactionId], references: [id]) query Query @relation(fields: [queryId], references: [id]) }
+model AnswerSource { id String @id @default(cuid()) answerId String docId String? chunkId String? score Float? answer Answer @relation(fields: [answerId], references: [id]) document Document @relation(fields: [docId], references: [id]) }
+model Feedback { id String @id @default(cuid()) tenantId String queryId String type FeedbackType reason String? createdAt DateTime @default(now()) tenant Tenant @relation(fields: [tenantId], references: [id]) query Query @relation(fields: [queryId], references: [id]) }
+model Event { id String @id @default(cuid()) tenantId String type String ts DateTime @default(now()) payload Json tenant Tenant @relation(fields: [tenantId], references: [id]) @@index([tenantId, type, ts]) }

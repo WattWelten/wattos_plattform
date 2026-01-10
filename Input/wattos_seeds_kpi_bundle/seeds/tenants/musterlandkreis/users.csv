@@ -1,0 +1,4 @@
+email,role,name
+verwaltung.leitung@example.com,ADMIN,Leitung Verwaltung
+buergerbuero@example.com,EDITOR,Sachbearbeitung Bürgerbüro
+it@example.com,VIEWER,IT / Digital

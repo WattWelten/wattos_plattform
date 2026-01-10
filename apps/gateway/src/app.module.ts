@@ -21,6 +21,7 @@ import {
 import { validateEnv } from '@wattweiser/config';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { BodyLimitMiddleware } from './middleware/body-limit.middleware';
+import { TenantMiddleware } from './middleware/tenant.middleware';
 
 // Validate environment variables on module load
 try {
@@ -83,6 +84,7 @@ try {
   ],
   providers: [
     BodyLimitMiddleware,
+    TenantMiddleware,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
@@ -95,6 +97,8 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Request-ID Middleware sollte zuerst ausgeführt werden
     consumer.apply(RequestIdMiddleware).forRoutes('*');
+    // Tenant-Resolver Middleware (früh, damit tenantId verfügbar ist)
+    consumer.apply(TenantMiddleware).forRoutes('*');
     // Body Limit Middleware (vor Body-Parsing)
     consumer.apply(BodyLimitMiddleware).forRoutes('*');
     // Request Logging Middleware danach
