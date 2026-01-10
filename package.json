@@ -26,6 +26,7 @@
     "test:e2e:kpi": "playwright test tests/e2e/multi-tenant-kpi.spec.ts",
     "test:performance": "node --import tsx scripts/test-kpi-performance.ts",
     "test:all": "pnpm test:kpi && pnpm test:tenant && pnpm test:rbac && pnpm test:config",
+    "verify:setup": "node --import tsx scripts/verify-setup.ts",
     "build": "turbo run build",
     "build:mvp": "turbo run build --filter=@wattweiser/web --filter=@wattweiser/gateway --filter=@wattweiser/chat-service --filter=@wattweiser/agent-service --filter=@wattweiser/rag-service --filter=@wattweiser/avatar-service --filter=@wattweiser/voice-service --filter=@wattweiser/crawler-service --filter=@wattweiser/admin-service --filter=@wattweiser/tool-service --filter=@wattweiser/llm-gateway",
     "test": "turbo run test",
