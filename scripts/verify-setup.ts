@@ -14,10 +14,9 @@ if (!databaseUrl) {
 }
 
 const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: databaseUrl,
-    },
+  adapter: {
+    provider: 'postgres',
+    url: databaseUrl,
   },
 });
 

@@ -41,7 +41,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     // @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
     this.client = new PrismaClient({
       adapter: {
-        provider: 'postgresql',
+        provider: 'postgres',
         url: databaseUrl,
       },
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
