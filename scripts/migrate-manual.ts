@@ -6,19 +6,21 @@
  * Führt SQL-Migrationen direkt aus
  */
 
+// Lade .env Datei bevor PrismaClient instanziiert wird
+import 'dotenv/config';
+
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Prisma 7.2.0+: DATABASE_URL wird automatisch aus Umgebungsvariablen gelesen
+// Prisma 7.2.0+: DATABASE_URL wird aus .env geladen (via dotenv/config)
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
-  throw new Error('DATABASE_URL environment variable is required');
+  throw new Error('DATABASE_URL environment variable is required. Bitte .env Datei prüfen.');
 }
 
 // Prisma 7.2.0+: PrismaClient liest DATABASE_URL automatisch aus process.env
-// Stelle sicher, dass DATABASE_URL gesetzt ist
-process.env.DATABASE_URL = databaseUrl;
+// dotenv/config hat bereits die .env Datei geladen
 const prisma = new PrismaClient();
 
 async function runMigration() {

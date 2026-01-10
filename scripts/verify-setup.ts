@@ -5,15 +5,20 @@
  * Prüft ob Multi-Tenant Setup erfolgreich war
  */
 
+// Lade .env Datei bevor PrismaClient instanziiert wird
+import 'dotenv/config';
+
 import { PrismaClient } from '@prisma/client';
 
+// Prisma 7.2.0+: DATABASE_URL wird aus .env geladen (via dotenv/config)
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
-  console.error('❌ DATABASE_URL nicht gesetzt');
+  console.error('❌ DATABASE_URL nicht gesetzt. Bitte .env Datei prüfen.');
   process.exit(1);
 }
 
-// Prisma 7.2.0+: URL wird aus DATABASE_URL oder prisma.config.js gelesen
+// Prisma 7.2.0+: PrismaClient liest DATABASE_URL automatisch aus process.env
+// dotenv/config hat bereits die .env Datei geladen
 const prisma = new PrismaClient();
 
 async function verifySetup() {
