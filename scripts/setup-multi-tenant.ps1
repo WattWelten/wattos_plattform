@@ -26,7 +26,7 @@ Write-Host ""
 Write-Host "🔍 Prüfe Datenbank-Verbindung..." -ForegroundColor Cyan
 try {
     $env:DATABASE_URL = $DatabaseUrl
-    node --import tsx -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } }); p.`$connect().then(() => { console.log('✅ Verbindung erfolgreich'); process.exit(0); }).catch((e) => { console.error('❌ Verbindung fehlgeschlagen:', e.message); process.exit(1); });"
+    node --import tsx -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient(); p.`$connect().then(() => { console.log('✅ Verbindung erfolgreich'); process.exit(0); }).catch((e) => { console.error('❌ Verbindung fehlgeschlagen:', e.message); process.exit(1); });"
     if ($LASTEXITCODE -ne 0) {
         throw "Datenbank-Verbindung fehlgeschlagen"
     }
@@ -73,7 +73,7 @@ try {
     $env:DATABASE_URL = $DatabaseUrl
     node --import tsx -e "
         import { PrismaClient } from '@prisma/client';
-        const p = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
+        const p = new PrismaClient();
         p.tenant.count().then(count => {
             console.log(`✅ ${count} Tenants gefunden`);
             if (count >= 4) {

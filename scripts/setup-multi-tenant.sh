@@ -20,7 +20,7 @@ echo ""
 
 # 2. Prüfe Datenbank-Verbindung
 echo "🔍 Prüfe Datenbank-Verbindung..."
-if ! node --import tsx -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } }); p.\$connect().then(() => { console.log('✅ Verbindung erfolgreich'); process.exit(0); }).catch((e) => { console.error('❌ Verbindung fehlgeschlagen:', e.message); process.exit(1); });"; then
+if ! node --import tsx -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient(); p.\$connect().then(() => { console.log('✅ Verbindung erfolgreich'); process.exit(0); }).catch((e) => { console.error('❌ Verbindung fehlgeschlagen:', e.message); process.exit(1); });"; then
     echo "❌ Datenbank-Verbindung fehlgeschlagen"
     exit 1
 fi
@@ -47,7 +47,7 @@ echo ""
 
 # 5. Verifiziere Setup
 echo "🔍 Verifiziere Setup..."
-TENANT_COUNT=$(node --import tsx -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } }); p.tenant.count().then(count => { console.log(count); process.exit(0); });")
+TENANT_COUNT=$(node --import tsx -e "import { PrismaClient } from '@prisma/client'; const p = new PrismaClient(); p.tenant.count().then(count => { console.log(count); process.exit(0); });")
 if [ "$TENANT_COUNT" -ge 4 ]; then
     echo "✅ $TENANT_COUNT Tenants gefunden"
     echo "✅ Setup-Verifikation erfolgreich"
