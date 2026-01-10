@@ -54,7 +54,7 @@ export class TenantConfigLoader implements OnModuleInit, OnModuleDestroy {
       try {
         this.redis = new Redis(redisUrl);
         this.logger.log('Redis cache enabled for tenant configs');
-      } catch (error) {
+      } catch {
         this.logger.warn('Failed to connect to Redis, using in-memory cache');
       }
     }

@@ -45,5 +45,23 @@ export class AnalyticsController {
       ...kpis,
     };
   }
+
+  @Get('kpi/:tenantId/metrics')
+  async getKpiMetrics(
+    @Param('tenantId') tenantId: string,
+    @Query('range') range?: string,
+  ) {
+    const kpiRange: KpiRange =
+      range === 'today' || range === '7d' || range === '30d'
+        ? range
+        : '7d';
+
+    return this.kpiMetricsService.exportKpiMetrics(tenantId, kpiRange);
+  }
+
+  @Get('kpi/:tenantId/alerts')
+  async getKpiAlerts(@Param('tenantId') tenantId: string) {
+    return this.kpiAlertsService.checkTenantAlerts(tenantId);
+  }
 }
 
