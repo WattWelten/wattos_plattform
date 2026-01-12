@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export interface UseAvatarRecordingReturn {
   isRecording: boolean;
@@ -16,6 +16,7 @@ export interface UseAvatarRecordingReturn {
  * Hook für Avatar-Screen-Recording
  * 
  * Erfasst Canvas-Stream und Audio für Video-Generierung
+ * P1-4: Memory-Leak-Fixes - Cleanup bei Unmount
  */
 export function useAvatarRecording(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -28,8 +29,40 @@ export function useAvatarRecording(
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const startTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // P1-4: Cleanup bei Unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup bei Component-Unmount
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (error) {
+          console.warn('Error stopping MediaRecorder on unmount:', error);
+        }
+      }
+      
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        streamRef.current = null;
+      }
+      
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+      }
+      
+      if (durationIntervalRef.current) {
+        clearInterval(durationIntervalRef.current);
+        durationIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   const startRecording = useCallback(async () => {
     if (!canvasRef.current) {
@@ -48,6 +81,7 @@ export function useAvatarRecording(
       if (audioElementRef?.current) {
         try {
           audioContext = new AudioContext();
+          audioContextRef.current = audioContext; // Speichere für Cleanup
           audioStream = audioContext.createMediaStreamSource(
             audioElementRef.current.captureStream() || new MediaStream(),
           );
@@ -97,13 +131,16 @@ export function useAvatarRecording(
         const blob = new Blob(chunksRef.current, { type: mimeType });
         setVideoBlob(blob);
         
-        // Cleanup
+        // P1-4: Cleanup
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((track) => track.stop());
           streamRef.current = null;
         }
         if (audioContext) {
-          audioContext.close();
+          audioContext.close().catch(() => {});
+          if (audioContextRef.current === audioContext) {
+            audioContextRef.current = null;
+          }
         }
         if (durationIntervalRef.current) {
           clearInterval(durationIntervalRef.current);

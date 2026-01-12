@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { KeycloakService } from './keycloak.service';
@@ -7,6 +7,8 @@ import { sanitizeText } from '@wattweiser/shared';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private jwtService: JwtService,
     private _configService: ConfigService,
@@ -35,7 +37,9 @@ export class AuthService {
 
     // Keycloak validation
     try {
+      this.logger.debug(`Attempting Keycloak login for user: ${sanitizedUsername}`);
       const token = await this.keycloakService.login(sanitizedUsername, sanitizedPassword);
+      this.logger.debug('Keycloak login successful, fetching user info...');
       const userInfo = await this.keycloakService.getUserInfo(token.access_token);
 
       return {
@@ -45,6 +49,14 @@ export class AuthService {
         token: token.access_token,
       };
     } catch (error) {
+      this.logger.error('Keycloak authentication failed:', error instanceof Error ? error.message : String(error));
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as any;
+        if (axiosError.response) {
+          this.logger.error(`Keycloak error response: ${JSON.stringify(axiosError.response.data)}`);
+          this.logger.error(`Keycloak status: ${axiosError.response.status}`);
+        }
+      }
       throw new UnauthorizedException('Invalid credentials');
     }
   }

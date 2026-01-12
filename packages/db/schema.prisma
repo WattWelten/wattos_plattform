@@ -1042,4 +1042,5 @@ model Video {
   @@index([avatarId])
   @@index([agentId])
   @@index([status])
+  @@index([tenantId, createdAt]) // P2-3: Composite Index für häufige Queries
 }

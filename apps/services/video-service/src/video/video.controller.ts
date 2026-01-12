@@ -12,8 +12,11 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
@@ -29,6 +32,7 @@ export class VideoController {
    */
   @Post('upload')
   @UseInterceptors(FileInterceptor('video'))
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // P1-2: Rate-Limiting für Uploads (10/Minute)
   async uploadVideo(
     @UploadedFile(
       new ParseFilePipe({
@@ -45,13 +49,23 @@ export class VideoController {
       throw new BadRequestException('tenantId, avatarId, and title are required');
     }
 
+    // P0-3: JSON.parse Error-Handling
+    let metadata: Record<string, unknown> | undefined;
+    if (body.metadata) {
+      try {
+        metadata = JSON.parse(body.metadata);
+      } catch (error) {
+        throw new BadRequestException('Invalid metadata JSON format');
+      }
+    }
+
     const createVideoDto: CreateVideoDto = {
       tenantId: body.tenantId,
       avatarId: body.avatarId,
       title: body.title,
       description: body.description,
       agentId: body.agentId,
-      metadata: body.metadata ? JSON.parse(body.metadata) : undefined,
+      metadata,
     };
 
     return this.videoService.uploadVideo(file, createVideoDto);
@@ -99,16 +113,31 @@ export class VideoController {
 
   /**
    * Video-Stream/Download
+   * P2-2: Unterstützt Streaming für große Videos
    */
   @Get(':videoId/download')
   async downloadVideo(
     @Param('videoId') videoId: string,
     @Query('tenantId') tenantId: string,
-  ): Promise<Buffer> {
+    @Res() res: Response,
+  ): Promise<void> {
     if (!tenantId) {
       throw new BadRequestException('tenantId is required');
     }
-    const { buffer } = await this.videoService.getVideoFile(videoId, tenantId);
-    return buffer;
+    
+    const fileData = await this.videoService.getVideoFile(videoId, tenantId);
+    
+    res.setHeader('Content-Type', fileData.contentType);
+    res.setHeader('Content-Length', fileData.fileSize.toString());
+    res.setHeader('Accept-Ranges', 'bytes');
+    
+    // P2-2: Streaming für große Videos
+    if (fileData.stream) {
+      fileData.stream.pipe(res);
+    } else if (fileData.buffer) {
+      res.send(fileData.buffer);
+    } else {
+      throw new BadRequestException('Video file not available');
+    }
   }
 }
