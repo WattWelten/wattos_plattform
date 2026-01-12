@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@wattweiser/db';
 import { DashboardDataAggregationService } from './dashboard-data-aggregation.service';
 import { CacheService } from '@wattweiser/shared';
+import { DashboardLayout, DashboardConfig, Dashboard } from '../common/interfaces/dashboard.interface';
 
 /**
  * Dashboard Service
@@ -20,9 +21,29 @@ export class DashboardService {
   ) {}
 
   /**
-   * Dashboard für Tenant abrufen
+   * Ruft ein Dashboard für einen Tenant ab
+   * 
+   * @param tenantId - UUID des Tenants
+   * @param dashboardId - Optional: UUID des Dashboards. Wenn nicht angegeben, wird das Default-Dashboard zurückgegeben
+   * @returns Promise<Dashboard & { widgets: Record<string, any> }> - Dashboard mit aggregierten Widget-Daten
+   * 
+   * @example
+   * ```typescript
+   * // Default Dashboard abrufen
+   * const dashboard = await dashboardService.getDashboard('tenant-uuid');
+   * 
+   * // Spezifisches Dashboard abrufen
+   * const dashboard = await dashboardService.getDashboard('tenant-uuid', 'dashboard-uuid');
+   * ```
+   * 
+   * @throws {Error} Wenn Dashboard nicht gefunden wird
+   * 
+   * @remarks
+   * - Verwendet Redis-Caching (TTL: 5 Minuten)
+   * - Cache-Key: `dashboard:{tenantId}:{dashboardId || 'default'}`
+   * - Aggregiert Widget-Daten parallel für bessere Performance
    */
-  async getDashboard(tenantId: string, dashboardId?: string): Promise<any> {
+  async getDashboard(tenantId: string, dashboardId?: string): Promise<Dashboard & { widgets: Record<string, any> }> {
     const cacheKey = `dashboard:${tenantId}:${dashboardId || 'default'}`;
     
     // Cache-Check
@@ -61,7 +82,7 @@ export class DashboardService {
 
     // Dashboard-Daten aggregieren
     // MVP: layout hat Vorrang, fallback zu config (Legacy)
-    const layout = dashboard.layout || dashboard.config;
+    const layout = (dashboard.layout || dashboard.config) as DashboardLayout;
     const dashboardData = await this.dataAggregation.aggregateDashboardData(
       tenantId,
       { ...dashboard, layout },
@@ -74,20 +95,34 @@ export class DashboardService {
   }
 
   /**
-   * Dashboard erstellen
+   * Erstellt ein neues Dashboard für einen Tenant
+   * 
+   * @param tenantId - UUID des Tenants
+   * @param name - Name des Dashboards
+   * @param layout - Dashboard-Layout-Konfiguration
+   * @param isDefault - Ob dies das Default-Dashboard sein soll (optional, default: false)
+   * @returns Promise<Dashboard> - Das erstellte Dashboard
+   * 
+   * @example
+   * ```typescript
+   * const dashboard = await dashboardService.createDashboard(
+   *   'tenant-uuid',
+   *   'My Dashboard',
+   *   { widgets: [...] },
+   *   true // als Default setzen
+   * );
+   * ```
+   * 
+   * @remarks
+   * - Wenn isDefault=true, werden alle anderen Default-Dashboards deaktiviert
+   * - Invalidiert automatisch den Cache für diesen Tenant
    */
   async createDashboard(
     tenantId: string,
     name: string,
-    layout: any,
+    layout: DashboardLayout,
     isDefault = false,
-  ): Promise<{
-    id: string;
-    name: string;
-    layout: any;
-    isDefault: boolean;
-    createdAt: Date;
-  }> {
+  ): Promise<Dashboard> {
     // Wenn Default, andere Defaults deaktivieren
     if (isDefault) {
       await this.prismaService.client.dashboard.updateMany({
@@ -100,14 +135,14 @@ export class DashboardService {
       data: {
         tenantId,
         name,
-        layout: layout as any, // MVP: layout field wird verwendet
-        config: {}, // Legacy: leeres config für Kompatibilität
+        layout: layout as any, // Prisma erwartet Json type
+        config: {} as DashboardConfig, // Legacy: leeres config für Kompatibilität
         isDefault,
       },
     });
 
-    // Cache invalidieren
-    await this.cache.delete(`dashboard:${tenantId}:*`);
+    // Cache invalidieren (alle Dashboard-Keys für diesen Tenant)
+    await this.cache.deletePattern(`dashboard:${tenantId}:*`);
 
     return dashboard;
   }
@@ -120,16 +155,10 @@ export class DashboardService {
     dashboardId: string,
     updates: {
       name?: string;
-      layout?: any;
+      layout?: DashboardLayout;
       isDefault?: boolean;
     },
-  ): Promise<{
-    id: string;
-    name: string;
-    layout: any;
-    isDefault: boolean;
-    updatedAt: Date;
-  }> {
+  ): Promise<Dashboard> {
     // Wenn Default, andere Defaults deaktivieren
     if (updates.isDefault) {
       await this.prismaService.client.dashboard.updateMany({
@@ -145,13 +174,13 @@ export class DashboardService {
       },
       data: {
         ...updates,
-        layout: updates.layout as any, // MVP: layout field wird verwendet
-        config: updates.layout || {}, // Legacy: config als Fallback
+        layout: updates.layout as any, // Prisma erwartet Json type
+        config: (updates.layout as DashboardConfig) || {}, // Legacy: config als Fallback
       },
     });
 
     // Cache invalidieren
-    await this.cache.delete(`dashboard:${tenantId}:${dashboardId}`);
+    await this.cache.deletePattern(`dashboard:${tenantId}:*`);
 
     return dashboard;
   }
@@ -168,7 +197,7 @@ export class DashboardService {
     });
 
     // Cache invalidieren
-    await this.cache.delete(`dashboard:${tenantId}:${dashboardId}`);
+    await this.cache.deletePattern(`dashboard:${tenantId}:*`);
   }
 
   /**
@@ -193,12 +222,7 @@ export class DashboardService {
   /**
    * Default Dashboard erstellen
    */
-  private async createDefaultDashboard(tenantId: string): Promise<{
-    id: string;
-    name: string;
-    layout: any;
-    isDefault: boolean;
-  }> {
+  private async createDefaultDashboard(tenantId: string): Promise<Dashboard> {
     const defaultLayout = {
       widgets: [
         {

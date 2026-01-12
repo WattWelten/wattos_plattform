@@ -31,16 +31,13 @@ export default defineConfig({
     teardownTimeout: 5000,
     isolate: true,
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false,
-      },
-    },
   },
   resolve: {
     alias: {
       '@wattweiser/core': path.resolve(__dirname, './packages/core/src'),
       '@wattweiser/shared': path.resolve(__dirname, './packages/shared/src'),
+      '@wattweiser/db': path.resolve(__dirname, './packages/db/src'),
+      '@wattweiser/config': path.resolve(__dirname, './packages/config/src'),
     },
   },
 });

@@ -18,7 +18,23 @@ export class KpiMetricsService {
   ) {}
 
   /**
-   * Exportiere KPIs als Metrics für Monitoring
+   * Exportiert KPIs als Metrics für Monitoring-Systeme (z.B. Prometheus, Datadog)
+   * 
+   * @param tenantId - UUID des Tenants
+   * @param range - Zeitraum: 'today', '7d', oder '30d'. Default: '7d'
+   * @returns Promise<Record<string, number>> - Objekt mit Metriken im Format 'kpi.{metric_name}': value
+   * 
+   * @example
+   * ```typescript
+   * const metrics = await kpiMetricsService.exportKpiMetrics('tenant-uuid', '7d');
+   * // { 'kpi.answered': 100, 'kpi.csat': 4.5, ... }
+   * ```
+   * 
+   * @throws {Error} Wenn KPI-Berechnung fehlschlägt
+   * 
+   * @remarks
+   * - Metriken können für Integration mit externen Monitoring-Systemen verwendet werden
+   * - Format: `kpi.{metric_name}` für bessere Kompatibilität
    */
   async exportKpiMetrics(tenantId: string, range: 'today' | '7d' | '30d' = '7d') {
     try {
@@ -50,7 +66,27 @@ export class KpiMetricsService {
   }
 
   /**
-   * Prüfe Alerts für kritische KPIs
+   * Prüft kritische KPI-Schwellenwerte und gibt Alerts zurück
+   * 
+   * @param tenantId - UUID des Tenants
+   * @returns Promise<string[]> - Array von Alert-Nachrichten (leer wenn keine Alerts)
+   * 
+   * @example
+   * ```typescript
+   * const alerts = await kpiMetricsService.checkAlerts('tenant-uuid');
+   * if (alerts.length > 0) {
+   *   console.log('Alerts:', alerts);
+   *   // ['CSAT kritisch: 2.5/5.0', 'P95 Latenz hoch: 6000ms']
+   * }
+   * ```
+   * 
+   * @remarks
+   * - Prüft folgende Schwellenwerte:
+   *   - CSAT < 3.0 → Alert
+   *   - P95 Latency > 5000ms → Alert
+   *   - Self-Service Rate < 0.5 → Alert
+   *   - Coverage Rate < 0.7 → Alert
+   * - Verwendet 7d-Range für KPI-Berechnung
    */
   async checkAlerts(tenantId: string) {
     const kpis = await this.kpiService.getKpis(tenantId, '7d');

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@wattweiser/db';
 import { CacheService } from '@wattweiser/shared';
+import { WidgetPosition, WidgetConfig, Widget } from '../common/interfaces/widget.interface';
 
 /**
  * Widget Service
@@ -18,7 +19,30 @@ export class WidgetService {
   ) {}
 
   /**
-   * Widget erstellen
+   * Erstellt ein neues Widget für einen Tenant
+   * 
+   * @param tenantId - UUID des Tenants
+   * @param data - Widget-Daten
+   * @param data.dashboardId - Optional: UUID des Dashboards, dem das Widget zugeordnet werden soll
+   * @param data.characterId - Optional: UUID des Characters, dem das Widget zugeordnet werden soll
+   * @param data.type - Widget-Typ (z.B. 'kpi', 'analytics', 'metrics')
+   * @param data.name - Widget-Name
+   * @param data.config - Optional: Widget-Konfiguration
+   * @param data.position - Optional: Widget-Position auf dem Dashboard
+   * @returns Promise<Widget> - Das erstellte Widget
+   * 
+   * @example
+   * ```typescript
+   * const widget = await widgetService.createWidget('tenant-uuid', {
+   *   type: 'kpi',
+   *   name: 'KPI Overview',
+   *   config: { range: '7d' },
+   *   position: { x: 0, y: 0, width: 4, height: 2 }
+   * });
+   * ```
+   * 
+   * @remarks
+   * - Invalidiert automatisch den Cache für das zugehörige Dashboard und alle Widgets des Tenants
    */
   async createWidget(
     tenantId: string,
@@ -27,10 +51,10 @@ export class WidgetService {
       characterId?: string;
       type: string;
       name: string;
-      config: any;
-      position: any;
+      config?: WidgetConfig;
+      position?: WidgetPosition;
     },
-  ): Promise<any> {
+  ): Promise<Widget> {
     const widget = await this.prismaService.client.widget.create({
       data: {
         tenantId,
@@ -38,8 +62,8 @@ export class WidgetService {
         characterId: data.characterId,
         type: data.type,
         name: data.name,
-        config: data.config as any,
-        position: data.position as any,
+        config: (data.config || {}) as any, // Prisma erwartet Json type
+        position: (data.position || {}) as any, // Prisma erwartet Json type
       },
       include: {
         dashboard: true,
@@ -49,9 +73,9 @@ export class WidgetService {
 
     // Cache invalidieren
     if (data.dashboardId) {
-      await this.cache.delete(`dashboard:${tenantId}:${data.dashboardId}`);
+      await this.cache.deletePattern(`dashboard:${tenantId}:*`);
     }
-    await this.cache.delete(`widgets:${tenantId}:*`);
+    await this.cache.deletePattern(`widgets:${tenantId}:*`);
 
     return widget;
   }
@@ -64,11 +88,11 @@ export class WidgetService {
     widgetId: string,
     updates: {
       name?: string;
-      config?: any;
-      position?: any;
+      config?: WidgetConfig;
+      position?: WidgetPosition;
       dashboardId?: string;
     },
-  ): Promise<any> {
+  ): Promise<Widget> {
     const widget = await this.prismaService.client.widget.update({
       where: {
         id: widgetId,
@@ -76,8 +100,8 @@ export class WidgetService {
       },
       data: {
         ...updates,
-        config: updates.config as any,
-        position: updates.position as any,
+        config: (updates.config || {}) as any, // Prisma erwartet Json type
+        position: (updates.position || {}) as any, // Prisma erwartet Json type
       },
       include: {
         dashboard: true,
@@ -87,10 +111,9 @@ export class WidgetService {
 
     // Cache invalidieren
     if (widget.dashboardId) {
-      await this.cache.delete(`dashboard:${tenantId}:${widget.dashboardId}`);
+      await this.cache.deletePattern(`dashboard:${tenantId}:*`);
     }
-    await this.cache.delete(`widget:${tenantId}:${widgetId}`);
-    await this.cache.delete(`widgets:${tenantId}:*`);
+    await this.cache.deletePattern(`widgets:${tenantId}:*`);
 
     return widget;
   }
@@ -119,17 +142,16 @@ export class WidgetService {
 
     // Cache invalidieren
     if (widget.dashboardId) {
-      await this.cache.delete(`dashboard:${tenantId}:${widget.dashboardId}`);
+      await this.cache.deletePattern(`dashboard:${tenantId}:*`);
     }
-    await this.cache.delete(`widget:${tenantId}:${widgetId}`);
-    await this.cache.delete(`widgets:${tenantId}:*`);
+    await this.cache.deletePattern(`widgets:${tenantId}:*`);
   }
 
   /**
    * Widget abrufen
    */
-  async getWidget(tenantId: string, widgetId: string): Promise<any> {
-    const cacheKey = `widget:${tenantId}:${widgetId}`;
+  async getWidget(tenantId: string, widgetId: string): Promise<Widget> {
+    const cacheKey = `widgets:${tenantId}:${widgetId}`;
     
     // Cache-Check
     const cached = await this.cache.get(cacheKey);
@@ -162,7 +184,7 @@ export class WidgetService {
   /**
    * Widgets für Dashboard abrufen
    */
-  async getWidgetsByDashboard(tenantId: string, dashboardId: string): Promise<any[]> {
+  async getWidgetsByDashboard(tenantId: string, dashboardId: string): Promise<Widget[]> {
     const cacheKey = `widgets:${tenantId}:${dashboardId}`;
     
     // Cache-Check
@@ -191,7 +213,7 @@ export class WidgetService {
   /**
    * Widgets für Character abrufen
    */
-  async getWidgetsByCharacter(tenantId: string, characterId: string): Promise<any[]> {
+  async getWidgetsByCharacter(tenantId: string, characterId: string): Promise<Widget[]> {
     const cacheKey = `widgets:${tenantId}:character:${characterId}`;
     
     // Cache-Check
@@ -220,7 +242,7 @@ export class WidgetService {
   /**
    * Alle Widgets für Tenant auflisten
    */
-  async listWidgets(tenantId: string, filters?: { type?: string; dashboardId?: string }): Promise<any[]> {
+  async listWidgets(tenantId: string, filters?: { type?: string; dashboardId?: string }): Promise<Widget[]> {
     const widgets = await this.prismaService.client.widget.findMany({
       where: {
         tenantId,

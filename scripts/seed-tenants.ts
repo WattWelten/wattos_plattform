@@ -115,10 +115,9 @@ async function ensureTenant(
 async function ensureUser(email: string, name: string, tenantId: string) {
   return prisma.user.upsert({
     where: { email },
-    update: { name },
+    update: {},
     create: {
       email,
-      name,
       tenantId,
     },
   });

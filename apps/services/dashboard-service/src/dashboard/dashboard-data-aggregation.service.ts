@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@wattweiser/db';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { MetricsService } from '../metrics/metrics.service';
+import { DashboardLayout, Dashboard } from '../common/interfaces/dashboard.interface';
+import { WidgetPosition, WidgetConfig } from '../common/interfaces/widget.interface';
 
 /**
  * Dashboard Data Aggregation Service
@@ -23,11 +25,11 @@ export class DashboardDataAggregationService {
    */
   async aggregateDashboardData(
     tenantId: string,
-    dashboard: { id: string; name: string; layout?: any; config?: any },
+    dashboard: Dashboard,
   ): Promise<{
     id: string;
     name: string;
-    layout: any;
+    layout: DashboardLayout;
     widgets: Record<string, any>;
     updatedAt: Date;
   }> {
@@ -66,7 +68,7 @@ export class DashboardDataAggregationService {
    */
   private async aggregateWidgetData(
     tenantId: string,
-    widget: { id: string; type: string; position?: any; config?: any },
+    widget: { id: string; type: string; position?: WidgetPosition; config?: WidgetConfig },
   ): Promise<any> {
     switch (widget.type) {
       case 'overview':

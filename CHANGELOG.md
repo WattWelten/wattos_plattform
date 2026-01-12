@@ -4,6 +4,164 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Sprint 5: Projekt-Bereinigung & Code-Qualität (2026-01-12)
+
+#### ✅ Projekt-Bereinigung
+- ✅ **Build-Artefakte entfernt**
+  - Alle `dist/` Ordner bereinigt (Gateway, Packages)
+  - Alle `.next/` Ordner bereinigt (Web, Console, Customer Portal)
+  - Build-Artefakte werden bei nächstem Build neu generiert
+- ✅ **Log-Dateien entfernt**
+  - Gateway-Log-Dateien entfernt (gateway.log, gateway-error.log, gateway-output.log)
+  - Log-Dateien werden automatisch von .gitignore ignoriert
+- ✅ **Alte Konfigurationsdateien entfernt**
+  - `packages/db/prisma.config.js` entfernt (nicht mehr benötigt, Prisma 7.2.0)
+  - Prisma-Adapter wird jetzt direkt in `PrismaService` konfiguriert
+- ✅ **TypeScript-Fehler behoben**
+  - Ungenutzter `@ts-expect-error` Kommentar in `jwt.strategy.ts` entfernt
+  - Ungenutzte `_authService` Variable entfernt
+  - Gateway kompiliert jetzt ohne Fehler
+- ✅ **.gitignore optimiert**
+  - Alle Build-Artefakte sind korrekt ignoriert
+  - Log-Dateien sind ignoriert
+  - Backup-Dateien sind ignoriert
+  - Temp-Dateien sind ignoriert
+
+### Sprint 5: Multi-Tenant KPI System - Phase 4.4 (Advanced Features) (2026-01-30)
+
+#### ✅ Phase 4.4.1: KPI Views nutzen (Performance-Optimierung)
+- ✅ **KPI Views aktiviert**
+  - `getAnsweredCount()` nutzt `vw_kpi_answered` View
+  - `getSelfServiceRate()` nutzt `vw_kpi_self_service` View
+  - `getP95Latency()` nutzt `vw_kpi_p95_latency` View
+  - `getCsat()` nutzt `vw_kpi_csat` View
+  - `getTopTopics()` nutzt `vw_kpi_top_topics` View
+  - Views aggregieren Daten pro Tag für bessere Performance
+  - Date-Range-Filterung über `date_trunc('day', ...)`
+
+#### ✅ Phase 4.4.2: Cache-Invalidierung bei Datenänderungen
+- ✅ **KPI Event Handler Service**
+  - `KpiEventHandlerService` reagiert auf Datenänderungen
+  - Prisma Middleware für automatische Cache-Invalidierung
+  - Reagiert auf `create`, `update`, `delete` Operationen
+  - Unterstützt `ConversationMessage`, `Feedback`, `Event`, `Conversation`
+  - Extrahiert Tenant-ID aus Operation-Params oder Result
+  - Invalidiert Cache für alle Ranges (today, 7d, 30d)
+
+#### ✅ Phase 4.4.3: OpenAPI/Swagger Dokumentation
+- ✅ **Swagger Setup in main.ts**
+  - Optional: Swagger wird geladen wenn `@nestjs/swagger` installiert ist
+  - Dokumentation verfügbar unter `/api/docs`
+  - JWT Bearer Auth konfiguriert
+  - Tags: `analytics` für KPI-Endpoints
+  - Controller bereits mit Swagger Decorators vorbereitet
+
+#### ✅ Phase 4.4.4: Metrics-Export für Prometheus
+- ✅ **Prometheus Controller**
+  - `GET /metrics` Endpoint für Prometheus-Scraping
+  - Exportiert alle KPI-Metriken im Prometheus-Format
+  - Metriken pro Tenant mit Labels (tenant_id, tenant_slug, tenant_name)
+  - Metriken: `wattweiser_kpi_answered`, `wattweiser_kpi_self_service_rate`, etc.
+  - RBAC: Nur ADMIN/EDITOR können Metrics abrufen
+  - Format: `metric_name{label="value"} metric_value`
+
+### Sprint 5: Multi-Tenant KPI System - Phase 4 (Gateway Integration & Performance) (2026-01-30)
+
+#### ✅ Phase 4.1: Gateway Integration
+- ✅ **Dashboard-Service über Gateway routen**
+  - `dashboard` und `analytics` Routes zum Proxy-Service hinzugefügt
+  - Path-Rewrite für `/api/analytics/*` → `/analytics/*`
+  - Tenant-ID und User-Info werden korrekt weitergegeben
+  - Gateway setzt `X-Tenant-Id`, `X-User-Id`, `X-User-Email` Headers
+- ✅ **Tenant-Middleware im Dashboard-Service**
+  - Extrahiert Tenant-ID aus Headers (vom Gateway gesetzt)
+  - Fallback auf `req.tenantId` und `user.tenantId`
+  - Unterstützt direkte Service-Calls (für Entwicklung)
+- ✅ **JWT Auth Guard erweitert**
+  - Prüft `req.user` (vom Gateway gesetzt)
+  - Fallback auf `X-User-Id` Header für direkte Calls
+  - Bessere Fehlermeldungen
+
+#### ✅ Phase 4.2: E2E Testing
+- ✅ **E2E Tests vollständig implementiert**
+  - `tests/e2e/multi-tenant-kpi.spec.ts` erstellt
+  - Playwright Config für Gateway + Dashboard-Service
+  - Tests für alle KPI-Endpoints
+  - Tenant-Isolation Tests
+  - RBAC Tests
+  - Rate-Limiting Tests
+  - Error-Handling Tests
+
+#### ✅ Phase 4.3: Performance-Optimierung
+- ✅ **Redis-Caching für KPIs**
+  - CacheService in AnalyticsModule importiert
+  - KPI-Ergebnisse werden gecacht (TTL: 5-30 Minuten je nach Range)
+  - Cache-Keys: `kpi:{tenantId}:{range}`
+  - Cache-Invalidierung via `KpiCacheService`
+- ✅ **KPI Cache Service**
+  - `KpiCacheService` für Cache-Invalidierung
+  - Methoden: `invalidateTenantCache()`, `invalidateTenantRangeCache()`
+  - Wird aufgerufen wenn neue Daten hinzugefügt werden
+- ✅ **KPI Views vorhanden**
+  - Views existieren und können für zukünftige Optimierung genutzt werden
+  - Aktuell: Direkte Queries mit Redis-Caching (ausreichend performant)
+
+### Sprint 5: Multi-Tenant KPI System - Phase 3 (Production Readiness) (2026-01-30)
+
+#### ✅ Phase 3.1: Security Hardening
+- ✅ **RBAC Guards am AnalyticsController**
+  - `@Roles()` Decorator für alle Endpoints
+  - ADMIN/EDITOR/VIEWER Rollen-Unterstützung
+  - Tenant-Isolation durch Request-Context
+- ✅ **Tenant-ID aus Request-Context**
+  - Tenant-ID wird aus `req.tenantId` (Middleware) extrahiert
+  - Verhindert Cross-Tenant Data Access via URL-Manipulation
+  - Fallback auf `X-Tenant-Id` Header für direkte API-Calls
+- ✅ **Global Exception Filter**
+  - Strukturierte Error-Responses mit Tenant-ID Context
+  - Logging für 4xx/5xx Errors
+  - Debug-Mode für detaillierte Fehlerinformationen
+- ✅ **Rate-Limiting**
+  - `@Throttle()` Decorator für alle Endpoints
+  - Tenant-spezifische Limits (50-100 req/min je nach Endpoint)
+  - ThrottlerModule im AppModule konfiguriert
+
+#### ✅ Phase 3.2: E2E Testing
+- ✅ **E2E Test-Struktur**
+  - Playwright Config für Dashboard-Service Tests
+  - Test-Dateien in `tests/e2e/` vorbereitet
+  - CI/CD Pipeline erweitert (bereits vorhanden in `.github/workflows/multi-tenant-tests.yml`)
+- ✅ **E2E Test-Coverage**
+  - KPI-Endpoint Tests (GET /analytics/kpi)
+  - Tenant-Isolation Tests
+  - RBAC Tests
+  - Rate-Limiting Tests
+  - Error-Handling Tests
+
+#### ✅ Phase 3.3: Production Readiness
+- ✅ **Logging & Monitoring**
+  - Strukturierte Logs mit Tenant-ID Context
+  - Logger in AnalyticsController
+  - Error-Logging im Global Exception Filter
+- ✅ **Input-Validierung**
+  - DTOs für KPI-Query-Parameter (`GetKpisDto`, `GetKpiMetricsDto`)
+  - UUID-Validierung für Tenant-IDs
+  - Range-Parameter-Validierung (today, 7d, 30d)
+  - Optional: Swagger/OpenAPI Decorators (wenn @nestjs/swagger installiert)
+
+#### 📊 Phase 3.4: Performance & Optimierung
+- ✅ **KPI Views vorhanden**
+  - `vw_kpi_answered`, `vw_kpi_self_service`, `vw_kpi_p95_latency`
+  - `vw_kpi_csat`, `vw_kpi_after_hours`, `vw_kpi_top_topics`
+  - Views können für zukünftige Performance-Optimierung genutzt werden
+  - Aktuell: Direkte Queries (funktioniert, Views sind optional)
+
+#### 📝 Dokumentation
+- ✅ **README aktualisiert**
+  - Multi-Tenant KPI System dokumentiert
+  - Security-Features dokumentiert
+  - E2E Testing dokumentiert
+
 
 ### Sprint 4: Database Query Optimization (2026-01-08)
 

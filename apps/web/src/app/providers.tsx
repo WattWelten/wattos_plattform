@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { GuidedTourProvider } from '@/components/onboarding/GuidedTourProvider';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
+import { TenantProvider } from '@/contexts/tenant.context';
 import { getValidAccessToken, isTokenExpired, refreshAccessTokenSilently } from '@/lib/auth/token-refresh';
 
 export function Providers({
@@ -66,10 +67,12 @@ export function Providers({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <GuidedTourProvider>
-            <OnboardingFlow />
-            {children}
-          </GuidedTourProvider>
+          <TenantProvider>
+            <GuidedTourProvider>
+              <OnboardingFlow />
+              {children}
+            </GuidedTourProvider>
+          </TenantProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </NextIntlClientProvider>

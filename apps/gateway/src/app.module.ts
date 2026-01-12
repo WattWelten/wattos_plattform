@@ -105,7 +105,7 @@ export class AppModule implements NestModule {
     consumer.apply(BodyLimitMiddleware).forRoutes('*');
     // Request Logging Middleware danach
     consumer.apply(RequestLoggingMiddleware).forRoutes('*');
-    // Auth Middleware für geschützte Routes (außer Health und Docs)
+    // Auth Middleware für geschützte Routes (außer Health, Docs, Auth und OPTIONS-Requests)
     consumer
       .apply(AuthMiddleware)
       .exclude(
@@ -113,8 +113,9 @@ export class AppModule implements NestModule {
         { path: 'health/*', method: RequestMethod.ALL },
         { path: 'docs', method: RequestMethod.ALL },
         { path: 'docs/*', method: RequestMethod.ALL },
-        { path: 'auth/login', method: RequestMethod.POST },
-        { path: 'auth/register', method: RequestMethod.POST },
+        { path: 'auth/login', method: RequestMethod.ALL }, // ALL für OPTIONS-Preflight
+        { path: 'auth/register', method: RequestMethod.ALL }, // ALL für OPTIONS-Preflight
+        { path: '*', method: RequestMethod.OPTIONS }, // Alle OPTIONS-Requests ausschließen (CORS Preflight)
       )
       .forRoutes('*');
   }

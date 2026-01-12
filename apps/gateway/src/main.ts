@@ -107,10 +107,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // CORS mit Allowlist
-  const allowedOrigins = (configService.get<string>('ALLOWED_ORIGINS') || 'http://localhost:3000').split(',');
+  const allowedOriginsRaw = configService.get<string>('ALLOWED_ORIGINS') || 'http://localhost:3000';
+  const allowedOrigins = allowedOriginsRaw.split(',').map((origin) => origin.trim());
+  
+  logger.log(`🌐 CORS configured for origins: ${allowedOrigins.join(', ')}`);
+  
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Erlaube Requests ohne Origin (z.B. Postman, mobile Apps)
+      // Erlaube Requests ohne Origin (z.B. Postman, mobile Apps, Server-to-Server)
       if (!origin) {
         return callback(null, true);
       }
@@ -118,12 +122,18 @@ async function bootstrap() {
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        logger.warn(`🚫 CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-Tenant-ID'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
+    // WICHTIG: Preflight-Requests explizit behandeln
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    maxAge: 86400, // 24 Stunden Cache für Preflight-Requests
   });
 
   // Validation

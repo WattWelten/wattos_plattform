@@ -139,6 +139,45 @@ export class CacheService {
   }
 
   /**
+   * Cache-Keys nach Pattern löschen
+   * Unterstützt Wildcards: dashboard:tenantId:* löscht alle Keys die mit dashboard:tenantId: beginnen
+   */
+  async deletePattern(pattern: string): Promise<void> {
+    if (!this.enabled) {
+      return;
+    }
+
+    try {
+      if (this.redisClient && this.redisClient.isOpen) {
+        // Konvertiere Wildcard-Pattern zu Redis Pattern
+        // dashboard:tenantId:* -> dashboard:tenantId:*
+        const redisPattern = pattern.replace('*', '*');
+        const keys = await this.redisClient.keys(redisPattern);
+        if (keys.length > 0) {
+          await this.redisClient.del(keys);
+          this.logger.debug(`Deleted ${keys.length} cache keys matching pattern: ${pattern}`);
+        }
+      }
+
+      // In-Memory Cache: Pattern-basierte Löschung
+      const patternPrefix = pattern.replace('*', '');
+      const keysToDelete: string[] = [];
+      for (const key of this.inMemoryCache.keys()) {
+        if (key.startsWith(patternPrefix)) {
+          keysToDelete.push(key);
+        }
+      }
+      keysToDelete.forEach(key => this.inMemoryCache.delete(key));
+      if (keysToDelete.length > 0) {
+        this.logger.debug(`Deleted ${keysToDelete.length} in-memory cache keys matching pattern: ${pattern}`);
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`Cache deletePattern error for pattern ${pattern}: ${errorMessage}`);
+    }
+  }
+
+  /**
    * Cache leeren (alle Keys mit Prefix)
    */
   async clear(pattern?: string): Promise<void> {

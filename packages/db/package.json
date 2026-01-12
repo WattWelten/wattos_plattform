@@ -17,11 +17,13 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.1.11",
+    "@nestjs/config": "^4.0.2",
+    "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@prisma/adapter-pg": "^7.2.0",
+    "@types/pg": "^8.11.10",
     "prisma": "^7.2.0",
     "typescript": "^5.9.3"
   }

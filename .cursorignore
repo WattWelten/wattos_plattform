@@ -1,4 +1,4 @@
-﻿# BLACKLIST-STRATEGIE fuer WattOS_Plattform
+# BLACKLIST-STRATEGIE fuer WattOS_Plattform
 # Erweitert für optimale Indexierungs-Performance
 
 # Node.js / JavaScript / TypeScript
@@ -229,6 +229,9 @@ docs/
 # E2E Test-Dateien erlauben (wichtig für Code-Indexierung)
 !**/e2e/**/*.spec.ts
 !**/e2e/**/*.test.ts
+!tests/e2e/**/*.spec.ts
+!tests/e2e/**/*.test.ts
+!tests/e2e/**/*.config.ts
 
 # Turbo Cache und Build-Info
 .turbo/
@@ -329,11 +332,17 @@ docker/artifacts/
 tests/
 **/tests/
 **/__tests__/
-**/*.test.ts
-**/*.test.js
-**/*.spec.ts
-**/*.spec.js
+# Test-Dateien ERLAUBEN (wichtig für Code-Indexierung)
+!**/*.test.ts
+!**/*.test.js
+!**/*.spec.ts
+!**/*.spec.js
+# Integration Tests erlauben
+!tests/integration/**/*.spec.ts
+!tests/integration/**/*.test.ts
 # vitest.integration.config.ts erlauben
+!vitest.integration.config.ts
+!vitest.integration.setup.ts
 # vitest.config.*
 vitest.setup.*
 

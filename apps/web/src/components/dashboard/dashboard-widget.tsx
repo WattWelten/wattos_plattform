@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { X, Settings } from 'lucide-react';
+import { KpiWidget } from './widgets/KpiWidget';
+import { ChartWidget, ChartType } from './widgets/ChartWidget';
 
 interface DashboardWidgetProps {
   id: string;
@@ -62,6 +64,44 @@ export function DashboardWidget({
     }
   };
 
+  const renderWidgetByType = (widgetType: string, widgetConfig: any) => {
+    // KPI Widgets
+    if (widgetType.startsWith('kpi-')) {
+      const kpiType = widgetType.replace('kpi-', '') as 'answered' | 'selfServiceRate' | 'fullySolved' | 'csat' | 'coverageRate';
+      return (
+        <KpiWidget
+          kpiType={kpiType}
+          range={widgetConfig.range || '7d'}
+          showChart={widgetConfig.showChart || false}
+          showTrend={widgetConfig.showTrend !== false}
+          compareRange={widgetConfig.compareRange}
+        />
+      );
+    }
+
+    // Chart Widgets
+    if (widgetType.startsWith('chart-')) {
+      const chartType = widgetType.replace('chart-', '') as ChartType;
+      return (
+        <ChartWidget
+          title={widgetConfig.title || 'Chart'}
+          type={chartType}
+          data={widgetConfig.data || []}
+          dataKey={widgetConfig.dataKey || 'value'}
+          colors={widgetConfig.colors}
+          height={widgetConfig.height || 300}
+        />
+      );
+    }
+
+    // Fallback für andere Widget-Types
+    return (
+      <div className="text-gray-400 text-sm">
+        Widget: {type}
+      </div>
+    );
+  };
+
   return (
     <div
       className={`dashboard-widget relative border-2 rounded-lg p-4 bg-white shadow-sm cursor-move ${
@@ -96,11 +136,7 @@ export function DashboardWidget({
 
       {/* Widget Content */}
       <div className="widget-content">
-        {children || (
-          <div className="text-gray-400 text-sm">
-            Widget: {type}
-          </div>
-        )}
+        {children || renderWidgetByType(type, config)}
       </div>
     </div>
   );

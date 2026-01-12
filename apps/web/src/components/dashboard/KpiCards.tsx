@@ -4,64 +4,87 @@
  * Zeigt die 8 Haupt-KPIs + P95 Latenz + CSAT in modernen Karten
  */
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@wattweiser/ui';
-
-interface KpiData {
-  answered: number;
-  selfServiceRate: number;
-  fullySolved: number;
-  timeSavedHours: number;
-  fteSaved: number;
-  afterHoursPercent: number;
-  topTopics: Array<{ topic: string; count: number }>;
-  coverageRate: number;
-  p95LatencyMs: number;
-  csat: number;
-}
+import { getKpis, KpiResult, KpiRange } from '@/lib/api/dashboard';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { useEffect } from 'react';
 
 interface KpiCardsProps {
-  tenantId: string;
-  range?: 'today' | '7d' | '30d';
+  range?: KpiRange;
 }
 
-export function KpiCards({ tenantId, range = '7d' }: KpiCardsProps) {
-  const [kpis, setKpis] = useState<KpiData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function KpiCards({ range = '7d' }: KpiCardsProps) {
+  const { toast } = useToast();
+  
+  const {
+    data: kpis,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['kpis', range],
+    queryFn: () => getKpis(range),
+    staleTime: 60 * 1000, // 1 Minute
+    refetchOnWindowFocus: false,
+    retry: 2,
+    onError: (error: Error) => {
+      toast({
+        title: 'Fehler beim Laden der KPIs',
+        description: error.message || 'Bitte versuchen Sie es später erneut.',
+        variant: 'destructive',
+      });
+    },
+  });
 
+  // Zeige Toast bei Fehler (nur einmal)
   useEffect(() => {
-    async function fetchKpis() {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `/api/analytics/kpi/${tenantId}?range=${range}`,
-        );
-        if (!response.ok) {
-          throw new Error('Failed to fetch KPIs');
-        }
-        const data = await response.json();
-        setKpis(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
+    if (error && !isLoading) {
+      // Toast wird bereits in onError gezeigt, aber für manuelle Retries
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      if (errorMessage.includes('Nicht authentifiziert') || errorMessage.includes('Session abgelaufen')) {
+        // Redirect wird bereits in API-Client gehandhabt
+        return;
       }
     }
+  }, [error, isLoading, toast]);
 
-    fetchKpis();
-  }, [tenantId, range]);
-
-  if (loading) {
-    return <div>Lade KPIs...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Lade KPIs...</span>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Fehler: {error}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+        <AlertCircle className="h-8 w-8 text-destructive" />
+        <div className="text-center">
+          <p className="font-semibold text-destructive">Fehler beim Laden der KPIs</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {error instanceof Error ? error.message : 'Unbekannter Fehler'}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Erneut versuchen
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!kpis) {
-    return <div>Keine Daten verfügbar</div>;
+    return (
+      <div className="flex items-center justify-center p-8 text-muted-foreground">
+        Keine Daten verfügbar
+      </div>
+    );
   }
 
   return (

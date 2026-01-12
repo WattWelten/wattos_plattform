@@ -118,7 +118,15 @@ export class ProxyController {
   @All('analytics/*')
   @UseGuards(JwtAuthGuard)
   async proxyAnalytics(@Req() req: Request, @Res() res: Response) {
-    const middleware = this.proxyService.getProxyMiddleware('customer-intelligence');
+    // Route analytics/* zu dashboard-service (für KPI-Endpoints)
+    const middleware = this.proxyService.getProxyMiddleware('analytics');
+    middleware(req, res, () => {});
+  }
+
+  @All('dashboard/*')
+  @UseGuards(JwtAuthGuard)
+  async proxyDashboard(@Req() req: Request, @Res() res: Response) {
+    const middleware = this.proxyService.getProxyMiddleware('dashboard');
     middleware(req, res, () => {});
   }
 

@@ -7,6 +7,11 @@ export class AuthMiddleware implements NestMiddleware {
   constructor(private jwtVerifyService: JwtVerifyService) {}
 
   async use(req: Request, _res: Response, next: NextFunction) {
+    // Skip auth für OPTIONS-Requests (CORS Preflight)
+    if (req.method === 'OPTIONS') {
+      return next();
+    }
+
     // Skip auth für Health-Checks und öffentliche Endpoints
     if (
       req.path.startsWith('/api/health') ||

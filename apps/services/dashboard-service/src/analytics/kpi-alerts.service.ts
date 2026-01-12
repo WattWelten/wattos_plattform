@@ -54,7 +54,22 @@ export class KpiAlertsService implements OnModuleInit {
   }
 
   /**
-   * Prüfe Alerts für einen spezifischen Tenant
+   * Prüft Alerts für einen spezifischen Tenant
+   * 
+   * @param tenantId - UUID des Tenants
+   * @returns Promise<{ tenantId: string; tenantName: string; alerts: string[]; timestamp: Date }> - Alert-Ergebnis mit Tenant-Info
+   * 
+   * @example
+   * ```typescript
+   * const result = await kpiAlertsService.checkTenantAlerts('tenant-uuid');
+   * console.log(result.alerts); // ['CSAT kritisch: 2.5/5.0']
+   * ```
+   * 
+   * @throws {Error} Wenn Tenant nicht gefunden wird
+   * 
+   * @remarks
+   * - Wird von Controllern verwendet für manuelle Alert-Prüfung
+   * - Automatische Prüfung erfolgt täglich um 9:00 via Cron-Job
    */
   async checkTenantAlerts(tenantId: string) {
     const tenant = await this.prisma.client.tenant.findUnique({

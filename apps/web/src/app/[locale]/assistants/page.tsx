@@ -19,7 +19,7 @@ import {
   ModalDescription,
   ModalFooter
 } from '@wattweiser/ui';
-import { Plus, Search, Bot, Settings, Trash2, Edit, PlayCircle as Play, HelpCircle as HelpCircleIcon } from 'lucide-react';
+import { Plus, Search, Bot, Settings, Trash2, Edit, Info as HelpCircleIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useGuidedTourContext } from '@/components/onboarding/GuidedTourProvider';
 import { getAgents, createAgent, deleteAgent, type Agent, type CreateAgentRequest } from '@/lib/api/agents';
@@ -28,7 +28,7 @@ import { useToast } from '@/components/ui/use-toast';
 export default function AssistantsPage() {
   const router = useRouter();
   const params = useParams();
-  const locale = params.locale as string || 'de';
+  const locale = (params?.locale as string) || 'de';
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [formData, setFormData] = useState<CreateAgentRequest>({
@@ -229,7 +229,6 @@ export default function AssistantsPage() {
                       className="flex-1 gap-2"
                       onClick={() => router.push(`/${locale}/test-console?agentId=${agent.id}`)}
                     >
-                      <PlayCircle className="h-4 w-4" />
                       Testen
                     </Button>
                     <Button 
@@ -250,7 +249,7 @@ export default function AssistantsPage() {
                       variant="ghost" 
                       size="sm"
                       onClick={() => handleDeleteAgent(agent.id)}
-                      disabled={deleteAgentMutation.status === 'pending'}
+                      disabled={deleteAgentMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4 text-error-600" />
                     </Button>

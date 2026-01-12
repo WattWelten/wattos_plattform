@@ -1,27 +1,36 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { BentoGrid } from '@/components/dashboard/BentoGrid';
-import { KPITile } from '@/components/dashboard/KPITile';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { KpiCards } from '@/components/dashboard/KpiCards';
 import { useGuidedTourContext } from '@/components/onboarding/GuidedTourProvider';
-import { 
-  MessageSquare, 
-  ThumbsUp, 
-  DollarSign, 
-  FileText, 
-  Bot, 
-  Activity 
-} from 'lucide-react';
 import { getAgents } from '@/lib/api/agents';
+import { getKpis, KpiRange } from '@/lib/api/dashboard';
 
 export default function DashboardPage() {
   const { startTour } = useGuidedTourContext();
+  const [range, setRange] = useState<KpiRange>('7d');
+  const queryClient = useQueryClient();
   
-  // Mock-Daten für MVP (später durch echte API-Calls ersetzen)
+  // Agents für zusätzliche Info (optional)
   const { data: agents } = useQuery({
     queryKey: ['agents'],
     queryFn: () => getAgents().catch(() => []),
   });
+
+  // Cache-Warming: Prefetch häufig genutzte Ranges
+  useEffect(() => {
+    const prefetchRanges: KpiRange[] = ['today', '7d', '30d'];
+    prefetchRanges.forEach((r) => {
+      if (r !== range) {
+        queryClient.prefetchQuery({
+          queryKey: ['kpis', r],
+          queryFn: () => getKpis(r),
+          staleTime: 60 * 1000,
+        });
+      }
+    });
+  }, [range, queryClient]);
 
   const dashboardTourSteps = [
     {
@@ -40,55 +49,6 @@ export default function DashboardPage() {
     },
   ];
 
-  const kpis = [
-    {
-      title: 'Conversations',
-      value: '1,234',
-      description: 'Gesamt Konversationen',
-      icon: MessageSquare,
-      trend: { value: 12, label: 'vs. letzter Monat', positive: true },
-      href: '/de/analytics',
-    },
-    {
-      title: 'Quality',
-      value: '94%',
-      description: '👍-Quote',
-      icon: ThumbsUp,
-      trend: { value: 3, label: 'vs. letzter Monat', positive: true },
-      href: '/de/analytics',
-    },
-    {
-      title: 'Costs',
-      value: '€234',
-      description: 'Token-Kosten (30d)',
-      icon: DollarSign,
-      trend: { value: -5, label: 'vs. letzter Monat', positive: true },
-      href: '/de/analytics',
-    },
-    {
-      title: 'Sources',
-      value: '42',
-      description: 'Indexierte Quellen',
-      icon: FileText,
-      href: '/de/knowledge-bases',
-    },
-    {
-      title: 'Agents',
-      value: agents?.length || 0,
-      description: 'Veröffentlichte Agents',
-      icon: Bot,
-      href: '/de/assistants',
-    },
-    {
-      title: 'System Health',
-      value: '99.9%',
-      description: 'Uptime (30d)',
-      icon: Activity,
-      trend: { value: 0.1, label: 'vs. letzter Monat', positive: true },
-      href: '/de/admin',
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="container mx-auto max-w-7xl">
@@ -99,23 +59,21 @@ export default function DashboardPage() {
               Übersicht über Ihre KI-Plattform
             </p>
           </div>
+          <div className="flex items-center gap-4">
+            <select
+              value={range}
+              onChange={(e) => setRange(e.target.value as KpiRange)}
+              className="px-4 py-2 border rounded-lg bg-white"
+            >
+              <option value="today">Heute</option>
+              <option value="7d">7 Tage</option>
+              <option value="30d">30 Tage</option>
+            </select>
+          </div>
         </div>
 
         <div data-tour="kpi-tiles">
-
-        <BentoGrid>
-          {kpis.map((kpi) => (
-            <KPITile
-              key={kpi.title}
-              title={kpi.title}
-              value={kpi.value}
-              description={kpi.description}
-              icon={kpi.icon}
-              trend={kpi.trend}
-              href={kpi.href}
-            />
-          ))}
-        </BentoGrid>
+          <KpiCards range={range} />
         </div>
       </div>
     </div>

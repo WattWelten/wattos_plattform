@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
   test: {
     name: 'integration',
-    include: ['**/*.integration.test.ts', '**/*.integration.spec.ts'],
+    include: ['tests/integration/**/*.spec.ts', '**/*.integration.test.ts', '**/*.integration.spec.ts'],
     exclude: ['node_modules', 'dist', '.next'],
     globals: true,
     environment: 'node',
@@ -21,6 +22,15 @@ export default defineConfig({
         '**/*.spec.ts',
         '**/*.config.ts',
       ],
+    },
+  },
+  resolve: {
+    alias: {
+      '@wattweiser/core': path.resolve(__dirname, './packages/core/src'),
+      '@wattweiser/shared': path.resolve(__dirname, './packages/shared/src'),
+      '@wattweiser/db': path.resolve(__dirname, './packages/db/src'),
+      '@wattweiser/config': path.resolve(__dirname, './packages/config/src'),
+      '@wattweiser/dashboard-service': path.resolve(__dirname, './apps/services/dashboard-service/src'),
     },
   },
 });

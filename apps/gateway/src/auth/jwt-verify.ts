@@ -31,9 +31,22 @@ export class JwtVerifyService {
   // jwksCache und CACHE_TTL werden nicht verwendet, da jose library intern cached
   // private jwksCache: Map<string, CachedJWK> = new Map();
   // private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Stunden in Millisekunden
-  private remoteJWKSet: ReturnType<typeof createRemoteJWKSet>;
+  private remoteJWKSet?: ReturnType<typeof createRemoteJWKSet>;
 
   constructor(private configService: ConfigService) {
+    // Development-Mode: Mock-Verifizierung ohne Keycloak
+    const isDevelopment = this.configService.get<string>('NODE_ENV') === 'development';
+    const keycloakDisabled = this.configService.get<string>('DISABLE_KEYCLOAK', 'false') === 'true';
+    
+    if (isDevelopment && keycloakDisabled) {
+      // Mock-Konfiguration für Development
+      this.jwksUrl = 'http://localhost:8080/realms/wattos/protocol/openid-connect/certs';
+      this.issuer = 'http://localhost:8080/realms/wattos';
+      this.audience = 'gateway';
+      // remoteJWKSet wird nicht initialisiert, da wir Mock-Verifizierung verwenden
+      return;
+    }
+
     // JWKS URL für Token-Verifizierung (muss mit Keycloak Realm übereinstimmen)
     this.jwksUrl =
       this.configService.get<string>('KEYCLOAK_JWKS_URL') ||
@@ -63,9 +76,36 @@ export class JwtVerifyService {
    * Zusätzlich haben wir einen expliziten Cache für bessere Kontrolle
    */
   async verifyToken(token: string): Promise<VerifiedToken> {
+    // Development-Mode: Mock-Verifizierung ohne Keycloak
+    const isDevelopment = this.configService.get<string>('NODE_ENV') === 'development';
+    const keycloakDisabled = this.configService.get<string>('DISABLE_KEYCLOAK', 'false') === 'true';
+    
+    if (isDevelopment && keycloakDisabled) {
+      // Mock-Verifizierung: Dekodiere Token ohne Verifizierung
+      try {
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          throw new UnauthorizedException('Invalid token format');
+        }
+        const payload = JSON.parse(Buffer.from(parts[1]!, 'base64').toString('utf-8'));
+        
+        return {
+          sub: payload.sub || 'dev-user-123',
+          email: payload.email || 'dev@example.com',
+          roles: payload.roles || ['user'],
+          tenantId: payload.tenantId,
+        } as VerifiedToken;
+      } catch (error) {
+        throw new UnauthorizedException('Token verification failed');
+      }
+    }
+
     try {
       // createRemoteJWKSet cached automatisch JWKS für 24h (Standard)
       // Wir verwenden die bereits initialisierte remoteJWKSet Instanz
+      if (!this.remoteJWKSet) {
+        throw new UnauthorizedException('JWKS not initialized');
+      }
       const { payload } = await jwtVerify(token, this.remoteJWKSet, {
         issuer: this.issuer,
         audience: this.audience,

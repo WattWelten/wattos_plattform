@@ -37,6 +37,7 @@ Write-Host "=== 3. Starte MVP-Services ===" -ForegroundColor Cyan
 Write-Host "Service-Ports:" -ForegroundColor Yellow
 Write-Host "  - Gateway: http://localhost:3001" -ForegroundColor Blue
 Write-Host "  - Web: http://localhost:3000" -ForegroundColor Green
+Write-Host "  - Dashboard-Service: http://localhost:3011" -ForegroundColor DarkCyan
 Write-Host "  - Chat-Service: http://localhost:3006" -ForegroundColor Yellow
 Write-Host "  - Agent-Service: http://localhost:3003" -ForegroundColor Magenta
 Write-Host "  - RAG-Service: http://localhost:3005" -ForegroundColor Cyan
@@ -48,6 +49,6 @@ Write-Host "DrÃ¼cken Sie Ctrl+C zum Beenden" -ForegroundColor Yellow
 Write-Host ""
 
 # Starte mit concurrently
-$concurrentlyCmd = "npx concurrently -n `"Gateway,Web,Chat,Agent,RAG,Avatar,Voice,Crawler`" -c `"blue,green,yellow,magenta,cyan,red,white,gray`" `"pnpm --filter @wattweiser/gateway dev`" `"pnpm --filter @wattweiser/web dev`" `"pnpm --filter @wattweiser/chat-service dev`" `"pnpm --filter @wattweiser/agent-service dev`" `"pnpm --filter @wattweiser/rag-service dev`" `"pnpm --filter @wattweiser/avatar-service dev`" `"pnpm --filter @wattweiser/voice-service dev`" `"pnpm --filter @wattweiser/crawler-service dev`""
+$concurrentlyCmd = "npx concurrently -n `"Gateway,Web,Dashboard,Chat,Agent,RAG,Avatar,Voice,Crawler`" -c `"blue,green,darkcyan,yellow,magenta,cyan,red,white,gray`" `"pnpm --filter @wattweiser/gateway dev`" `"pnpm --filter @wattweiser/web dev`" `"pnpm --filter @wattweiser/dashboard-service dev`" `"pnpm --filter @wattweiser/chat-service dev`" `"pnpm --filter @wattweiser/agent-service dev`" `"pnpm --filter @wattweiser/rag-service dev`" `"pnpm --filter @wattweiser/avatar-service dev`" `"pnpm --filter @wattweiser/voice-service dev`" `"pnpm --filter @wattweiser/crawler-service dev`""
 
 Invoke-Expression $concurrentlyCmd

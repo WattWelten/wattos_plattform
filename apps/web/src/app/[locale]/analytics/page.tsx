@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Tabs, TabsList, TabsTrigger, TabsContent, Skeleton } from '@wattweiser/ui';
-import { TrendingUp, TrendingDown, MessageSquare, Zap, DollarSign, Users, RefreshCw, Download } from 'lucide-react';
+import { TrendingDown, MessageSquare, Zap, DollarSign, Users, RefreshCw, FileText } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { LineChart, BarChart, PieChart } from '@/components/charts/lazy-charts';
 
@@ -59,7 +59,7 @@ export default function AnalyticsPage() {
               Aktualisieren
             </Button>
             <Button variant="outline" size="lg" className="gap-2">
-              <Download className="h-5 w-5" />
+              <FileText className="h-5 w-5" />
               Export
             </Button>
           </div>
@@ -178,7 +178,14 @@ export default function AnalyticsPage() {
                   {isLoading ? (
                     <Skeleton className="h-64 w-full" />
                   ) : (
-                    <LineChart data={analyticsData?.usageData || []} />
+                    <LineChart 
+                      data={analyticsData?.usageData || []} 
+                      dataKey="date"
+                      lines={[
+                        { key: 'calls', name: 'API Calls', color: '#0073E6' },
+                        { key: 'cost', name: 'Kosten', color: '#00C49F' },
+                      ]}
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -209,7 +216,13 @@ export default function AnalyticsPage() {
                 {isLoading ? (
                   <Skeleton className="h-96 w-full" />
                 ) : (
-                  <BarChart data={analyticsData?.usageData || []} />
+                  <BarChart 
+                    data={analyticsData?.usageData || []} 
+                    dataKey="date"
+                    bars={[
+                      { key: 'calls', name: 'API Calls', color: '#0073E6' },
+                    ]}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -225,7 +238,14 @@ export default function AnalyticsPage() {
                 {isLoading ? (
                   <Skeleton className="h-96 w-full" />
                 ) : (
-                  <LineChart data={analyticsData?.costData || []} />
+                  <LineChart 
+                    data={analyticsData?.costData || []} 
+                    dataKey="date"
+                    lines={[
+                      { key: 'total', name: 'Gesamtkosten', color: '#FF8042' },
+                      { key: 'api', name: 'API Kosten', color: '#8884d8' },
+                    ]}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -241,7 +261,14 @@ export default function AnalyticsPage() {
                 {isLoading ? (
                   <Skeleton className="h-96 w-full" />
                 ) : (
-                  <LineChart data={analyticsData?.performanceData || []} />
+                  <LineChart 
+                    data={analyticsData?.performanceData || []} 
+                    dataKey="date"
+                    lines={[
+                      { key: 'latency', name: 'Latenz (ms)', color: '#00C49F' },
+                      { key: 'errorRate', name: 'Fehlerrate (%)', color: '#FF8042' },
+                    ]}
+                  />
                 )}
               </CardContent>
             </Card>

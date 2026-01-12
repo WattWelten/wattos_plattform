@@ -3,6 +3,9 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Optional, Inject } f
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
 import { PrismaClient } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { ConfigService } from '@nestjs/config';
 
 // Optional: MetricsService from @wattweiser/shared (if available)
 type MetricsService = {
@@ -21,22 +24,42 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
   public readonly client: PrismaClient;
   private readonly metricsService: MetricsService | undefined;
+  private pool: Pool | undefined;
 
   constructor(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Decorators werden zur Laufzeit von NestJS verarbeitet
     @Optional() @Inject('MetricsService') metricsService?: MetricsService,
+    @Optional() private configService?: ConfigService,
   ) {
     this.metricsService = metricsService;
     
-    // PrismaClient-Instanz erstellen
-    // Prisma 7.2.0+: Connection URL wird aus prisma.config.js oder DATABASE_URL gelesen
-    // PrismaClient liest die URL automatisch aus der Umgebung oder prisma.config.js
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
-    this.client = new PrismaClient({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    });
+    // Prisma 7.2.0+: Erfordert Adapter für PostgreSQL
+    const databaseUrl = this.configService?.get<string>('DATABASE_URL') || process.env.DATABASE_URL;
+    
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL environment variable is required. Bitte .env Datei prüfen.');
+    }
+
+    try {
+      // Erstelle PostgreSQL Pool und Adapter
+      this.pool = new Pool({ connectionString: databaseUrl });
+      const adapter = new PrismaPg(this.pool);
+      
+      // PrismaClient mit Adapter erstellen
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - PrismaClient wird nach `prisma generate` verfügbar sein
+      this.client = new PrismaClient({
+        adapter,
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      });
+      
+      this.logger.log('PrismaClient initialized with PostgreSQL adapter');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to initialize PrismaClient: ${errorMessage}`);
+      throw error;
+    }
     
     // Prisma Middleware für automatische Metrics-Collection
     this.setupQueryLogging();
@@ -107,6 +130,11 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - $disconnect wird nach Prisma-Generierung verfügbar sein
     await this.client.$disconnect();
+    // Pool schließen
+    if (this.pool) {
+      await this.pool.end();
+      this.logger.log('PostgreSQL pool closed');
+    }
     this.logger.log('Prisma Client disconnected from database');
   }
 

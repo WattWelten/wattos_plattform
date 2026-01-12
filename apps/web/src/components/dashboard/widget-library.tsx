@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react';
+import { Plus, TrendingUp, MessageSquare, Users, FileText, BarChart3, PieChart } from 'lucide-react';
 
 interface WidgetType {
   id: string;
@@ -12,6 +12,48 @@ interface WidgetType {
 }
 
 const WIDGET_TYPES: WidgetType[] = [
+  {
+    id: 'kpi-answered',
+    name: 'KPI: Beantwortete Anfragen',
+    description: 'Anzahl beantworteter Anfragen mit Trend',
+    icon: <TrendingUp className="w-5 h-5" />,
+    category: 'kpi',
+  },
+  {
+    id: 'kpi-self-service',
+    name: 'KPI: Self-Service-Quote',
+    description: 'Self-Service-Quote mit Chart',
+    icon: <TrendingUp className="w-5 h-5" />,
+    category: 'kpi',
+  },
+  {
+    id: 'kpi-csat',
+    name: 'KPI: CSAT Score',
+    description: 'Customer Satisfaction Score',
+    icon: <TrendingUp className="w-5 h-5" />,
+    category: 'kpi',
+  },
+  {
+    id: 'chart-line',
+    name: 'Line Chart',
+    description: 'Liniendiagramm für Zeitreihen',
+    icon: <TrendingUp className="w-5 h-5" />,
+    category: 'charts',
+  },
+  {
+    id: 'chart-bar',
+    name: 'Bar Chart',
+    description: 'Balkendiagramm für Vergleiche',
+    icon: <BarChart3 className="w-5 h-5" />,
+    category: 'charts',
+  },
+  {
+    id: 'chart-pie',
+    name: 'Pie Chart',
+    description: 'Kreisdiagramm für Verteilungen',
+    icon: <PieChart className="w-5 h-5" />,
+    category: 'charts',
+  },
   {
     id: 'overview',
     name: 'Overview',
@@ -32,13 +74,6 @@ const WIDGET_TYPES: WidgetType[] = [
     description: 'Agent-Status und Performance',
     icon: <Users className="w-5 h-5" />,
     category: 'agents',
-  },
-  {
-    id: 'metrics',
-    name: 'Metrics',
-    description: 'Detaillierte Metriken und KPIs',
-    icon: <TrendingUp className="w-5 h-5" />,
-    category: 'metrics',
   },
   {
     id: 'analytics',

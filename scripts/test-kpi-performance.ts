@@ -26,7 +26,25 @@ const prisma = new PrismaClient({ adapter });
 async function testKpiPerformance() {
   console.log('🚀 Starte KPI Performance-Test...\n');
 
-  const tenantId = process.env.TEST_TENANT_ID || 'musterlandkreis';
+  // Hole echten Tenant-ID aus DB (UUID)
+  const tenant = await prisma.tenant.findFirst({
+    where: { 
+      OR: [
+        { name: { contains: 'muster' } },
+        { slug: { contains: 'muster' } },
+      ]
+    },
+    select: { id: true },
+  });
+  
+  if (!tenant) {
+    console.error('❌ Kein Test-Tenant gefunden. Bitte seed:tenants ausführen.');
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+  
+  const tenantId = tenant.id;
+  console.log(`📊 Verwende Tenant-ID: ${tenantId}\n`);
   const iterations = 10;
 
   const results = {
@@ -43,7 +61,7 @@ async function testKpiPerformance() {
       SELECT count(*)::int AS answered 
       FROM "ConversationMessage" a 
       JOIN "Conversation" i ON i.id = a."conversationId"
-      WHERE i."tenantId" = ${tenantId}::uuid
+      WHERE i."tenantId" = ${tenantId}
         AND a.role = 'assistant'
     `;
     results.answered.push(Date.now() - start1);
@@ -54,7 +72,7 @@ async function testKpiPerformance() {
       SELECT coalesce(avg(CASE WHEN a.solved THEN 1 ELSE 0 END), 0) AS rate
       FROM "ConversationMessage" a 
       JOIN "Conversation" i ON i.id = a."conversationId"
-      WHERE i."tenantId" = ${tenantId}::uuid
+      WHERE i."tenantId" = ${tenantId}
         AND a.role = 'assistant'
     `;
     results.selfService.push(Date.now() - start2);
@@ -65,7 +83,7 @@ async function testKpiPerformance() {
       SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY a."latencyMs") AS p95
       FROM "ConversationMessage" a 
       JOIN "Conversation" i ON i.id = a."conversationId"
-      WHERE i."tenantId" = ${tenantId}::uuid
+      WHERE i."tenantId" = ${tenantId}
         AND a.role = 'assistant'
     `;
     results.p95Latency.push(Date.now() - start3);
@@ -81,7 +99,7 @@ async function testKpiPerformance() {
         WHEN type IN ('STAR1', 'DOWN') THEN 1
       END)::numeric, 2) AS csat
       FROM "Feedback"
-      WHERE "tenantId" = ${tenantId}::uuid
+      WHERE "tenantId" = ${tenantId}
     `;
     results.csat.push(Date.now() - start4);
   }

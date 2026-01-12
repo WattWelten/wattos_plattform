@@ -74,3 +74,5 @@ export * from './compliance/audit-replay.service';
 export * from './compliance/pii-redaction.service';
 export * from './compliance/compliance.module';
 
+// Analytics
+export * from './analytics';

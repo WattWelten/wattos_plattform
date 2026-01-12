@@ -24,6 +24,8 @@ const SERVICE_MAPPING: Record<string, [string, number]> = {
   'customer-intelligence': ['customer-intelligence-service', 3014],
   crawler: ['crawler-service', 3015],
   voice: ['voice-service', 3016],
+  dashboard: ['dashboard-service', 3011],
+  analytics: ['dashboard-service', 3011], // Alias für analytics routes
 };
 
 @Injectable()
@@ -44,18 +46,35 @@ export class ProxyService {
       throw new Error(`Service ${serviceName} not found`);
     }
 
+    // Path-Rewrite-Logik: /api/{serviceName}/* -> /{serviceName}/*
+    // Ausnahmen: admin -> '', analytics -> /analytics, dashboard -> /dashboard
+    let pathRewrite: Record<string, string>;
+    if (serviceName === 'admin') {
+      pathRewrite = { [`^/api/${serviceName}`]: '' };
+    } else if (serviceName === 'analytics') {
+      pathRewrite = { [`^/api/analytics`]: '/analytics' };
+    } else if (serviceName === 'dashboard') {
+      pathRewrite = { [`^/api/dashboard`]: '/dashboard' };
+    } else {
+      pathRewrite = { [`^/api/${serviceName}`]: `/${serviceName}` };
+    }
+
     const options: Options = {
       target,
       changeOrigin: true,
-      pathRewrite: {
-        [`^/api/${serviceName}`]: serviceName === 'admin' ? '' : `/${serviceName}`,
-      },
+      pathRewrite,
       onProxyReq: (proxyReq: any, req: any) => {
         // Forward user info to downstream services
         if (req.user) {
           proxyReq.setHeader('X-User-Id', req.user.id);
-          proxyReq.setHeader('X-User-Email', req.user.email);
-          proxyReq.setHeader('X-Tenant-Id', req.user.tenantId || '');
+          proxyReq.setHeader('X-User-Email', req.user.email || '');
+          // Tenant-ID aus Request-Context (von TenantMiddleware gesetzt) hat Priorität
+          const tenantId = (req as any).tenantId || req.user.tenantId || '';
+          proxyReq.setHeader('X-Tenant-Id', tenantId);
+        }
+        // Forward tenantId auch wenn kein user vorhanden (für interne Services)
+        if ((req as any).tenantId && !req.user) {
+          proxyReq.setHeader('X-Tenant-Id', (req as any).tenantId);
         }
       },
     };

@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/use-toast';
 import { WidgetLibrary } from './widget-library';
 import { DashboardLayout } from './dashboard-layout';
-
-interface DashboardBuilderProps {
-  tenantId: string;
-  dashboardId?: string;
-  onSave?: (layout: any) => void;
-}
+import { getDashboard, createDashboard, updateDashboard, Dashboard, DashboardLayout as DashboardLayoutType } from '@/lib/api/dashboard';
+import { useTenant } from '@/contexts/tenant.context';
 
 /**
  * Dashboard Builder Component
@@ -16,60 +14,56 @@ interface DashboardBuilderProps {
  * Low-Code Dashboard-Builder mit Drag & Drop
  */
 export function DashboardBuilder({
-  tenantId,
   dashboardId,
   onSave,
 }: DashboardBuilderProps) {
+  const { tenantId, isLoading: tenantLoading } = useTenant();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [widgets, setWidgets] = useState<any[]>([]);
   const [selectedWidget, setSelectedWidget] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (dashboardId) {
-      loadDashboard();
-    } else {
-      loadDefaultDashboard();
-    }
-  }, [dashboardId, tenantId]);
-
-  const loadDashboard = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/v1/dashboards/${dashboardId}?tenantId=${tenantId}`,
-      );
-      const data = await response.json();
+  // Lade Dashboard
+  const { data: dashboard, isLoading } = useQuery({
+    queryKey: ['dashboard', dashboardId],
+    queryFn: () => dashboardId ? getDashboard(dashboardId) : getDashboard(),
+    enabled: !!tenantId && !tenantLoading,
+    onSuccess: (data) => {
       setWidgets(data.layout?.widgets || []);
-    } catch (error) {
-      // Error-Handling: In Production sollte hier ein Logger verwendet werden
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to load dashboard:', error);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
-  const loadDefaultDashboard = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/v1/dashboards?tenantId=${tenantId}`,
-      );
-      const data = await response.json();
-      const defaultDashboard = data.find((d: any) => d.isDefault);
-      if (defaultDashboard) {
-        setWidgets(defaultDashboard.layout?.widgets || []);
+  // Save Mutation
+  const saveMutation = useMutation({
+    mutationFn: async (layout: DashboardLayoutType) => {
+      if (dashboardId && dashboard) {
+        return updateDashboard(dashboardId, { layout });
+      } else {
+        return createDashboard({
+          name: 'My Dashboard',
+          layout,
+          isDefault: false,
+        });
       }
-    } catch (error) {
-      // Error-Handling: In Production sollte hier ein Logger verwendet werden
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to load default dashboard:', error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast({
+        title: 'Erfolgreich',
+        description: 'Dashboard wurde gespeichert.',
+      });
+      if (onSave) {
+        onSave(dashboard?.layout || { widgets: [] });
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Fehler beim Speichern des Dashboards.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const handleAddWidget = (widgetType: string) => {
     const newWidget = {
@@ -91,49 +85,37 @@ export function DashboardBuilder({
     );
   };
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      const layout = { widgets };
-      if (onSave) {
-        onSave(layout);
-      } else if (dashboardId) {
-        await fetch(`/api/v1/dashboards/${dashboardId}?tenantId=${tenantId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ layout }),
-        });
-      } else {
-        await fetch(`/api/v1/dashboards?tenantId=${tenantId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: 'My Dashboard',
-            layout,
-            isDefault: false,
-          }),
-        });
-      }
-    } catch (error) {
-      // Error-Handling: In Production sollte hier ein Logger verwendet werden
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to save dashboard:', error);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSave = () => {
+    const layout: DashboardLayoutType = { widgets };
+    saveMutation.mutate(layout);
   };
 
-  if (isLoading && widgets.length === 0) {
-    return <div>Loading dashboard...</div>;
+  if (tenantLoading || (isLoading && widgets.length === 0)) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Lade Dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!tenantId) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-destructive">Tenant-ID nicht verfügbar.</p>
+      </div>
+    );
   }
 
   return (
     <div className="dashboard-builder">
-      <div className="dashboard-builder-header">
-        <h2>Dashboard Builder</h2>
-        <button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? 'Saving...' : 'Save Dashboard'}
+      <div className="dashboard-builder-header flex items-center justify-between mb-4 p-4 bg-white rounded-lg shadow-sm">
+        <h2 className="text-2xl font-bold">Dashboard Builder</h2>
+        <button
+          onClick={handleSave}
+          disabled={saveMutation.isPending}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saveMutation.isPending ? 'Speichere...' : 'Dashboard speichern'}
         </button>
       </div>
 

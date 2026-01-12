@@ -9,7 +9,6 @@ import { sanitizeText } from '@wattweiser/shared';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    // @ts-expect-error - Reserved for future use
     private _configService: ConfigService,
     private keycloakService: KeycloakService,
     private tokenBlacklistService: TokenBlacklistService
@@ -19,6 +18,20 @@ export class AuthService {
     // Input-Sanitization: Entferne gefährliche Zeichen
     const sanitizedUsername = sanitizeText(username);
     const sanitizedPassword = sanitizeText(password);
+
+    // Development-Mode: Mock-Login ohne Keycloak
+    const isDevelopment = this._configService.get<string>('NODE_ENV') === 'development';
+    const keycloakDisabled = this._configService.get<string>('DISABLE_KEYCLOAK', 'false') === 'true';
+    
+    if (isDevelopment && keycloakDisabled) {
+      // Mock-Login für Development (jeder User/Pass funktioniert)
+      return {
+        id: 'dev-user-123',
+        email: sanitizedUsername,
+        keycloakId: 'dev-keycloak-123',
+        token: 'dev-mock-token',
+      };
+    }
 
     // Keycloak validation
     try {
