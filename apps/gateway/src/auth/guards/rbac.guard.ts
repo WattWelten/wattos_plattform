@@ -111,8 +111,8 @@ export class RbacGuard implements CanActivate {
 
       // Extrahiere RoleType enum Werte
       const roles = userRoles
-        .map((ur) => ur.role.roleType)
-        .filter((rt): rt is RoleType => rt !== null);
+        .map((ur: any) => ur.role.roleType)
+        .filter((rt: any): rt is RoleType => rt !== null);
 
       // Fallback: Wenn keine RoleType gesetzt ist, prüfe Role.name
       if (roles.length === 0) {
@@ -133,13 +133,13 @@ export class RbacGuard implements CanActivate {
         });
 
         // Mappe Role.name zu RoleType (Fallback für Migration)
-        return rolesByName.map((ur) => {
+        return rolesByName.map((ur: any) => {
           const name = ur.role.name.toUpperCase();
           if (name.includes('ADMIN')) return RoleType.ADMIN;
           if (name.includes('EDITOR')) return RoleType.EDITOR;
           if (name.includes('VIEWER')) return RoleType.VIEWER;
           return null;
-        }).filter((rt): rt is RoleType => rt !== null);
+        }).filter((rt: any): rt is RoleType => rt !== null);
       }
 
       return roles;

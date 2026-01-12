@@ -218,7 +218,35 @@ stats.json
 !CONTRIBUTING.md
 docs/
 **/docs/
+# Wichtige Dokumentationsdateien erlauben
 !docs/LOCAL_SETUP.md
+!docs/MULTI_TENANT_KPI.md
+!docs/ENV_REFERENCE.md
+!docs/HOWTO_E2E.md
+!docs/COOLIFY_DEPLOYMENT.md
+!docs/DOCKER_BUILD.md
+!docs/SERVICE_MIGRATION_STATUS.md
+!docs/LOGGING.md
+!docs/TYPE_SAFETY.md
+!docs/ESLINT_RULES.md
+!docs/API_DOCUMENTATION.md
+!docs/DEPLOYMENT_GUIDE.md
+!docs/TROUBLESHOOTING.md
+!docs/DATABASE_OPTIMIZATION.md
+!docs/PROMETHEUS_INTEGRATION.md
+!docs/PERFORMANCE_OPTIMIZATION.md
+!docs/TEST_COVERAGE.md
+!docs/COVERAGE_ANALYSIS.md
+!docs/HEALTH_CHECK_STANDARDIZATION.md
+!docs/ERROR_HANDLING.md
+!docs/TODOS.md
+!docs/DOCKER_OPTIMIZATION.md
+# Package-spezifische Dokumentation
+!packages/db/docs/VECTOR_INDEX_STRATEGY.md
+!packages/**/docs/*.md
+# Service-spezifische READMEs erlauben
+!apps/**/README.md
+!packages/**/README.md
 
 # E2E Screenshots und Test-Artefakte (aber Test-Dateien erlauben)
 **/e2e-screens/

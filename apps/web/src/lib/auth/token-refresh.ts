@@ -48,15 +48,13 @@ export async function refreshAccessToken(): Promise<{
 
   const tokenData = await response.json();
 
-  // Speichere neue Token
-  localStorage.setItem('access_token', tokenData.access_token);
-  if (tokenData.refresh_token) {
-    localStorage.setItem('refresh_token', tokenData.refresh_token);
-  }
-  localStorage.setItem('token_expires_at', String(Date.now() + tokenData.expires_in * 1000));
-  
-  // Aktualisiere Cookie
-  document.cookie = `access_token=${tokenData.access_token}; path=/; max-age=${tokenData.expires_in}; SameSite=Lax; Secure=${window.location.protocol === 'https:'}`;
+  // Speichere neue Token mit zentraler Funktion
+  const { saveAuthTokens } = await import('./token-storage');
+  saveAuthTokens({
+    accessToken: tokenData.access_token,
+    refreshToken: tokenData.refresh_token,
+    expiresIn: tokenData.expires_in,
+  });
 
   return {
     accessToken: tokenData.access_token,
@@ -120,6 +118,12 @@ export async function refreshAccessTokenSilently(): Promise<{
     return null;
   }
 
+  // Prüfe zuerst ob Refresh-Token vorhanden ist
+  const refreshToken = localStorage.getItem('refresh_token');
+  if (!refreshToken) {
+    return null; // Kein Refresh-Token = kein Fehler, einfach null
+  }
+
   const expiresAt = localStorage.getItem('token_expires_at');
   if (!expiresAt) {
     return null;
@@ -136,7 +140,11 @@ export async function refreshAccessTokenSilently(): Promise<{
   try {
     return await refreshAccessToken();
   } catch (error) {
-    console.warn('Silent token refresh failed:', error);
+    // Fehler ignorieren (wird bereits in refreshAccessToken behandelt)
+    // Logge nur in Development
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('Silent token refresh failed:', error);
+    }
     return null;
   }
 }

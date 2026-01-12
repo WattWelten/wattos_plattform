@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ServiceDiscoveryService } from '@wattweiser/shared';
+import { PrismaService } from '@wattweiser/db';
+import axios from 'axios';
 
 @Injectable()
 export class AvatarService {
@@ -13,6 +15,7 @@ export class AvatarService {
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly serviceDiscovery: ServiceDiscoveryService,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -159,6 +162,139 @@ export class AvatarService {
       agentId,
       ...sceneConfig,
     };
+  }
+
+  /**
+   * Avatar-Liste für Tenant abrufen
+   */
+  async getAvatarsForTenant(tenantId: string): Promise<Array<{
+    id: string;
+    name: string;
+    glbUrl: string;
+    thumbnailUrl: string | null;
+    characterId: string | null;
+    source: string;
+    createdAt: Date;
+  }>> {
+    const avatars = await this.prisma.avatar.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        glbUrl: true,
+        thumbnailUrl: true,
+        characterId: true,
+        source: true,
+        createdAt: true,
+      },
+    });
+
+    return avatars;
+  }
+
+  /**
+   * Avatar erstellen (aus Bild)
+   * 
+   * Nutzt Avaturn-Integration wenn konfiguriert, sonst Fallback
+   */
+  async createAvatar(
+    tenantId: string,
+    imageBuffer: Buffer,
+    name: string,
+    characterId?: string,
+  ): Promise<{
+    id: string;
+    name: string;
+    glbUrl: string;
+    thumbnailUrl: string | null;
+  }> {
+    try {
+      const { randomUUID } = await import('crypto');
+      const avatarId = randomUUID();
+
+      // Versuche Avaturn-Integration zu nutzen (wenn API-Key konfiguriert)
+      const avaturnApiKey = this.configService.get<string>('AVATURN_API_KEY');
+      let glbUrl: string;
+      let thumbnailUrl: string | null = null;
+      let source = 'upload';
+
+      if (avaturnApiKey) {
+        try {
+          // Direkte Avaturn-API-Integration (vereinfacht)
+          const FormData = (await import('form-data')).default;
+          
+          const formData = new FormData();
+          formData.append('image', imageBuffer, {
+            filename: 'avatar.jpg',
+            contentType: 'image/jpeg',
+          });
+          formData.append('quality', 'premium');
+          formData.append('enableMorphs', 'true');
+          formData.append('enableRigs', 'true');
+
+          const avaturnApiUrl = this.configService.get<string>('AVATURN_API_URL', 'https://api.avaturn.me');
+          const response = await axios.post(
+            `${avaturnApiUrl}/api/v1/avatars/create`,
+            formData,
+            {
+              headers: {
+                ...formData.getHeaders(),
+                Authorization: `Bearer ${avaturnApiKey}`,
+              },
+              timeout: 60000,
+            },
+          );
+
+          glbUrl = response.data.glbUrl;
+          thumbnailUrl = response.data.thumbnailUrl;
+          source = 'avaturn';
+
+          this.logger.log(`Avatar created via Avaturn: ${response.data.avatarId}`, {
+            tenantId,
+            name,
+          });
+        } catch (avaturnError) {
+          // Fallback: Avatar ohne Avaturn erstellen
+          this.logger.warn(
+            `Avaturn integration failed, creating avatar without Avaturn: ${avaturnError instanceof Error ? avaturnError.message : 'Unknown error'}`,
+          );
+          glbUrl = `placeholder://avatar/${avatarId}.glb`;
+          source = 'upload';
+        }
+      } else {
+        this.logger.debug('Avaturn API key not configured, creating placeholder avatar');
+        glbUrl = `placeholder://avatar/${avatarId}.glb`;
+        source = 'upload';
+      }
+
+      // Avatar in DB speichern
+      const avatar = await this.prisma.avatar.create({
+        data: {
+          id: avatarId,
+          tenantId,
+          characterId: characterId || null,
+          name,
+          glbUrl,
+          thumbnailUrl,
+          source,
+          metadata: {},
+        },
+      });
+
+      this.logger.log(`Avatar created: ${avatarId}`, { tenantId, name, source });
+
+      return {
+        id: avatar.id,
+        name: avatar.name,
+        glbUrl: avatar.glbUrl,
+        thumbnailUrl: avatar.thumbnailUrl,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to create avatar: ${errorMessage}`);
+      throw error;
+    }
   }
 }
 

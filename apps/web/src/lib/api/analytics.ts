@@ -54,6 +54,7 @@ async function authenticatedFetch(url: string, options: RequestInit = {}): Promi
       Authorization: `Bearer ${token}`,
       ...options.headers,
     },
+    credentials: 'include', // Wichtig für Cookie-basierte Auth
     signal: AbortSignal.timeout(30000), // 30s Timeout
   });
 
@@ -68,6 +69,7 @@ async function authenticatedFetch(url: string, options: RequestInit = {}): Promi
           Authorization: `Bearer ${refreshedToken}`,
           ...options.headers,
         },
+        credentials: 'include', // Wichtig für Cookie-basierte Auth
         signal: AbortSignal.timeout(30000),
       });
     }

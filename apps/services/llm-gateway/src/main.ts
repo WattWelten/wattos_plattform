@@ -24,7 +24,7 @@ async function bootstrap() {
     })
   );
 
-  const port = configService.get<number>('port') || process.env.PORT || 3015;
+  const port = configService.get<number>('port') || process.env.PORT || 3017;
   await app.listen(port);
   logger.log(`🚀 LLM Gateway listening on http://localhost:${port}`);
 }

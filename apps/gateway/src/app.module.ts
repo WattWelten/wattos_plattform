@@ -23,15 +23,96 @@ import { AuthMiddleware } from './auth/auth.middleware';
 import { BodyLimitMiddleware } from './middleware/body-limit.middleware';
 import { TenantMiddleware } from './middleware/tenant.middleware';
 import { TenantsController } from './tenants/tenants.controller';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
 
-// Validate environment variables on module load
+// WICHTIG: Lade .env Dateien MANUELL, bevor validateEnv() aufgerufen wird
+// ConfigModule lädt sie nicht automatisch in process.env
+// Ermittle Projekt-Root: Wenn wir in apps/gateway sind, gehe ein Verzeichnis nach oben
+let projectRoot = process.cwd();
+const cwdPath = path.normalize(projectRoot);
+
+// Prüfe ob wir bereits im apps/gateway Verzeichnis sind
+if (cwdPath.endsWith(path.join('apps', 'gateway')) || cwdPath.endsWith('apps\\gateway')) {
+  // Wir sind in apps/gateway, gehe ein Verzeichnis nach oben zum Projekt-Root
+  projectRoot = path.resolve(projectRoot, '..', '..');
+  console.log('🔍 [Gateway] Detected we are in apps/gateway, adjusting project root');
+}
+
+const gatewayDir = path.resolve(projectRoot, 'apps', 'gateway');
+const rootEnvPath = path.resolve(projectRoot, '.env');
+const envPath = path.resolve(gatewayDir, '.env');
+const envLocalPath = path.resolve(gatewayDir, '.env.local');
+
+// Debug: IMMER anzeigen (nicht nur in development)
+console.log('🔍 [Gateway] Loading .env files...');
+console.log(`  process.cwd(): ${process.cwd()}`);
+console.log(`  projectRoot (adjusted): ${projectRoot}`);
+console.log(`  Root .env: ${rootEnvPath}`);
+console.log(`  Gateway .env: ${envPath}`);
+console.log(`  Gateway .env.local: ${envLocalPath}`);
+
+// Prüfe ob Dateien existieren
+console.log(`  Root .env exists: ${fs.existsSync(rootEnvPath)}`);
+console.log(`  Gateway .env exists: ${fs.existsSync(envPath)}`);
+console.log(`  Gateway .env.local exists: ${fs.existsSync(envLocalPath)}`);
+
+// Lade in dieser Reihenfolge (spätere überschreiben frühere)
+const rootResult = dotenv.config({ path: rootEnvPath });
+const envResult = dotenv.config({ path: envPath });
+const envLocalResult = dotenv.config({ path: envLocalPath });
+
+// Debug: IMMER anzeigen
+console.log('🔍 [Gateway] .env loading results:');
+if (rootResult.error) {
+  if ((rootResult.error as NodeJS.ErrnoException).code === 'ENOENT') {
+    console.log('  ⚠️ Root .env not found (optional)');
+  } else {
+    console.warn(`  ⚠️ Root .env error: ${rootResult.error.message}`);
+  }
+} else {
+  console.log('  ✅ Root .env loaded');
+}
+
+if (envResult.error) {
+  if ((envResult.error as NodeJS.ErrnoException).code === 'ENOENT') {
+    console.log('  ⚠️ Gateway .env not found (REQUIRED!)');
+  } else {
+    console.warn(`  ⚠️ Gateway .env error: ${envResult.error.message}`);
+  }
+} else {
+  console.log('  ✅ Gateway .env loaded');
+}
+
+if (envLocalResult.error) {
+  if ((envLocalResult.error as NodeJS.ErrnoException).code === 'ENOENT') {
+    console.log('  ⚠️ Gateway .env.local not found (optional)');
+  } else {
+    console.warn(`  ⚠️ Gateway .env.local error: ${envLocalResult.error.message}`);
+  }
+} else {
+  console.log('  ✅ Gateway .env.local loaded');
+}
+
+// Debug: Zeige geladene Variablen (nur die kritischen)
+console.log('🔍 [Gateway] Critical env vars after loading:');
+console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set (' + process.env.DATABASE_URL.substring(0, 30) + '...)' : '❌ Missing'}`);
+console.log(`  JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Set (' + process.env.JWT_SECRET.length + ' chars)' : '❌ Missing'}`);
+
+// Validate environment variables on module load (NACH dem Laden der .env Dateien)
 try {
   validateEnv();
+  console.log('✅ [Gateway] Environment variables validated successfully');
 } catch (error) {
-  console.error('❌ Environment variable validation failed:');
+  console.error('❌ [Gateway] Environment variable validation failed:');
   if (error instanceof Error) {
     console.error(error.message);
   }
+  // Debug: IMMER anzeigen (nicht nur in development)
+  console.error('🔍 [Gateway] Current process.env keys (filtered):', Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('JWT')));
+  console.error(`🔍 [Gateway] DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ Missing'}`);
+  console.error(`🔍 [Gateway] JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Set' : '❌ Missing'}`);
   process.exit(1);
 }
 
@@ -39,7 +120,8 @@ try {
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: ['.env.local', '.env', '../.env'], // Suche .env in Gateway-Verzeichnis und Root
+      // Validierung erfolgt bereits oben nach manuellem Laden der .env Dateien
     }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],

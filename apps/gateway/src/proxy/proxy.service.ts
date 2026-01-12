@@ -13,11 +13,12 @@ const SERVICE_MAPPING: Record<string, [string, number]> = {
   rag: ['rag-service', 3005],
   agent: ['agent-service', 3003],
   tool: ['tool-service', 3004],
-  summary: ['summary-service', 3011],
+  summary: ['summary-service', 3018],
   feedback: ['feedback-service', 3010],
   admin: ['admin-service', 3007],
   avatar: ['avatar-service', 3009],
-  metaverse: ['metaverse-service', 3010],
+  video: ['video-service', 3017],
+  metaverse: ['metaverse-service', 3012],
   ingestion: ['ingestion-service', 8001],
   parsing: ['parsing-service', 3012],
   character: ['character-service', 3013],
@@ -47,7 +48,7 @@ export class ProxyService {
     }
 
     // Path-Rewrite-Logik: /api/{serviceName}/* -> /{serviceName}/*
-    // Ausnahmen: admin -> '', analytics -> /analytics, dashboard -> /dashboard
+    // Ausnahmen: admin -> '', analytics -> /analytics, dashboard -> /dashboard, character -> /v1/characters
     let pathRewrite: Record<string, string>;
     if (serviceName === 'admin') {
       pathRewrite = { [`^/api/${serviceName}`]: '' };
@@ -55,6 +56,21 @@ export class ProxyService {
       pathRewrite = { [`^/api/analytics`]: '/analytics' };
     } else if (serviceName === 'dashboard') {
       pathRewrite = { [`^/api/dashboard`]: '/dashboard' };
+    } else if (serviceName === 'character') {
+      // Character-Service: /api/v1/characters/* -> /v1/characters/*
+      pathRewrite = { [`^/api/v1/characters`]: '/v1/characters', [`^/api/v1/artifacts`]: '/v1/artifacts' };
+    } else if (serviceName === 'agent') {
+      // Agent-Service: /api/agents/* -> /agents/*, /api/v1/agents/* -> /v1/agents/*
+      pathRewrite = { 
+        [`^/api/agents`]: '/agents',
+        [`^/api/v1/agents`]: '/v1/agents'
+      };
+    } else if (serviceName === 'avatar') {
+      // Avatar-Service: /api/v1/avatars/* -> /api/v1/avatars/*
+      pathRewrite = { [`^/api/v1/avatars`]: '/api/v1/avatars' };
+    } else if (serviceName === 'video') {
+      // Video-Service: /api/v1/videos/* -> /api/v1/videos/*
+      pathRewrite = { [`^/api/v1/videos`]: '/api/v1/videos' };
     } else {
       pathRewrite = { [`^/api/${serviceName}`]: `/${serviceName}` };
     }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useLocale } from 'next-intl';
+import { saveAuthTokens } from '@/lib/auth/token-storage';
+import { getLoginRedirect } from '@/lib/auth/redirect';
 
 const loginSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
@@ -24,6 +27,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const locale = useLocale();
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -36,7 +40,20 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+      // Prüfe API-URL
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      if (!apiUrl) {
+        throw new Error('API-URL nicht konfiguriert');
+      }
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Login Debug:', { apiUrl, email: data.email });
+      }
+      
+      // Timeout für Request (30 Sekunden)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -46,18 +63,90 @@ export default function LoginPage() {
           username: data.email, // API erwartet 'username'
           password: data.password,
         }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Anmeldung fehlgeschlagen' }));
-        throw new Error(error.message || 'Anmeldung fehlgeschlagen');
+        let errorMessage = 'Anmeldung fehlgeschlagen';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || error.error || errorMessage;
+        } catch {
+          // JSON-Parsing fehlgeschlagen, verwende Standard-Fehlermeldung
+          if (response.status === 401) {
+            errorMessage = 'Ungültige Anmeldedaten';
+          } else if (response.status === 500) {
+            errorMessage = 'Serverfehler. Bitte versuchen Sie es später erneut.';
+          } else if (response.status >= 500) {
+            errorMessage = 'Serverfehler. Bitte versuchen Sie es später erneut.';
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
       
-      // Token speichern
+      // Debug: Logge API-Response
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Login API Response:', {
+          hasAccessToken: !!result.access_token,
+          hasRefreshToken: !!result.refresh_token,
+          hasUser: !!result.user,
+          resultKeys: Object.keys(result),
+          result: result,
+        });
+      }
+      
+      // Token konsistent speichern (localStorage + Cookie)
       if (result.access_token) {
-        document.cookie = `wattweiser_auth_token=${result.access_token}; path=/; max-age=3600; SameSite=Lax`;
+        // Extrahiere User aus Response oder Token
+        const user = result.user || {
+          id: result.sub || result.id || '',
+          email: result.email || data.email,
+          name: result.name,
+          roles: result.roles || ['user'],
+          tenantId: result.tenantId || '',
+        };
+
+        // Speichere Token mit zentraler Funktion
+        // API gibt standardmäßig kein expiresIn zurück, verwende Default 3600s
+        const expiresIn = result.expiresIn || result.expires_in || 3600;
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Saving tokens:', {
+            hasAccessToken: !!result.access_token,
+            hasRefreshToken: !!result.refresh_token,
+            expiresIn,
+            user: user,
+          });
+        }
+        
+        saveAuthTokens(
+          {
+            accessToken: result.access_token,
+            refreshToken: result.refresh_token || result.refreshToken,
+            expiresIn: expiresIn,
+          },
+          user
+        );
+        
+        // Debug: Prüfe ob Token gespeichert wurde
+        if (process.env.NODE_ENV === 'development') {
+          setTimeout(() => {
+            const savedToken = localStorage.getItem('access_token');
+            const savedUser = localStorage.getItem('wattweiser_user');
+            console.log('🔍 Token nach Speicherung:', {
+              hasToken: !!savedToken,
+              tokenLength: savedToken?.length,
+              hasUser: !!savedUser,
+              user: savedUser ? JSON.parse(savedUser) : null,
+            });
+          }, 100);
+        }
+      } else {
+        throw new Error('Kein Access Token erhalten');
       }
 
       toast({
@@ -65,12 +154,60 @@ export default function LoginPage() {
         description: 'Sie werden weitergeleitet...',
       });
 
-      // Redirect nach erfolgreichem Login
-      router.push(`/${locale}/chat`);
+      // Redirect mit zentraler Logik (berücksichtigt Query-Parameter)
+      const redirectTo = getLoginRedirect(locale, '/chat');
+      
+      // Debug-Logging (nur in Development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Login Redirect Debug:', {
+          locale,
+          defaultPath: '/chat',
+          redirectTo,
+          windowLocation: window.location.pathname,
+          searchParams: window.location.search,
+          routerType: typeof router,
+          routerPush: typeof router.push,
+        });
+      }
+      
+      // Fallback falls redirectTo ungültig ist
+      // redirectTo enthält bereits OHNE Locale (next-intl fügt sie automatisch hinzu)
+      if (!redirectTo || redirectTo === 'undefined' || redirectTo.trim() === '') {
+        console.error('❌ Invalid redirect path, using fallback:', redirectTo);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Attempting router.push("/chat")');
+        }
+        router.push('/chat'); // OHNE Locale - next-intl fügt sie hinzu
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Attempting router.push:', redirectTo);
+        }
+        router.push(redirectTo); // OHNE Locale - next-intl fügt sie hinzu
+      }
+      
+      // Debug: Prüfe ob Navigation stattgefunden hat
+      if (process.env.NODE_ENV === 'development') {
+        setTimeout(() => {
+          console.log('🔍 After router.push - Current location:', {
+            pathname: window.location.pathname,
+            href: window.location.href,
+          });
+        }, 500);
+      }
     } catch (error: any) {
+      let errorMessage = 'Bitte überprüfen Sie Ihre Anmeldedaten.';
+      
+      if (error.name === 'AbortError') {
+        errorMessage = 'Zeitüberschreitung. Bitte überprüfen Sie Ihre Internetverbindung.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = 'Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung.';
+      }
+
       toast({
         title: 'Anmeldung fehlgeschlagen',
-        description: error.message || 'Bitte überprüfen Sie Ihre Anmeldedaten.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -90,7 +227,14 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(onSubmit)(e);
+            }} 
+            className="space-y-4"
+            noValidate
+          >
             <div className="space-y-2">
               <Label htmlFor="email">E-Mail</Label>
               <Input

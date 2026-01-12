@@ -8,6 +8,8 @@ import { GuidedTourProvider } from '@/components/onboarding/GuidedTourProvider';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TenantProvider } from '@/contexts/tenant.context';
 import { getValidAccessToken, isTokenExpired, refreshAccessTokenSilently } from '@/lib/auth/token-refresh';
+import { ReactDevTools } from '@/components/dev/ReactDevTools';
+import { getLoginUrl } from '@/lib/auth/redirect';
 
 export function Providers({
   children,
@@ -35,10 +37,23 @@ export function Providers({
     const checkToken = async () => {
       if (typeof window === 'undefined') return;
       
+      // Prüfe zuerst ob Token vorhanden ist
+      const hasToken = localStorage.getItem('access_token');
+      if (!hasToken) {
+        return; // Kein Token = nicht eingeloggt, kein Refresh nötig
+      }
+      
       // Versuche Silent-Refresh (2min vor Ablauf)
-      const refreshed = await refreshAccessTokenSilently();
-      if (refreshed) {
-        return; // Token wurde erfolgreich aktualisiert
+      try {
+        const refreshed = await refreshAccessTokenSilently();
+        if (refreshed) {
+          return; // Token wurde erfolgreich aktualisiert
+        }
+      } catch (error) {
+        // Ignoriere Fehler beim Silent-Refresh (wird bereits in refreshAccessTokenSilently behandelt)
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('Silent refresh error (ignored):', error);
+        }
       }
 
       // Falls Silent-Refresh nicht möglich war, prüfe ob Token abgelaufen ist
@@ -48,7 +63,9 @@ export function Providers({
         } catch (error) {
           // Token-Refresh fehlgeschlagen, redirect zu Login
           if (typeof window !== 'undefined') {
-            window.location.href = '/de/login';
+            const currentPath = window.location.pathname;
+            const locale = currentPath.split('/')[1] || 'de'; // Extract current locale or default
+            window.location.href = getLoginUrl(locale, currentPath, true); // Redirect with locale
           }
         }
       }
@@ -69,6 +86,7 @@ export function Providers({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <TenantProvider>
             <GuidedTourProvider>
+              <ReactDevTools />
               <OnboardingFlow />
               {children}
             </GuidedTourProvider>

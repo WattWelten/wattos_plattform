@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { 
   Card, 
   CardHeader, 
@@ -227,21 +228,21 @@ export default function AssistantsPage() {
                       variant="ghost" 
                       size="sm" 
                       className="flex-1 gap-2"
-                      onClick={() => router.push(`/${locale}/test-console?agentId=${agent.id}`)}
+                      onClick={() => router.push(`/test-console?agentId=${agent.id}`)}
                     >
                       Testen
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => router.push(`/${locale}/assistants/${agent.id}/edit`)}
+                      onClick={() => router.push(`/assistants/${agent.id}/edit`)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => router.push(`/${locale}/assistants/${agent.id}/settings`)}
+                      onClick={() => router.push(`/assistants/${agent.id}/settings`)}
                     >
                       <Settings className="h-4 w-4" />
                     </Button>

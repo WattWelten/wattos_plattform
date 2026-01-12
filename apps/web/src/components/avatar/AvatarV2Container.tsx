@@ -20,6 +20,7 @@ export interface AvatarV2ContainerProps {
   className?: string;
   enableControls?: boolean;
   enableEnvironment?: boolean;
+  onCanvasReady?: (canvas: HTMLCanvasElement) => void;
 }
 
 export function AvatarV2Container({
@@ -31,6 +32,7 @@ export function AvatarV2Container({
   className,
   enableControls = true,
   enableEnvironment = true,
+  onCanvasReady,
 }: AvatarV2ContainerProps) {
   const {
     sceneConfig,
@@ -66,6 +68,7 @@ export function AvatarV2Container({
           {...(onError && { onError })}
           enableControls={enableControls}
           enableEnvironment={enableEnvironment}
+          {...(onCanvasReady && { onCanvasReady })}
         />
       </Suspense>
     </div>

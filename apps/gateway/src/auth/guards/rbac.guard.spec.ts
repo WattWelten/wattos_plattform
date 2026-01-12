@@ -12,6 +12,7 @@ import { PrismaService } from '@wattweiser/db';
 describe('RbacGuard', () => {
   let guard: RbacGuard;
   let mockContext: ExecutionContext;
+  let mockReflector: { getAllAndOverride: ReturnType<typeof vi.fn> };
 
   const mockPrismaService = {
     client: {
@@ -22,13 +23,12 @@ describe('RbacGuard', () => {
   };
 
   beforeEach(async () => {
-    const mockReflector = {
+    mockReflector = {
       getAllAndOverride: vi.fn(),
     };
     
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        RbacGuard,
         {
           provide: Reflector,
           useValue: mockReflector,
@@ -37,10 +37,30 @@ describe('RbacGuard', () => {
           provide: PrismaService,
           useValue: mockPrismaService,
         },
+        RbacGuard,
       ],
     }).compile();
 
     guard = module.get<RbacGuard>(RbacGuard);
+    
+    // Stelle sicher, dass der Reflector korrekt injiziert wurde
+    // Verwende Object.defineProperty für read-only Properties
+    if (!guard['reflector']) {
+      Object.defineProperty(guard, 'reflector', {
+        value: mockReflector,
+        writable: true,
+        configurable: true,
+      });
+    }
+    
+    // Stelle sicher, dass PrismaService korrekt injiziert wurde
+    if (!guard['prisma']) {
+      Object.defineProperty(guard, 'prisma', {
+        value: mockPrismaService,
+        writable: true,
+        configurable: true,
+      });
+    }
 
     const mockRequest = {
       user: { id: 'user-123' },
@@ -62,8 +82,7 @@ describe('RbacGuard', () => {
 
   describe('canActivate', () => {
     it('should allow access when no roles required', async () => {
-      // @ts-ignore - Zugriff auf private Property für Test
-      (guard['reflector'].getAllAndOverride as ReturnType<typeof vi.fn>).mockReturnValue(null);
+      mockReflector.getAllAndOverride.mockReturnValue(null);
 
       const result = await guard.canActivate(mockContext);
 
@@ -71,8 +90,7 @@ describe('RbacGuard', () => {
     });
 
     it('should allow access when user has required role', async () => {
-      // @ts-ignore - Zugriff auf private Property für Test
-      (guard['reflector'].getAllAndOverride as ReturnType<typeof vi.fn>).mockReturnValue([RoleType.ADMIN]);
+      mockReflector.getAllAndOverride.mockReturnValue([RoleType.ADMIN]);
       mockPrismaService.client.userRole.findMany.mockResolvedValue([
         {
           role: {
@@ -87,8 +105,7 @@ describe('RbacGuard', () => {
     });
 
     it('should deny access when user lacks required role', async () => {
-      // @ts-ignore - Zugriff auf private Property für Test
-      (guard['reflector'].getAllAndOverride as ReturnType<typeof vi.fn>).mockReturnValue([RoleType.ADMIN]);
+      mockReflector.getAllAndOverride.mockReturnValue([RoleType.ADMIN]);
       mockPrismaService.client.userRole.findMany.mockResolvedValue([
         {
           role: {
@@ -103,8 +120,7 @@ describe('RbacGuard', () => {
     });
 
     it('should deny access when user is not authenticated', async () => {
-      // @ts-ignore - Zugriff auf private Property für Test
-      (guard['reflector'].getAllAndOverride as ReturnType<typeof vi.fn>).mockReturnValue([RoleType.ADMIN]);
+      mockReflector.getAllAndOverride.mockReturnValue([RoleType.ADMIN]);
       const contextWithoutUser = {
         ...mockContext,
         switchToHttp: vi.fn(() => ({
@@ -121,8 +137,7 @@ describe('RbacGuard', () => {
     });
 
     it('should deny access when tenantId is missing', async () => {
-      // @ts-ignore - Zugriff auf private Property für Test
-      (guard['reflector'].getAllAndOverride as ReturnType<typeof vi.fn>).mockReturnValue([RoleType.ADMIN]);
+      mockReflector.getAllAndOverride.mockReturnValue([RoleType.ADMIN]);
       const contextWithoutTenant = {
         ...mockContext,
         switchToHttp: vi.fn(() => ({

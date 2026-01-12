@@ -11,11 +11,12 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:stack": "docker compose -f docker-compose.dev.yml up -d",
-    "dev:mvp": "turbo run dev --filter=./apps/web --filter=./apps/gateway --filter=./apps/services/chat-service --filter=./apps/services/agent-service --filter=./apps/services/rag-service --filter=./apps/services/avatar-service --filter=./apps/services/voice-service --filter=./apps/services/crawler-service --filter=./apps/services/admin-service --filter=./apps/services/tool-service --filter=./apps/services/llm-gateway --filter=./apps/services/dashboard-service",
+    "dev:mvp": "turbo run dev --filter=./apps/web --filter=./apps/gateway --filter=./apps/services/chat-service --filter=./apps/services/agent-service --filter=./apps/services/rag-service --filter=./apps/services/avatar-service --filter=./apps/services/video-service --filter=./apps/services/voice-service --filter=./apps/services/crawler-service --filter=./apps/services/admin-service --filter=./apps/services/tool-service --filter=./apps/services/llm-gateway --filter=./apps/services/dashboard-service --filter=./apps/services/character-service",
     "seed:dev": "node --import tsx scripts/seed.ts",
     "seed:tenants": "node --import tsx scripts/seed-tenants.ts",
     "seed:test-data": "node --import tsx scripts/seed-test-data.ts",
     "migrate:manual": "node --import tsx scripts/migrate-manual.ts",
+    "migrate:avatars-videos": "node --import tsx scripts/migrate-avatars-videos.ts",
     "setup:multi-tenant": "pnpm migrate:manual && pnpm seed:tenants",
     "setup:multi-tenant:ps1": "powershell -ExecutionPolicy Bypass -File scripts/setup-multi-tenant.ps1",
     "setup:multi-tenant:sh": "bash scripts/setup-multi-tenant.sh",

@@ -31,6 +31,14 @@ export class ProxyController {
     middleware(req, res, () => {});
   }
 
+  @All('v1/agents/*')
+  @UseGuards(JwtAuthGuard)
+  async proxyV1Agents(@Req() req: Request, @Res() res: Response) {
+    // Route /api/v1/agents/* zu agent-service (für Avatar-Endpunkte)
+    const middleware = this.proxyService.getProxyMiddleware('agent');
+    middleware(req, res, () => {});
+  }
+
   @All('tools/*')
   @UseGuards(JwtAuthGuard)
   async proxyTool(@Req() req: Request, @Res() res: Response) {
@@ -141,6 +149,22 @@ export class ProxyController {
   @UseGuards(JwtAuthGuard)
   async proxyVoice(@Req() req: Request, @Res() res: Response) {
     const middleware = this.proxyService.getProxyMiddleware('voice');
+    middleware(req, res, () => {});
+  }
+
+  @All('v1/avatars/*')
+  @UseGuards(JwtAuthGuard)
+  async proxyV1Avatars(@Req() req: Request, @Res() res: Response) {
+    // Route /api/v1/avatars/* zu avatar-service
+    const middleware = this.proxyService.getProxyMiddleware('avatar');
+    middleware(req, res, () => {});
+  }
+
+  @All('v1/videos/*')
+  @UseGuards(JwtAuthGuard)
+  async proxyV1Videos(@Req() req: Request, @Res() res: Response) {
+    // Route /api/v1/videos/* zu video-service
+    const middleware = this.proxyService.getProxyMiddleware('video');
     middleware(req, res, () => {});
   }
 }

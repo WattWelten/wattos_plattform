@@ -6,7 +6,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "generate": "prisma generate",
-    "build": "pnpm generate && tsc",
+    "build": "tsc",
+    "build:full": "pnpm generate && tsc",
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit",
     "migrate:dev": "prisma migrate dev",

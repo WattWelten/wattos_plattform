@@ -25,7 +25,7 @@ export class TenantsController {
       },
     });
 
-    return tenants.map((t) => ({
+    return tenants.map((t: any) => ({
       id: t.id,
       slug: t.slug,
       name: t.name,

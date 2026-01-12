@@ -12,6 +12,7 @@ import {
   BookOpen,
   Search,
   Volume2,
+  Video,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'Knowledge', href: '/knowledge', icon: BookOpen },
   { name: 'Search & RAG', href: '/search', icon: Search },
   { name: 'Avatar & Voice', href: '/avatar-voice', icon: Volume2 },
+  { name: 'Videos', href: '/videos', icon: Video },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

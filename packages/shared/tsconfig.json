@@ -7,18 +7,13 @@
     "useDefineForClassFields": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "composite": true,
-    "incremental": true,
+    "composite": false,
+    "incremental": false,
     "sourceMap": false,
     "declarationMap": false,
     "skipLibCheck": true,
     "typeRoots": ["../../node_modules/@types", "node_modules/@types"]
   },
   "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "../db"],
-  "references": [
-    {
-      "path": "../db"
-    }
-  ]
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "../db"]
 }

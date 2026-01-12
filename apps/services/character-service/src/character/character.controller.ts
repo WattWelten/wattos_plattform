@@ -4,7 +4,7 @@ import { CharacterDefinitionService } from './character-definition.service';
 import { CreateCharacterDto } from './dto/create-character.dto';
 import { DefineCharacterDto } from './dto/define-character.dto';
 
-@Controller('api/v1/characters')
+@Controller('characters')
 export class CharacterController {
   constructor(
     private readonly characterService: CharacterService,

@@ -10,15 +10,11 @@ import { getKeycloakConfig } from './keycloak';
 export async function logout(): Promise<void> {
   const config = getKeycloakConfig();
 
-  // Entferne gespeicherte Token
+  // Entferne gespeicherte Token mit zentraler Funktion
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('token_expires_at');
+    const { clearAuthTokens } = await import('./token-storage');
+    clearAuthTokens();
     sessionStorage.removeItem('auth_redirect');
-    
-    // Entferne Cookie
-    document.cookie = 'wattweiser_auth_token=; path=/; max-age=0';
   }
 
   // Keycloak Logout URL

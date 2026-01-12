@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { OnboardingWizard, OnboardingStep } from '@wattweiser/ui';
 import { Bot, Database, Settings, CheckCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
@@ -93,7 +93,7 @@ export function OnboardingFlow() {
   const handleComplete = () => {
     localStorage.setItem('onboarding_completed', 'true');
     setShowOnboarding(false);
-    router.push('/de/assistants');
+    router.push('/assistants'); // next-intl fügt Locale automatisch hinzu
   };
 
   const handleSkip = () => {

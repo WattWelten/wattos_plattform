@@ -63,13 +63,22 @@ export default function LabPage() {
   // Test Audio laden
   const handleTestAudio = async () => {
     try {
-      // In Production: Audio von TTS-Service laden
+      // Hole Token für Authentifizierung
+      const { getValidAccessToken } = await import('@/lib/auth/token-refresh');
+      const token = await getValidAccessToken();
+      
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${apiUrl}/api/voice/tts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: 'Test audio for lab environment', voice: 'default' }),
+        headers,
         credentials: 'include',
+        body: JSON.stringify({ text: 'Test audio for lab environment', voice: 'default' }),
       });
       if (response.ok) {
         const blob = await response.blob();

@@ -11,9 +11,9 @@ export class KeycloakService {
 
   constructor(private configService: ConfigService) {
     this.keycloakUrl = this.configService.get<string>('KEYCLOAK_URL', 'http://localhost:8080');
-    this.realm = this.configService.get<string>('KEYCLOAK_REALM', 'wattweiser');
-    this.clientId = this.configService.get<string>('KEYCLOAK_CLIENT_ID', 'wattweiser-client');
-    this.clientSecret = this.configService.get<string>('KEYCLOAK_CLIENT_SECRET', '');
+    this.realm = this.configService.get<string>('KEYCLOAK_REALM', 'wattos');
+    this.clientId = this.configService.get<string>('KEYCLOAK_CLIENT_ID', 'gateway');
+    this.clientSecret = this.configService.get<string>('KEYCLOAK_CLIENT_SECRET', 'gateway-secret');
   }
 
   async login(username: string, password: string) {

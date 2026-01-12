@@ -79,7 +79,7 @@ export default function RegisterPage() {
       });
 
       // Redirect zum Onboarding
-      router.push(`/${locale}/onboarding`);
+      router.push('/onboarding'); // next-intl fügt Locale automatisch hinzu
     } catch (error: any) {
       toast({
         title: 'Registrierung fehlgeschlagen',

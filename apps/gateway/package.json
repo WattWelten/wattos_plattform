@@ -28,6 +28,7 @@
     "@wattweiser/shared": "workspace:*",
     "axios": "^1.13.2",
     "compression": "^1.8.1",
+    "dotenv": "^16.6.1",
     "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.5",
     "jose": "^6.1.3",

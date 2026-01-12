@@ -1,7 +1,7 @@
 # Plattformunabhängiges Makefile (optimiert)
 # Funktioniert auf Windows (PowerShell), WSL und Unix-Systemen
 
-.PHONY: up down db:migrate seed dev test lint fmt e2e smoke docker:wait docker:logs docker:ps docker:restart
+.PHONY: up down db:migrate seed dev test lint fmt e2e smoke docker:wait docker:logs docker:ps docker:restart install-ffmpeg migrate-avatars-videos
 
 # Docker Compose Command Detection
 DOCKER_COMPOSE := $(shell command -v docker-compose 2> /dev/null || echo "docker compose")
@@ -66,4 +66,26 @@ docker:ps:
 
 docker:restart:
 	@$(DOCKER_COMPOSE) restart
+
+install-ffmpeg: ## Installiert FFmpeg für Video-Service (benötigt für Metadaten & Thumbnails)
+	@echo "🎥 Installiere FFmpeg..."
+	@if [ "$(OS)" = "Windows_NT" ]; then \
+		powershell -ExecutionPolicy Bypass -File scripts/install-ffmpeg.ps1; \
+	else \
+		bash scripts/install-ffmpeg.sh; \
+	fi
+
+migrate-avatars-videos: ## Führt Migration für Avatar & Video Models aus
+	@echo "📦 Führe Migration aus..."
+	@cd packages/db && \
+	if [ -f "migrations/20250131000000_add_avatars_videos/migration.sql" ]; then \
+		echo "Migration-Datei gefunden. Führe SQL aus..."; \
+		psql $${DATABASE_URL} -f migrations/20250131000000_add_avatars_videos/migration.sql || \
+		echo "⚠️  Migration konnte nicht automatisch ausgeführt werden. Führe manuell aus:"; \
+		echo "   psql \$$DATABASE_URL -f packages/db/migrations/20250131000000_add_avatars_videos/migration.sql"; \
+	else \
+		echo "❌ Migration-Datei nicht gefunden"; \
+	fi
+	@echo "🔄 Generiere Prisma Client..."
+	@cd packages/db && npx prisma generate
 

@@ -28,7 +28,23 @@ export function useAvatarV2(agentId: string): UseAvatarV2Return {
   useEffect(() => {
     const loadConfig = async () => {
       try {
-        const response = await fetch(`/api/v1/agents/${agentId}/avatar-config`);
+        // Hole Token für Authentifizierung
+        const { getValidAccessToken } = await import('@/lib/auth/token-refresh');
+        const token = await getValidAccessToken();
+        
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(`/api/v1/agents/${agentId}/avatar-config`, {
+          method: 'GET',
+          headers,
+          credentials: 'include',
+        });
         if (response.ok) {
           const config = await response.json();
           setSceneConfig(config);
@@ -97,11 +113,22 @@ export function useAvatarV2(agentId: string): UseAvatarV2Return {
   const generateAvatar = useCallback(async (text: string, voiceId?: string) => {
     setIsPlaying(true);
     try {
+      // Hole Token für Authentifizierung
+      const { getValidAccessToken } = await import('@/lib/auth/token-refresh');
+      const token = await getValidAccessToken();
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`/api/v1/agents/${agentId}/generate-avatar`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({ text, voiceId }),
       });
 

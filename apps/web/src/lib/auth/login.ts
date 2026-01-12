@@ -88,14 +88,14 @@ export async function handleAuthCallback(code: string, state: string): Promise<{
 
   const tokenData = await response.json();
 
-  // Speichere Token in localStorage und Cookie
+  // Speichere Token mit zentraler Funktion
   if (typeof window !== 'undefined') {
-    localStorage.setItem('access_token', tokenData.access_token);
-    localStorage.setItem('refresh_token', tokenData.refresh_token);
-    localStorage.setItem('token_expires_at', String(Date.now() + tokenData.expires_in * 1000));
-    
-    // Setze Cookie für Middleware (Server-seitige Validierung)
-    document.cookie = `access_token=${tokenData.access_token}; path=/; max-age=${tokenData.expires_in}; SameSite=Lax; Secure=${window.location.protocol === 'https:'}`;
+    const { saveAuthTokens } = await import('./token-storage');
+    saveAuthTokens({
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      expiresIn: tokenData.expires_in,
+    });
   }
 
   // Entferne PKCE-Werte

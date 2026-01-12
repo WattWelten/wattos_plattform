@@ -56,6 +56,7 @@ async function authenticatedFetch(url: string, options: RequestInit = {}): Promi
       Authorization: `Bearer ${token}`,
       ...options.headers,
     },
+    credentials: 'include', // Wichtig für Cookie-basierte Auth
   });
 
   // Token abgelaufen, versuche Refresh
@@ -69,6 +70,7 @@ async function authenticatedFetch(url: string, options: RequestInit = {}): Promi
           Authorization: `Bearer ${refreshedToken}`,
           ...options.headers,
         },
+        credentials: 'include', // Wichtig für Cookie-basierte Auth
       });
     }
     // Refresh fehlgeschlagen, redirect zu Login

@@ -81,6 +81,8 @@ model Tenant {
   alerts           Alert[]
   artifacts        Artifact[]
   feedback         Feedback[]
+  avatars          Avatar[]
+  videos           Video[]
 
   @@index([slug])
 }
@@ -990,4 +992,54 @@ model AnswerSource {
   @@index([docId])
   @@index([chunkId])
   @@index([score])
+}
+
+// ============================================
+// AVATARS & VIDEOS
+// ============================================
+
+model Avatar {
+  id          String   @id @default(uuid())
+  tenantId    String
+  characterId String?  // Optional: Verknüpfung zu Character
+  name        String
+  glbUrl      String
+  thumbnailUrl String?
+  source      String   @default("avaturn") // "avaturn" | "upload" | "custom"
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  videos Video[]
+
+  @@index([tenantId])
+  @@index([characterId])
+}
+
+model Video {
+  id          String   @id @default(uuid())
+  tenantId    String
+  avatarId    String
+  agentId     String?  // Optional: Verknüpfung zu Agent
+  title       String
+  description String?
+  videoUrl    String   // S3/MinIO URL
+  thumbnailUrl String?
+  duration    Int      // in Sekunden
+  fileSize    BigInt   // in Bytes
+  format      String   @default("webm") // "webm" | "mp4"
+  resolution  String   @default("1920x1080")
+  status      String   @default("completed") // "processing" | "completed" | "failed"
+  metadata    Json     @default("{}") // { text, voiceId, language, etc. }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  avatar Avatar @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([avatarId])
+  @@index([agentId])
+  @@index([status])
 }

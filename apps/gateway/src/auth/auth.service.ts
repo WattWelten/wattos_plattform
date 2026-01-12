@@ -56,10 +56,43 @@ export class AuthService {
       keycloakId: user.keycloakId,
     };
 
+    // Hole JWT Expiration Time (Standard: 1h = 3600s)
+    const expiresIn = this.parseJwtExpiry(
+      this._configService.get<string>('JWT_EXPIRES_IN', '1h')
+    );
+
     return {
       access_token: this.jwtService.sign(payload),
+      expires_in: expiresIn,
+      token_type: 'Bearer',
       user,
     };
+  }
+
+  /**
+   * Parst JWT Expiration String (z.B. "1h", "3600s") zu Sekunden
+   */
+  private parseJwtExpiry(expiry: string): number {
+    if (!expiry) return 3600; // Default: 1 Stunde
+
+    const match = expiry.match(/^(\d+)([smhd])?$/i);
+    if (!match || !match[1]) return 3600; // Fix: Prüfe match[1]
+
+    const value = parseInt(match[1], 10);
+    const unit = (match[2] || 's').toLowerCase();
+
+    switch (unit) {
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 3600;
+      case 'd':
+        return value * 86400;
+      default:
+        return 3600;
+    }
   }
 
   async validateToken(token: string) {

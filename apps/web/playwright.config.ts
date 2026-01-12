@@ -30,23 +30,28 @@ export default defineConfig({
     },
   ],
 
-  webServer: [
-    {
-      command: 'pnpm dev',
-      url: 'http://localhost:3000',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-      stdout: 'pipe',
-      stderr: 'pipe',
-    },
-    {
-      command: 'cd ../gateway && pnpm dev',
-      url: 'http://localhost:3001/api/health/liveness',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-      stdout: 'pipe',
-      stderr: 'pipe',
-    },
-  ],
+  // Services werden manuell gestartet (pnpm dev:mvp)
+  // Playwright verwendet vorhandene Server, startet keine neuen
+  // webServer deaktiviert, wenn Services bereits laufen
+  webServer: process.env.SKIP_WEB_SERVER
+    ? undefined
+    : [
+        {
+          command: 'pnpm dev',
+          url: 'http://localhost:3000',
+          reuseExistingServer: true,
+          timeout: 180 * 1000,
+          stdout: 'pipe',
+          stderr: 'pipe',
+        },
+        {
+          command: 'cd ../gateway && pnpm dev',
+          url: 'http://localhost:3001/api/health/liveness',
+          reuseExistingServer: true,
+          timeout: 180 * 1000,
+          stdout: 'pipe',
+          stderr: 'pipe',
+        },
+      ],
 });
 

@@ -1,7 +1,10 @@
-import { Controller, Post, Get, Param, Body, Query } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 import { AvatarService } from './avatar.service';
 
-@Controller('api/v1/avatar')
+@ApiTags('avatars')
+@Controller('api/v1/avatars')
 export class AvatarController {
   constructor(private readonly avatarService: AvatarService) {}
 
@@ -25,7 +28,39 @@ export class AvatarController {
 
   @Get(':agentId/video')
   async getAvatarVideo(@Param('agentId') agentId: string) {
-    return { videoUrl: `/api/v1/avatar/${agentId}/video/stream` };
+    return { videoUrl: `/api/v1/avatars/${agentId}/video/stream` };
+  }
+
+  /**
+   * Avatar-Liste für Tenant abrufen
+   */
+  @Get('tenant/:tenantId')
+  async getAvatarsForTenant(@Param('tenantId') tenantId: string) {
+    return this.avatarService.getAvatarsForTenant(tenantId);
+  }
+
+  /**
+   * Avatar erstellen (aus Bild)
+   */
+  @Post('create')
+  @UseInterceptors(FileInterceptor('image'))
+  async createAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: { tenantId: string; name: string; characterId?: string },
+  ) {
+    if (!file) {
+      throw new BadRequestException('No image file provided');
+    }
+    if (!body.tenantId || !body.name) {
+      throw new BadRequestException('tenantId and name are required');
+    }
+
+    return this.avatarService.createAvatar(
+      body.tenantId,
+      file.buffer,
+      body.name,
+      body.characterId,
+    );
   }
 }
 

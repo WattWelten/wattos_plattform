@@ -198,3 +198,131 @@ export async function getVisemeEvents(
   if (conversationId) params.append('conversationId', conversationId);
   return apiRequest<VisemeEvent[]>(`/admin/events?${params}&type=viseme`);
 }
+
+// ============================================
+// AVATAR APIs
+// ============================================
+
+export interface Avatar {
+  id: string;
+  name: string;
+  glbUrl: string;
+  thumbnailUrl: string | null;
+  characterId: string | null;
+  source: string;
+  createdAt: string;
+}
+
+export async function getAvatars(tenantId: string): Promise<Avatar[]> {
+  return apiRequest<Avatar[]>(`/v1/avatars/tenant/${tenantId}`);
+}
+
+export async function createAvatar(
+  tenantId: string,
+  imageFile: File,
+  name: string,
+  characterId?: string,
+): Promise<Avatar> {
+  const formData = new FormData();
+  formData.append('image', imageFile);
+  formData.append('tenantId', tenantId);
+  formData.append('name', name);
+  if (characterId) {
+    formData.append('characterId', characterId);
+  }
+
+  const response = await authenticatedFetch(`${apiUrl}/api/v1/avatars/create`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ 
+      message: `HTTP ${response.status}: ${response.statusText}` 
+    }));
+    throw new Error(error.message || `Request failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// ============================================
+// VIDEO APIs
+// ============================================
+
+export interface Video {
+  id: string;
+  tenantId: string;
+  avatarId: string;
+  agentId?: string;
+  title: string;
+  description?: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  duration: number;
+  fileSize: number;
+  format: string;
+  resolution: string;
+  status: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function uploadVideo(
+  tenantId: string,
+  avatarId: string,
+  videoFile: Blob,
+  title: string,
+  metadata?: Record<string, unknown>,
+): Promise<Video> {
+  const formData = new FormData();
+  formData.append('video', videoFile, `avatar-video-${Date.now()}.webm`);
+  formData.append('tenantId', tenantId);
+  formData.append('avatarId', avatarId);
+  formData.append('title', title);
+  if (metadata) {
+    formData.append('metadata', JSON.stringify(metadata));
+  }
+
+  const response = await authenticatedFetch(`${apiUrl}/api/v1/videos/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ 
+      message: `HTTP ${response.status}: ${response.statusText}` 
+    }));
+    throw new Error(error.message || `Request failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function getVideos(tenantId: string): Promise<Video[]> {
+  return apiRequest<Video[]>(`/v1/videos?tenantId=${tenantId}`);
+}
+
+export async function getVideo(videoId: string, tenantId: string): Promise<Video> {
+  return apiRequest<Video>(`/v1/videos/${videoId}?tenantId=${tenantId}`);
+}
+
+export async function deleteVideo(videoId: string, tenantId: string): Promise<void> {
+  await apiRequest(`/v1/videos/${videoId}?tenantId=${tenantId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function downloadVideo(videoId: string, tenantId: string): Promise<Blob> {
+  const response = await authenticatedFetch(`${apiUrl}/api/v1/videos/${videoId}/download?tenantId=${tenantId}`);
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ 
+      message: `HTTP ${response.status}: ${response.statusText}` 
+    }));
+    throw new Error(error.message || `Request failed: ${response.statusText}`);
+  }
+
+  return response.blob();
+}

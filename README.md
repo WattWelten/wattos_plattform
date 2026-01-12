@@ -5,6 +5,7 @@ Eine moderne, skalierbare KI-Plattform für intelligente Assistants und Knowledg
 ## 🚀 Features
 
 - **Multi-Tenant Architecture**: Vollständige Tenant-Isolation
+- **Video Avatar Service**: 3D-Avatar-Erstellung und Video-Aufnahme (HeyGen/Synthesia-ähnlich)
 - **Keycloak Integration**: Enterprise-grade Authentication & Authorization mit JWKS-Verification
 - **RAG (Retrieval-Augmented Generation)**: Intelligente Wissensdatenbanken mit pgvector
 - **Apple 2026 Design System**: Moderne, zugängliche UI mit Bento-Dashboard
@@ -97,12 +98,18 @@ pnpm dev:mvp
 
 Dies startet:
 - Web App (http://localhost:3000)
+- Customer Portal (http://localhost:3002)
 - Gateway API (http://localhost:3001)
+- Avatar Service (http://localhost:3009)
+- Video Service (http://localhost:3017)
 - RAG Service (http://localhost:3005)
+- Weitere Services (siehe `package.json`)
 
 ## 📚 Dokumentation
 
 - [Multi-Tenant KPI System](./docs/MULTI_TENANT_KPI.md) - Multi-Tenant Analytics & KPI-System
+- [Video Avatar Service - Architektur](./docs/VIDEO_AVATAR_ARCHITECTURE.md) - Video-Avatar-Service Architektur & Design
+- [Video Avatar Service - Setup](./docs/VIDEO_AVATAR_SETUP.md) - Setup-Anleitung für Video-Avatar-Service
 - [Environment Variables Reference](./docs/ENV_REFERENCE.md) - Vollständige ENV-Variablen-Referenz
 - [E2E Testing Guide](./docs/HOWTO_E2E.md) - Playwright E2E Testing Anleitung
 - [Coolify Deployment Guide](./docs/COOLIFY_DEPLOYMENT.md) - Deployment auf Hetzner via Coolify

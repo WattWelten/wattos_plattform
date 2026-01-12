@@ -5,6 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { AvatarModule } from './avatar/avatar.module';
 import { HealthModule } from './health/health.module';
 import { ServiceDiscoveryModule } from '@wattweiser/shared';
+import { PrismaModule } from '@wattweiser/db';
 import configuration from './config/configuration';
 
 @Module({
@@ -21,6 +22,7 @@ import configuration from './config/configuration';
     ]),
     HttpModule,
     ServiceDiscoveryModule,
+    PrismaModule,
     AvatarModule,
     HealthModule,
   ],

@@ -100,7 +100,8 @@ export default function OnboardingPage() {
       });
 
       // Weiterleitung zum Chat mit dem neuen Character
-      router.push(`/de/chat?character=${character.role}`);
+      // Verwende window.location für direkte Navigation (außerhalb von [locale])
+      window.location.href = `/de/chat?character=${character.role}`;
     } catch (error: any) {
       toast({
         title: 'Fehler',

@@ -1,15 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { handleAuthCallback } from '@/lib/auth/login';
+import { getLoginRedirect } from '@/lib/auth/redirect';
+import { useLocale } from 'next-intl';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!searchParams) return;
+    
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const errorParam = searchParams.get('error');
@@ -17,7 +23,7 @@ export default function AuthCallbackPage() {
     if (errorParam) {
       setError(`Authentication error: ${errorParam}`);
       setTimeout(() => {
-        router.push('/login');
+        router.push('/login'); // next-intl fügt Locale automatisch hinzu
       }, 3000);
       return;
     }
@@ -25,7 +31,7 @@ export default function AuthCallbackPage() {
     if (!code || !state) {
       setError('Missing authorization code or state');
       setTimeout(() => {
-        router.push('/login');
+        router.push('/login'); // next-intl fügt Locale automatisch hinzu
       }, 3000);
       return;
     }
@@ -33,18 +39,17 @@ export default function AuthCallbackPage() {
     // Verarbeite Authorization Callback
     handleAuthCallback(code, state)
       .then(() => {
-        // Redirect zur ursprünglich angefragten Seite oder Dashboard
-        const redirectTo = sessionStorage.getItem('auth_redirect') || '/dashboard';
-        sessionStorage.removeItem('auth_redirect');
+        // Redirect mit zentraler Logik (berücksichtigt sessionStorage)
+        const redirectTo = getLoginRedirect(locale, '/dashboard');
         router.push(redirectTo);
       })
       .catch((err) => {
         setError(err.message || 'Authentication failed');
         setTimeout(() => {
-          router.push('/login');
+          router.push('/login'); // next-intl fügt Locale automatisch hinzu
         }, 3000);
       });
-  }, [searchParams, router]);
+  }, [searchParams, router, locale]);
 
   if (error) {
     return (

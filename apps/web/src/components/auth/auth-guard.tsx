@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLocale } from 'next-intl';
+import { getLoginUrl } from '@/lib/auth/redirect';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -24,13 +26,17 @@ export function AuthGuard({
 }: AuthGuardProps) {
   const { user, isLoading, isAuthenticated, checkRole, checkAnyRole } = useAuth();
   const router = useRouter();
+  const locale = useLocale();
 
   useEffect(() => {
     if (isLoading) return;
 
     // Check authentication
     if (!isAuthenticated || !user) {
-      router.push(redirectTo);
+      // Erstelle Login-Pfad OHNE Locale (next-intl fügt sie hinzu)
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const loginPath = getLoginUrl(locale, currentPath, false); // false = für router.push()
+      router.push(loginPath);
       return;
     }
 
@@ -41,11 +47,11 @@ export function AuthGuard({
         : requiredRoles.every((role) => checkRole(role));
 
       if (!hasRequiredRole) {
-        router.push('/unauthorized');
+        router.push('/unauthorized'); // next-intl fügt Locale automatisch hinzu
         return;
       }
     }
-  }, [isLoading, isAuthenticated, user, requiredRoles, requireAnyRole, checkRole, checkAnyRole, router, redirectTo]);
+  }, [isLoading, isAuthenticated, user, requiredRoles, requireAnyRole, checkRole, checkAnyRole, router, redirectTo, locale]);
 
   if (isLoading) {
     return (

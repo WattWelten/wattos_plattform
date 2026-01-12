@@ -107,6 +107,7 @@ async function authenticatedFetch(
           Authorization: `Bearer ${token}`,
           ...options.headers,
         },
+        credentials: 'include', // Wichtig für Cookie-basierte Auth
         signal: AbortSignal.timeout(30000), // 30s Timeout
       });
 

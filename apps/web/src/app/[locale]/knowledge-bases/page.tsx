@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AppShell, Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, EmptyState, Skeleton, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@wattweiser/ui';
-import { Plus, Search, Database, FileText, Globe, Upload, Trash2, Edit, Settings } from 'lucide-react';
+import { Plus, Search, Database, FileText, Globe2, Upload, Trash2, Edit, Settings } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 interface KnowledgeBase {
@@ -56,7 +56,7 @@ export default function KnowledgeBasesPage() {
               Datei hochladen
             </Button>
             <Button variant="outline" size="lg" className="gap-2">
-              <Globe className="h-5 w-5" />
+              <Globe2 className="h-5 w-5" />
               Website crawlen
             </Button>
             <Button onClick={() => setIsCreateModalOpen(true)} size="lg" className="gap-2">
