@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Railway CLI
         run: npm install -g @railway/cli
@@ -48,7 +48,7 @@ jobs:
     needs: collect-logs
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Download logs
         uses: actions/download-artifact@v4
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Railway CLI
         run: npm install -g @railway/cli
