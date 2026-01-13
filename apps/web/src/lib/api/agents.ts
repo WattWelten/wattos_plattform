@@ -2,7 +2,7 @@
  * Agents API Client
  */
 
-import { getValidAccessToken } from '../auth/token-refresh';
+import { authenticatedFetch } from './authenticated-fetch';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -40,48 +40,6 @@ export interface CreateAgentRequest {
 
 export interface UpdateAgentRequest extends Partial<CreateAgentRequest> {}
 
-/**
- * Helper: Authenticated fetch mit automatischem Token-Refresh
- */
-async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = await getValidAccessToken();
-  if (!token) {
-    throw new Error('Nicht authentifiziert. Bitte melden Sie sich erneut an.');
-  }
-
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-    credentials: 'include', // Wichtig für Cookie-basierte Auth
-  });
-
-  // Token abgelaufen, versuche Refresh
-  if (response.status === 401) {
-    const refreshedToken = await getValidAccessToken();
-    if (refreshedToken) {
-      return fetch(url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${refreshedToken}`,
-          ...options.headers,
-        },
-        credentials: 'include', // Wichtig für Cookie-basierte Auth
-      });
-    }
-    // Refresh fehlgeschlagen, redirect zu Login
-    if (typeof window !== 'undefined') {
-      window.location.href = '/de/login';
-    }
-    throw new Error('Session abgelaufen. Bitte melden Sie sich erneut an.');
-  }
-
-  return response;
-}
 
 /**
  * Alle Agents abrufen

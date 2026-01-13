@@ -30,8 +30,14 @@ export class AuditService {
     }
 
     try {
-      // In Datenbank speichern
-      await (this.prisma as any).auditLog.create({
+      // Prüfe ob Prisma Client verfügbar ist
+      if (!this.prisma || !this.prisma.client) {
+        this.logger.warn('PrismaService not available, skipping audit log');
+        return;
+      }
+
+      // In Datenbank speichern (verwende client mit Type Assertion, da Prisma-Typen zur Compile-Zeit nicht verfügbar sind)
+      await (this.prisma.client as any).auditLog.create({
         data: {
           tenantId: options?.tenantId || 'default',
           userId: options?.userId,
@@ -39,6 +45,7 @@ export class AuditService {
           resourceType: options?.resourceType,
           resourceId: options?.resourceId,
           details: details || {},
+          metadata: {}, // Zusätzliche Metadaten für Logs (leer, kann später erweitert werden)
           ipAddress: options?.ipAddress,
           userAgent: options?.userAgent,
         },

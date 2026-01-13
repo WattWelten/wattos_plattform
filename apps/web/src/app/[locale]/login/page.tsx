@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -28,6 +28,28 @@ export default function LoginPage() {
   const router = useRouter();
   const locale = useLocale();
   const searchParams = useSearchParams();
+
+  // MVP-Mode: Automatisch zu /chat weiterleiten wenn Auth deaktiviert ist
+  useEffect(() => {
+    const disableAuth = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
+    if (disableAuth) {
+      const targetUrl = `/${locale}/chat`;
+      const currentPath = window.location.pathname;
+      
+      // Nur weiterleiten wenn nicht bereits auf Ziel-URL oder einer Chat-Unterroute
+      if (currentPath !== targetUrl && !currentPath.startsWith(`/${locale}/chat`)) {
+        // Verhindere mehrfache Redirects durch einmalige Prüfung
+        const hasRedirected = sessionStorage.getItem('mvp_redirected');
+        if (!hasRedirected) {
+          sessionStorage.setItem('mvp_redirected', 'true');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔍 [Login] MVP-Mode aktiv - Weiterleitung zu /chat');
+          }
+          window.location.href = targetUrl;
+        }
+      }
+    }
+  }, [locale]);
 
   const {
     register,
@@ -165,35 +187,24 @@ export default function LoginPage() {
           redirectTo,
           windowLocation: window.location.pathname,
           searchParams: window.location.search,
-          routerType: typeof router,
-          routerPush: typeof router.push,
         });
       }
       
       // Fallback falls redirectTo ungültig ist
-      // redirectTo enthält bereits OHNE Locale (next-intl fügt sie automatisch hinzu)
-      if (!redirectTo || redirectTo === 'undefined' || redirectTo.trim() === '') {
-        console.error('❌ Invalid redirect path, using fallback:', redirectTo);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 Attempting router.push("/chat")');
-        }
-        router.push('/chat'); // OHNE Locale - next-intl fügt sie hinzu
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 Attempting router.push:', redirectTo);
-        }
-        router.push(redirectTo); // OHNE Locale - next-intl fügt sie hinzu
+      const finalRedirectPath = (!redirectTo || redirectTo === 'undefined' || redirectTo.trim() === '') 
+        ? '/chat' 
+        : redirectTo;
+      
+      // Verwende window.location.href für zuverlässige Navigation
+      // next-intl fügt Locale automatisch hinzu, daher OHNE Locale im Pfad
+      const targetUrl = `/${locale}${finalRedirectPath}`;
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Redirecting to:', targetUrl);
       }
       
-      // Debug: Prüfe ob Navigation stattgefunden hat
-      if (process.env.NODE_ENV === 'development') {
-        setTimeout(() => {
-          console.log('🔍 After router.push - Current location:', {
-            pathname: window.location.pathname,
-            href: window.location.href,
-          });
-        }, 500);
-      }
+      // Direkte Navigation mit window.location.href (zuverlässiger als router.replace)
+      window.location.href = targetUrl;
     } catch (error: any) {
       let errorMessage = 'Bitte überprüfen Sie Ihre Anmeldedaten.';
       

@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { getValidAccessToken } from '../auth/token-refresh';
+import { authenticatedFetch } from './authenticated-fetch';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -85,59 +85,6 @@ const UpdateDashboardRequestSchema = z.object({
 export type CreateDashboardRequest = z.infer<typeof CreateDashboardRequestSchema>;
 export type UpdateDashboardRequest = z.infer<typeof UpdateDashboardRequestSchema>;
 
-/**
- * Helper: Authenticated fetch mit automatischem Token-Refresh und Retry-Logic
- */
-async function authenticatedFetch(
-  url: string,
-  options: RequestInit = {},
-  retries = 3,
-): Promise<Response> {
-  const token = await getValidAccessToken();
-  if (!token) {
-    throw new Error('Nicht authentifiziert. Bitte melden Sie sich erneut an.');
-  }
-
-  const fetchWithRetry = async (attempt: number): Promise<Response> => {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          ...options.headers,
-        },
-        credentials: 'include', // Wichtig für Cookie-basierte Auth
-        signal: AbortSignal.timeout(30000), // 30s Timeout
-      });
-
-      // Token abgelaufen, versuche Refresh
-      if (response.status === 401 && attempt < retries) {
-        const refreshedToken = await getValidAccessToken();
-        if (refreshedToken) {
-          return fetchWithRetry(attempt + 1);
-        }
-        // Refresh fehlgeschlagen, redirect zu Login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/de/login';
-        }
-        throw new Error('Session abgelaufen. Bitte melden Sie sich erneut an.');
-      }
-
-      return response;
-    } catch (error) {
-      // Network error oder Timeout - retry mit exponential backoff
-      if (attempt < retries && error instanceof Error) {
-        const delay = Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10s
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return fetchWithRetry(attempt + 1);
-      }
-      throw error;
-    }
-  };
-
-  return fetchWithRetry(0);
-}
 
 /**
  * KPIs abrufen

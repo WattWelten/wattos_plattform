@@ -5,8 +5,10 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TokenBlacklistGuard } from './guards/token-blacklist.guard';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { RegisterDto } from './dto/register.dto';
 import { ZodValidationPipe } from '@wattweiser/shared';
 import { LoginDtoSchema } from './dto/login.dto.schema';
+import { RegisterDtoSchema } from './dto/register.dto.schema';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,6 +23,22 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.validateUser(loginDto.username, loginDto.password);
     return this.authService.login(user);
+  }
+
+  @Post('register')
+  @UsePipes(new ZodValidationPipe(RegisterDtoSchema))
+  @ApiOperation({ summary: 'User registration', description: 'Register a new user and receive JWT token' })
+  @ApiResponse({ status: 201, description: 'Registration successful', type: LoginResponseDto })
+  @ApiResponse({ status: 400, description: 'Invalid registration data' })
+  @ApiResponse({ status: 401, description: 'Registration failed' })
+  async register(@Body() registerDto: RegisterDto) {
+    const result = await this.authService.register(
+      registerDto.name,
+      registerDto.email,
+      registerDto.password,
+      registerDto.tenantType
+    );
+    return result;
   }
 
   @Post('logout')

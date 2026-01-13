@@ -39,10 +39,23 @@ async function verifyAdminRole(token: string): Promise<boolean> {
 }
 
 // Protected routes (without locale prefix)
-const protectedRoutes = ['/chat', '/admin', '/onboarding'];
-const adminRoutes = ['/admin'];
+// MVP-Mode: Wenn DISABLE_AUTH=true, sind keine Routen geschützt
+// WICHTIG: Environment-Variablen werden zur Build-Zeit geladen!
+const disableAuth = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
+const protectedRoutes = disableAuth ? [] : ['/chat', '/admin', '/onboarding'];
+const adminRoutes = disableAuth ? [] : ['/admin'];
 
-export default async function middleware(request: NextRequest) {
+// Debug-Logging (nur in Development)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔍 [Proxy] MVP-Mode:', {
+    disableAuth,
+    NEXT_PUBLIC_DISABLE_AUTH: process.env.NEXT_PUBLIC_DISABLE_AUTH,
+    protectedRoutes,
+    adminRoutes,
+  });
+}
+
+export default async function proxy(request: NextRequest) {
   // First, let next-intl handle the request
   const response = await intlMiddleware(request);
   
@@ -66,6 +79,11 @@ export default async function middleware(request: NextRequest) {
   const pathWithoutLocale = segments.length > 1 
     ? '/' + segments.slice(1).join('/') 
     : '/';
+
+  // MVP-Mode: Überspringe alle Auth-Checks
+  if (disableAuth) {
+    return response;
+  }
 
   // Check if route is protected
   const isProtectedRoute = protectedRoutes.some((route) => pathWithoutLocale.startsWith(route));

@@ -1,10 +1,14 @@
 import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { JwtVerifyService } from './jwt-verify';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(private jwtVerifyService: JwtVerifyService) {}
+  constructor(
+    private jwtVerifyService: JwtVerifyService,
+    private configService: ConfigService,
+  ) {}
 
   async use(req: Request, _res: Response, next: NextFunction) {
     // Skip auth für OPTIONS-Requests (CORS Preflight)
@@ -19,6 +23,20 @@ export class AuthMiddleware implements NestMiddleware {
       req.path.startsWith('/api/auth/login') ||
       req.path.startsWith('/api/auth/register')
     ) {
+      return next();
+    }
+
+    // MVP-Mode: Wenn DISABLE_AUTH=true, überspringe Auth-Check und setze Mock-User
+    const disableAuth = this.configService.get<string>('DISABLE_AUTH', 'false') === 'true';
+    if (disableAuth) {
+      // Setze Mock-User für MVP-Mode
+      req.user = {
+        id: 'mvp-user',
+        email: 'mvp@wattweiser.com',
+        roles: ['ADMIN'],
+        keycloakId: 'mvp-keycloak-id',
+        tenantId: 'default',
+      };
       return next();
     }
 

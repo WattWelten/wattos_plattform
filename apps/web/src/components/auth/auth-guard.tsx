@@ -24,9 +24,15 @@ export function AuthGuard({
   requireAnyRole = false,
   redirectTo = '/login',
 }: AuthGuardProps) {
+  const disableAuth = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
   const { user, isLoading, isAuthenticated, checkRole, checkAnyRole } = useAuth();
   const router = useRouter();
   const locale = useLocale();
+
+  // MVP-Mode: Überspringe Auth-Prüfung
+  if (disableAuth) {
+    return <>{children}</>;
+  }
 
   useEffect(() => {
     if (isLoading) return;

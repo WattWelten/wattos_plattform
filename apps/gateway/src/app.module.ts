@@ -192,9 +192,9 @@ export class AppModule implements NestModule {
       .apply(AuthMiddleware)
       .exclude(
         { path: 'health', method: RequestMethod.ALL },
-        { path: 'health/*', method: RequestMethod.ALL },
+        { path: 'health/*path', method: RequestMethod.ALL },
         { path: 'docs', method: RequestMethod.ALL },
-        { path: 'docs/*', method: RequestMethod.ALL },
+        { path: 'docs/*path', method: RequestMethod.ALL },
         { path: 'auth/login', method: RequestMethod.ALL }, // ALL für OPTIONS-Preflight
         { path: 'auth/register', method: RequestMethod.ALL }, // ALL für OPTIONS-Preflight
         { path: '*', method: RequestMethod.OPTIONS }, // Alle OPTIONS-Requests ausschließen (CORS Preflight)

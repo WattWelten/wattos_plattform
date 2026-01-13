@@ -13,6 +13,8 @@ import { TokenBlacklistService } from './token-blacklist.service';
 import { JwtVerifyService } from './jwt-verify';
 import { AuthMiddleware } from './auth.middleware';
 import { RbacGuard } from './guards/rbac.guard';
+import { ConditionalAuthGuard } from './guards/conditional-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -38,7 +40,9 @@ import { RbacGuard } from './guards/rbac.guard';
     JwtVerifyService,
     AuthMiddleware,
     RbacGuard,
+    JwtAuthGuard,
+    ConditionalAuthGuard,
   ],
-  exports: [AuthService, TokenBlacklistService, JwtVerifyService, AuthMiddleware, RbacGuard],
+  exports: [AuthService, TokenBlacklistService, JwtVerifyService, AuthMiddleware, RbacGuard, ConditionalAuthGuard, JwtAuthGuard],
 })
 export class AuthModule {}

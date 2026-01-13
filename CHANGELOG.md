@@ -4,6 +4,59 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Sprint 6: Auth & Proxy Refactoring (2026-01-12)
+
+#### ✅ Next.js Proxy-Middleware Refactoring
+- ✅ **Neue Proxy-Middleware** (`apps/web/src/proxy.ts`)
+  - Ersetzt alte `middleware.ts` mit verbesserter Locale-Behandlung
+  - Integriert next-intl Middleware für i18n-Support
+  - MVP-Mode Support: Auth-Checks können deaktiviert werden
+  - Admin-Role-Verification über API-Endpoint
+  - Cookie-basierte Token-Extraktion (Rückwärtskompatibilität)
+  - Geschützte Routen: `/chat`, `/admin`, `/onboarding`
+  - Admin-Routen: `/admin` mit Rollenprüfung
+
+#### ✅ Authenticated Fetch Utility
+- ✅ **Zentrale authenticated-fetch Funktion** (`apps/web/src/lib/api/authenticated-fetch.ts`)
+  - Automatischer Token-Refresh bei 401-Fehlern
+  - Retry-Logic mit exponential backoff
+  - MVP-Mode Support (kein Token erforderlich)
+  - Timeout-Handling (30s Standard)
+  - Cookie-basierte Credentials
+
+#### ✅ Gateway Auth-Verbesserungen
+- ✅ **Register DTO** (`apps/gateway/src/auth/dto/register.dto.ts`)
+  - Tenant-Type Enum (KMU, SCHULE, VERWALTUNG)
+  - Validierung mit class-validator
+  - Swagger/OpenAPI Dokumentation
+- ✅ **Conditional Auth Guard** (`apps/gateway/src/auth/guards/conditional-auth.guard.ts`)
+  - Optional Auth je nach Route-Konfiguration
+  - MVP-Mode Support
+- ✅ **Auth-Middleware erweitert**
+  - Verbesserte Token-Handling
+  - Bessere Fehlerbehandlung
+- ✅ **Audit-Service Metadaten-Support**
+  - Erweiterte Metadaten-Unterstützung für Audit-Logs
+
+#### ✅ Environment-Variablen Dokumentation
+- ✅ **MVP-Mode Environment-Variablen**
+  - `DISABLE_AUTH` (Gateway): Deaktiviert Auth für alle API-Routes
+  - `NEXT_PUBLIC_DISABLE_AUTH` (Web): Öffnet geschützte Frontend-Routen
+  - Dokumentation in `.env.example` Dateien
+
+#### ✅ Code-Cleanup
+- ✅ **Alte Middleware entfernt** (`apps/web/src/middleware.ts`)
+  - Durch neue `proxy.ts` ersetzt
+- ✅ **API-Clients refactored**
+  - Verwendung von `authenticatedFetch` statt direkter fetch-Calls
+  - Reduzierte Code-Duplikation in `agents.ts`, `analytics.ts`, `dashboard.ts`
+
+#### ✅ Migration & Scripts
+- ✅ **Audit-Log Metadaten Migration** (`packages/db/migrations/20260112000000_add_auditlog_metadata/`)
+  - Erweitert AuditLog-Tabelle um Metadaten-Support
+- ✅ **Keycloak User Fix Script** (`scripts/fix-keycloak-user.ps1`)
+  - PowerShell-Script für Keycloak-User-Korrekturen
+
 ### Sprint 5: Projekt-Bereinigung & Code-Qualität (2026-01-12)
 
 #### ✅ Projekt-Bereinigung

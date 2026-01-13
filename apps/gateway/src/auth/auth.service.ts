@@ -81,6 +81,43 @@ export class AuthService {
     };
   }
 
+  async register(name: string, email: string, password: string, tenantType: string) {
+    // Input-Sanitization: Entferne gefährliche Zeichen
+    const sanitizedName = sanitizeText(name);
+    const sanitizedEmail = sanitizeText(email);
+    sanitizeText(password); // Sanitize für Sicherheit, wird aber nicht verwendet (wird an Keycloak übergeben)
+
+    // Development-Mode: Mock-Register ohne Keycloak
+    const isDevelopment = this._configService.get<string>('NODE_ENV') === 'development';
+    const keycloakDisabled = this._configService.get<string>('DISABLE_KEYCLOAK', 'false') === 'true';
+    
+    if (isDevelopment && keycloakDisabled) {
+      // Mock-Register für Development
+      const mockUser = {
+        id: `dev-user-${Date.now()}`,
+        email: sanitizedEmail,
+        name: sanitizedName,
+        keycloakId: `dev-keycloak-${Date.now()}`,
+        tenantType,
+        token: 'dev-mock-token',
+      };
+      
+      this.logger.debug(`Mock registration for user: ${sanitizedEmail}`);
+      return this.login(mockUser);
+    }
+
+    // Keycloak registration (falls Keycloak aktiviert ist)
+    try {
+      this.logger.debug(`Attempting Keycloak registration for user: ${sanitizedEmail}`);
+      // TODO: Implementiere Keycloak User Registration
+      // Für jetzt: Wirft einen Fehler, da Keycloak-Registration noch nicht implementiert ist
+      throw new Error('Keycloak registration not yet implemented. Use development mode with DISABLE_KEYCLOAK=true');
+    } catch (error) {
+      this.logger.error('Registration failed:', error instanceof Error ? error.message : String(error));
+      throw new UnauthorizedException('Registration failed');
+    }
+  }
+
   /**
    * Parst JWT Expiration String (z.B. "1h", "3600s") zu Sekunden
    */

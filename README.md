@@ -92,8 +92,26 @@ Dies erstellt:
 
 ### 7. Anwendung starten
 
+#### MVP-Mode (ohne Login, für Demo/Testing)
+
 ```bash
 pnpm dev:mvp
+```
+
+**Wichtig**: Für MVP-Mode müssen folgende Environment-Variablen gesetzt sein:
+- `DISABLE_AUTH=true` (Gateway)
+- `NEXT_PUBLIC_DISABLE_AUTH=true` (Web)
+
+Im MVP-Mode:
+- ✅ Kein Login erforderlich
+- ✅ Alle Services direkt nutzbar
+- ✅ Mock-User wird automatisch gesetzt
+- ✅ Perfekt für Demo und Testing
+
+#### Normal-Mode (mit Login)
+
+```bash
+pnpm dev
 ```
 
 Dies startet:

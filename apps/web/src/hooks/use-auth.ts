@@ -24,13 +24,31 @@ interface UseAuthReturn {
   refresh: () => Promise<void>;
 }
 
+/**
+ * MVP-Mode Mock-User
+ */
+const MVP_MOCK_USER: User = {
+  id: 'mvp-user',
+  email: 'mvp@wattweiser.com',
+  name: 'MVP Demo User',
+  roles: ['ADMIN', 'USER'],
+  tenantId: 'default',
+};
+
 export function useAuth(): UseAuthReturn {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const disableAuth = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
+  const [user, setUser] = useState<User | null>(disableAuth ? MVP_MOCK_USER : null);
+  const [isLoading, setIsLoading] = useState(!disableAuth);
   const router = useRouter();
 
   // Initial load
   useEffect(() => {
+    // MVP-Mode: Mock-User sofort setzen
+    if (disableAuth) {
+      setIsLoading(false);
+      return;
+    }
+
     const loadUser = async () => {
       try {
         const currentUser = getUser();
@@ -53,7 +71,7 @@ export function useAuth(): UseAuthReturn {
     };
 
     loadUser();
-  }, []);
+  }, [disableAuth]);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -97,9 +115,9 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   return {
-    user,
+    user: disableAuth ? MVP_MOCK_USER : user,
     isLoading,
-    isAuthenticated: isAuthenticated() && user !== null,
+    isAuthenticated: disableAuth ? true : (isAuthenticated() && user !== null),
     login,
     logout,
     checkRole: (role: string) => hasRole(role),

@@ -63,15 +63,17 @@ export default function LabPage() {
   // Test Audio laden
   const handleTestAudio = async () => {
     try {
-      // Hole Token für Authentifizierung
-      const { getValidAccessToken } = await import('@/lib/auth/token-refresh');
-      const token = await getValidAccessToken();
-      
+      const disableAuth = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      // MVP-Mode: Kein Token nötig (Gateway setzt Mock-User)
+      if (!disableAuth) {
+        const { getValidAccessToken } = await import('@/lib/auth/token-refresh');
+        const token = await getValidAccessToken();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
       }
       
       const response = await fetch(`${apiUrl}/api/voice/tts`, {

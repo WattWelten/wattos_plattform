@@ -20,6 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "rootDir": ".",
     "typeRoots": ["../../node_modules/@types", "node_modules/@types", "./src/types"],
+    "types": [], // Deaktiviere automatisches Laden von @types/* Paketen
     "paths": {
       "@/*": ["src/*"]
     }

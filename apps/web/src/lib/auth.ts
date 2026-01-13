@@ -15,6 +15,17 @@ export interface User {
   tenantId: string;
 }
 
+/**
+ * MVP-Mode Mock-User
+ */
+const MVP_MOCK_USER: User = {
+  id: 'mvp-user',
+  email: 'mvp@wattweiser.com',
+  name: 'MVP Demo User',
+  roles: ['ADMIN', 'USER'],
+  tenantId: 'default',
+};
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -36,6 +47,12 @@ export function setAuthTokens(tokens: AuthTokens): void {
  */
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
+  
+  // MVP-Mode: Mock-Token zurückgeben (Gateway akzeptiert Mock-Token)
+  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+    return 'mvp-mock-token';
+  }
+  
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
@@ -81,6 +98,12 @@ export function setUser(user: User): void {
  */
 export function getUser(): User | null {
   if (typeof window === 'undefined') return null;
+  
+  // MVP-Mode: Mock-User zurückgeben
+  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+    return MVP_MOCK_USER;
+  }
+  
   const userStr = localStorage.getItem(USER_KEY);
   if (!userStr) return null;
   try {
@@ -201,6 +224,11 @@ export async function refreshAuthToken(): Promise<AuthTokens | null> {
  * Prüfen ob User authentifiziert ist
  */
 export function isAuthenticated(): boolean {
+  // MVP-Mode: Immer authentifiziert
+  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+    return true;
+  }
+  
   const token = getAuthToken();
   if (!token) return false;
   return !isTokenExpired();

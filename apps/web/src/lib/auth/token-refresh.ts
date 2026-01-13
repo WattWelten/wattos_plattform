@@ -71,6 +71,11 @@ export async function getValidAccessToken(): Promise<string | null> {
     return null;
   }
 
+  // MVP-Mode: Mock-Token zurückgeben (Gateway akzeptiert Mock-Token)
+  if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+    return 'mvp-mock-token';
+  }
+
   const accessToken = localStorage.getItem('access_token');
   const expiresAt = localStorage.getItem('token_expires_at');
 
