@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
-    "@nestjs/common": "^11.1.11",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
     "@wattweiser/shared": "workspace:*",
     "axios": "^1.13.2",
