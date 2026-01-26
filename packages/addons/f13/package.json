@@ -12,11 +12,11 @@
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
-    "@nestjs/common": "^11.1.11",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
     "@wattweiser/shared": "workspace:*",
-    "axios": "^1.13.2",
-    "zod": "^4.3.5"
+    "axios": "^1.13.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

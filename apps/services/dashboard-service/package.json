@@ -34,10 +34,10 @@
     }
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.9",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.9",
-    "@nestjs/platform-express": "^11.1.9",
+    "@nestjs/core": "^11.1.12",
+    "@nestjs/platform-express": "^11.1.12",
     "@nestjs/schedule": "^4.1.1",
     "@wattweiser/db": "workspace:*",
     "@wattweiser/shared": "workspace:*",
