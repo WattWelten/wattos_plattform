@@ -14,19 +14,19 @@
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
-    "@nestjs/common": "^11.1.11",
+    "@nestjs/common": "^11.1.12",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.11",
+    "@nestjs/core": "^11.1.12",
     "@wattweiser/avatar": "workspace:*",
     "@wattweiser/characters": "workspace:*",
     "@wattweiser/db": "workspace:*",
     "@wattweiser/dms": "workspace:*",
     "@wattweiser/shared": "workspace:*",
-    "axios": "^1.13.2",
-    "ioredis": "^5.9.1",
+    "axios": "^1.13.3",
+    "ioredis": "^5.9.2",
     "rxjs": "^7.8.2",
     "uuid": "^13.0.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
